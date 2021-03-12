@@ -1,72 +1,82 @@
+# coding=utf-8
 import numpy as np
 
 __all__ = ['complete_timestamp', 'standardize_kpi']
 
 
-def complete_timestamp(timestamp, arrays=None):
+def complete_timestamp(timestamp, src_arrays=None):
     """
-    Complete `timestamp` such that the time interval is homogeneous.
-
-    Zeros will be inserted into each array in `arrays`, at missing points.
-    Also, an indicator array will be returned to indicate whether each
-    point is missing or not.
+    1.完成时间戳，使时间间隔是齐次的。
+    2.在缺失点上注入0。
+    3.同样，将返回一个指示符数组来指示缺失点。
 
     Args:
-        timestamp (np.ndarray): 1-D int64 array, the timestamp values.
-            It can be unsorted.
-        arrays (Iterable[np.ndarray]): The 1-D arrays to be filled with zeros
-            according to `timestamp`.
+        timestamp (np.ndarray):  时间戳 一维64位整数数组 可以无序 \
+            1-D int64 src_array, the timestamp values.It can be unsorted.
+        src_arrays (Iterable[np.ndarray]): (values,labels) (数值，标签) 与时间戳相关的一维数组 \
+            The 1-D arrays to be filled with zeros according to `timestamp`.
 
     Returns:
-        np.ndarray: A 1-D int64 array, the completed timestamp.
-        np.ndarray: A 1-D int32 array, indicating whether each point is missing.
-        list[np.ndarray]: The arrays, missing points filled with zeros.
-            (optional, return only if `arrays` is specified)
+        np.ndarray: 一维64位整型数组 补充完整的时间戳 \
+            A 1-D int64 src_array, the completed timestamp.
+        np.ndarray: 一维32位整型数组 标注时间戳对应数据是否为缺失数据 \
+            A 1-D int32 src_array, indicating whether the data corresponding to the timestamp is missing.
+        list[np.ndarray]: 已经进行缺失值补0的时间戳对应值数组\
+            The arrays, missing points filled with zeros.(optional, return only if `arrays` is specified)
     """
+    # 1.检验数据合法性
+    # np src_array-> src_array
     timestamp = np.asarray(timestamp, np.int64)
+    # 一维数组检验
     if len(timestamp.shape) != 1:
-        raise ValueError('`timestamp` must be a 1-D array')
-
-    has_arrays = arrays is not None
-    arrays = [np.asarray(array) for array in (arrays or ())]
-    for i, array in enumerate(arrays):
-        if array.shape != timestamp.shape:
-            raise ValueError('The shape of ``arrays[{}]`` does not agree with '
-                             'the shape of `timestamp` ({} vs {})'.
-                             format(i, array.shape, timestamp.shape))
-
-    # sort the timestamp, and check the intervals
+        raise ValueError('`timestamp` must be a 1-D src_array')
+    # 数组是否为空
+    has_array = src_arrays is not None
+    # np arrays-> arrays
+    src_arrays = [np.asarray(src_array) for src_array in src_arrays]
+    # 相同维度
+    for i, src_array in enumerate(src_arrays):
+        if src_array.shape != timestamp.shape:
+            raise ValueError(
+                'component of src_array must has same shape with timestamp ,shape :timestamp - src_array {} - {}'
+                ',src_array index {}'.format(timestamp.shape, src_array.shape, i))
+    # 2.检验时间戳数据 补充为有序等间隔时间戳数组
+    # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
     src_index = np.argsort(timestamp)
     timestamp_sorted = timestamp[src_index]
+    # 沿给定轴计算离散差分 即获得所有存在的时间戳间隔
     intervals = np.unique(np.diff(timestamp_sorted))
+    # 最小的间隔数
     interval = np.min(intervals)
+    # 有重复值抛异常 数据有误
     if interval == 0:
         raise ValueError('Duplicated values in `timestamp`')
-    for itv in intervals:
-        if itv % interval != 0:
-            raise ValueError('Not all intervals in `timestamp` are multiples '
-                             'of the minimum interval')
-
-    # prepare for the return arrays
-    length = (timestamp_sorted[-1] - timestamp_sorted[0]) // interval + 1
-    ret_timestamp = np.arange(timestamp_sorted[0],
-                              timestamp_sorted[-1] + interval,
-                              interval,
-                              dtype=np.int64)
-    ret_missing = np.ones([length], dtype=np.int32)
-    ret_arrays = [np.zeros([length], dtype=array.dtype) for array in arrays]
-
-    # copy values to the return arrays
-    dst_index = np.asarray((timestamp_sorted - timestamp_sorted[0]) // interval,
-                           dtype=np.int)
-    ret_missing[dst_index] = 0
-    for ret_array, array in zip(ret_arrays, arrays):
-        ret_array[dst_index] = array[src_index]
-
-    if has_arrays:
-        return ret_timestamp, ret_missing, ret_arrays
-    else:
-        return ret_timestamp, ret_missing
+    # 所有间隔数是否与最小间隔为整除关系
+    for i in intervals:
+        if i % interval != 0:
+            raise ValueError('Not all intervals in `timestamp` are multiples of the minimum interval')
+    # 最终时间戳数量为 时间跨度/时间间隔+1
+    amount = (timestamp_sorted[-1] - timestamp_sorted[0]) // interval + 1
+    # 重构时间戳数组
+    dst_timestamp = np.arange(timestamp_sorted[0], timestamp_sorted[-1] + interval, interval, dtype=np.int64)
+    # 初始化缺失点数组与数值与标注数组
+    dst_missing = np.ones([amount], dtype=np.int32)
+    dst_arrays = [np.zeros([amount], dtype=src_array.dtype) for src_array in src_arrays]
+    # 3.填充数值
+    # 获得与初始时间戳的差值数组
+    diff_with_first = (timestamp_sorted - timestamp_sorted[0])
+    # 获得与初始时间戳相差的最小间隔数 即应处的索引值
+    diff_intervals_with_first = diff_with_first // interval
+    dst_index = np.asarray(diff_intervals_with_first, dtype=np.int)
+    # 标记有原值的时间戳为非缺失点
+    dst_missing[dst_index] = 0
+    if not has_array:
+        return dst_timestamp, dst_missing
+    # 分别组合
+    zip_array = zip(dst_arrays, src_arrays)
+    for dst_array, src_array in zip_array:
+        dst_array[dst_index] = src_array[src_index]
+    return dst_timestamp, dst_missing, dst_arrays
 
 
 def standardize_kpi(values, mean=None, std=None, excludes=None):

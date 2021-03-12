@@ -41,8 +41,8 @@ class CompleteTimestampTestCase(unittest.TestCase):
         # test pure sort w.r.t. `timestamp`
         ts, y, arrays = complete_timestamp(
             timestamp=np.array([0, 1, 6, 5, 3, 4, 2]),
-            arrays=[np.array([7, 6, 1, 2, 4, 3, 5], dtype=np.int32),
-                    np.arange(1, 8, dtype=np.float32)]
+            src_arrays=[np.array([7, 6, 1, 2, 4, 3, 5], dtype=np.int32),
+                        np.arange(1, 8, dtype=np.float32)]
         )
         self.assertEqual(arrays[0].dtype, np.int32)
         self.assertEqual(arrays[1].dtype, np.float32)
@@ -52,8 +52,8 @@ class CompleteTimestampTestCase(unittest.TestCase):
         # test fill the missing
         ts, y, arrays = complete_timestamp(
             timestamp=np.array([0, 1, 3, 6, 5]),
-            arrays=[np.array([5, 4, 3, 1, 2], dtype=np.int32),
-                    np.arange(1, 6, dtype=np.float32)]
+            src_arrays=[np.array([5, 4, 3, 1, 2], dtype=np.int32),
+                        np.arange(1, 6, dtype=np.float32)]
         )
         np.testing.assert_equal(arrays[0], [5, 4, 0, 3, 0, 2, 1])
         np.testing.assert_equal(arrays[1], [1, 2, 0, 3, 0, 5, 4])

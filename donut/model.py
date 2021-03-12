@@ -56,6 +56,7 @@ class Donut(VarScopeObject):
         scope (str): Optional scope of this module
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
     """
+
     def __init__(self, h_for_p_x, h_for_q_z, x_dims, z_dims, std_epsilon=1e-4,
                  name=None, scope=None):
         if not is_integer(x_dims) or x_dims <= 0:
@@ -144,8 +145,8 @@ class Donut(VarScopeObject):
             alpha = tf.cast(1 - y, dtype=tf.float32)
             beta = tf.reduce_mean(alpha, axis=-1)
             log_joint = (
-                tf.reduce_sum(alpha * x_log_prob, axis=-1) +
-                beta * chain.model['z'].log_prob()
+                    tf.reduce_sum(alpha * x_log_prob, axis=-1) +
+                    beta * chain.model['z'].log_prob()
             )
             vi = VariationalInference(
                 log_joint=log_joint,

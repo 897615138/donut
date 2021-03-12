@@ -21,7 +21,7 @@ class DonutTrainer(VarScopeObject):
 
     Args:
         model (Donut): The :class:`Donut` model instance.
-        model_vs (str or tf.VariableScope): If specified, will collect
+        model_vs (str or tf.compat.v1.VariableScope): If specified, will collect
             trainable variables only from this scope.  If :obj:`None`,
             will collect all trainable variables within current graph.
             (default :obj:`None`)
