@@ -6,9 +6,8 @@ __all__ = ['complete_timestamp', 'standardize_kpi']
 
 def complete_timestamp(timestamp, src_arrays=None):
     """
-    1.完成时间戳，使时间间隔是齐次的。
-    2.在缺失点上注入0。
-    3.同样，将返回一个指示符数组来指示缺失点。
+    1.补齐时间戳，使时间间隔是齐次的。/1. Complement the timestamp so that the interval is homogeneous.
+    2.标记非缺失点。/2. Marking non-missing points.
 
     Args:
         timestamp (np.ndarray):  时间戳 一维64位整数数组 可以无序 \
@@ -37,9 +36,8 @@ def complete_timestamp(timestamp, src_arrays=None):
     # 相同维度
     for i, src_array in enumerate(src_arrays):
         if src_array.shape != timestamp.shape:
-            raise ValueError(
-                'component of src_array must has same shape with timestamp ,shape :timestamp - src_array {} - {}'
-                ',src_array index {}'.format(timestamp.shape, src_array.shape, i))
+            raise ValueError('component of src_array must has same shape with timestamp ,shape :timestamp - src_array '
+                             '{} - {} ,src_array index {}'.format(timestamp.shape, src_array.shape, i))
     # 2.检验时间戳数据 补充为有序等间隔时间戳数组
     # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
     src_index = np.argsort(timestamp)
@@ -81,39 +79,38 @@ def complete_timestamp(timestamp, src_arrays=None):
 
 def standardize_kpi(values, mean=None, std=None, excludes=None):
     """
-    Standardize a
+    标准化 Standardize
     Args:
-        values (np.ndarray): 1-D `float32` array, the KPI observations.
-        mean (float): If not :obj:`None`, will use this `mean` to standardize
-            `values`. If :obj:`None`, `mean` will be computed from `values`.
-            Note `mean` and `std` must be both :obj:`None` or not :obj:`None`.
-            (default :obj:`None`)
-        std (float): If not :obj:`None`, will use this `std` to standardize
-            `values`. If :obj:`None`, `std` will be computed from `values`.
-            Note `mean` and `std` must be both :obj:`None` or not :obj:`None`.
-            (default :obj:`None`)
-        excludes (np.ndarray): Optional, 1-D `int32` or `bool` array, the
-            indicators of whether each point should be excluded for computing
-            `mean` and `std`. Ignored if `mean` and `std` are not :obj:`None`.
-            (default :obj:`None`)
+        values (np.ndarray): 一维浮点数组，KPI数据  1-D `float32` array, the KPIs.
+        mean (float):
+            如果不为None，将使用平均值来标准化values。
+            默认为None。
+            注意:mean和std同时为None或不为None。
+
+        std (float): 标准差， 与mean类似
+        excludes (np.ndarray):
+            可选，一维布尔或者32位整型数组,指示是否应该排除某个点计算mean和std。如果mean和std不是None，则忽略。
+            默认为None。
 
     Returns:
-        np.ndarray: The standardized `values`.
-        float: The computed `mean` or the given `mean`.
-        float: The computed `std` or the given `std`.
+        np.ndarray: 标准化数据/The standardized `values`.
+        float: 计算得出的平均值或提供的平均值/The computed `mean` or the given `mean`.
+        float: 计算得出的标准差或提供的标准差/The computed `std` or the given `std`.
     """
+    # 1.转化数组格式 校验数据类型
     values = np.asarray(values, dtype=np.float32)
+    # 一维数组检验
     if len(values.shape) != 1:
-        raise ValueError('`values` must be a 1-D array')
+        raise ValueError('values must be a 1-D array')
+    # mean 和 std 同时为None或非None
     if (mean is None) != (std is None):
-        raise ValueError('`mean` and `std` must be both None or not None')
+        raise ValueError('mean and std must be both None or not None')
+    # 排除点维数必须与数值维数相同
     if excludes is not None:
         excludes = np.asarray(excludes, dtype=np.bool)
         if excludes.shape != values.shape:
-            raise ValueError('The shape of `excludes` does not agree with '
-                             'the shape of `values` ({} vs {})'.
-                             format(excludes.shape, values.shape))
-
+            raise ValueError('excludes must has same shape with values ,shape :excludes - values {} - {}'
+                             .format(excludes.shape, values.shape))
     if mean is None:
         if excludes is not None:
             val = values[np.logical_not(excludes)]
