@@ -36,7 +36,7 @@ class DonutTrainerTestCase(tf.test.TestCase):
         with TemporaryDirectory() as tmpdir:
             tf.set_random_seed(1234)
             donut = Donut(
-                h_for_p_x=lambda x: x, h_for_q_z=lambda x: x, x_dims=5,
+                hidden_net_p_x_z=lambda x: x, hidden_net_q_z_x=lambda x: x, x_dims=5,
                 z_dims=3
             )
             trainer = DonutTrainer(
@@ -55,7 +55,7 @@ class DonutTrainerTestCase(tf.test.TestCase):
 
         tf.set_random_seed(1234)
         donut = Donut(
-            h_for_p_x=lambda x: x, h_for_q_z=lambda x: x, x_dims=5,
+            hidden_net_p_x_z=lambda x: x, hidden_net_q_z_x=lambda x: x, x_dims=5,
             z_dims=3
         )
 
@@ -96,7 +96,7 @@ class DonutTrainerTestCase(tf.test.TestCase):
 
         tf.set_random_seed(1234)
         donut = Donut(
-            h_for_p_x=lambda x: x, h_for_q_z=lambda x: x, x_dims=5,
+            hidden_net_p_x_z=lambda x: x, hidden_net_q_z_x=lambda x: x, x_dims=5,
             z_dims=3
         )
         trainer = DonutTrainer(donut, max_epoch=1)

@@ -22,7 +22,7 @@ class DonutPredictorTestCase(tf.test.TestCase):
         tf.set_random_seed(1234)
 
         # test last_point_only == True
-        donut = Donut(h_for_p_x=lambda x: x, h_for_q_z=lambda x: x, x_dims=5,
+        donut = Donut(hidden_net_p_x_z=lambda x: x, hidden_net_q_z_x=lambda x: x, x_dims=5,
                       z_dims=3)
         _ = donut.get_score(
             tf.zeros([4, 5], dtype=tf.float32),

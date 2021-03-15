@@ -13,8 +13,8 @@ class ModelTestCase(tf.test.TestCase):
 
     def test_props(self):
         donut = Donut(
-            h_for_p_x=Mock(wraps=lambda x: x),
-            h_for_q_z=Mock(wraps=lambda x: x),
+            hidden_net_p_x_z=Mock(wraps=lambda x: x),
+            hidden_net_q_z_x=Mock(wraps=lambda x: x),
             x_dims=5,
             z_dims=3,
             std_epsilon=0.125,
@@ -27,8 +27,8 @@ class ModelTestCase(tf.test.TestCase):
         @global_reuse
         def get_donut():
             return Donut(
-                h_for_p_x=lambda x: x,
-                h_for_q_z=lambda x: x,
+                hidden_net_p_x_z=lambda x: x,
+                hidden_net_q_z_x=lambda x: x,
                 x_dims=5,
                 z_dims=3,
             )
@@ -100,8 +100,8 @@ class ModelTestCase(tf.test.TestCase):
         # create and patch donut model
         tf.set_random_seed(1234)
         donut = Donut(
-            h_for_p_x=Mock(wraps=lambda x: x),
-            h_for_q_z=Mock(wraps=lambda x: x),
+            hidden_net_p_x_z=Mock(wraps=lambda x: x),
+            hidden_net_q_z_x=Mock(wraps=lambda x: x),
             x_dims=5,
             z_dims=3,
             std_epsilon=0.125,
@@ -159,8 +159,8 @@ class ModelTestCase(tf.test.TestCase):
 
         tf.set_random_seed(1234)
         donut = Donut(
-            h_for_p_x=lambda x: x,
-            h_for_q_z=lambda x: x,
+            hidden_net_p_x_z=lambda x: x,
+            hidden_net_q_z_x=lambda x: x,
             x_dims=5,
             z_dims=3,
         )

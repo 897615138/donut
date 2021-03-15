@@ -7,3 +7,6 @@ pytest
 mock
 setuptools
 pandas
+matplotlib
+streamlit
+donut

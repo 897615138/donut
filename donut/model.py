@@ -5,9 +5,7 @@ import tensorflow as tf
 from tfsnippet.distributions import Normal
 from tfsnippet.modules import VAE, Lambda, Module
 from tfsnippet.stochastic import validate_n_samples
-from tfsnippet.utils import (VarScopeObject,
-                             reopen_variable_scope,
-                             is_integer)
+from tfsnippet.utils import (VarScopeObject, reopen_variable_scope, is_integer)
 from tfsnippet.variational import VariationalInference
 
 from .reconstruction import iterative_masked_reconstruct
@@ -30,35 +28,37 @@ def wrap_params_net(inputs, h_for_dist, mean_layer, std_layer):
 
 class Donut(VarScopeObject):
     """
-    Class for constructing Donut model.
+    构造Donut
 
-    This class provides :meth:`get_training_loss` for deriving the
-    training loss :class:`tf.Tensor`, and :meth:`get_score` for obtaining
-    the reconstruction probability :class:`tf.Tensor`.
+    `get_training_loss`方法 得出训练损失 :class:`tf.Tensor`
+    `get_score`方法 获取重构概率 :class:`tf.Tensor`.
 
     Note:
-        :class:`Donut` instances will not build the computation graph
-        until :meth:`get_training_loss` or :meth:`get_score` is
-        called.  This suggests that a :class:`donut.DonutTrainer` or
-        a :class:`donut.DonutPredictor` must have been constructed
-        before saving or restoring the model parameters.
+        :class:`Donut` 实例在`get_training_loss`方法或`get_score`方法被调用的时候才会构建。
+        在保存或恢复模型参数之前构建:class:`donut.DonutTrainer`或者 :class:`donut.DonutPredictor`
 
     Args:
-        h_for_p_x (Module or (tf.Tensor) -> tf.Tensor):
-            The hidden network for :math:`p(x|z)`.
-        h_for_q_z (Module or (tf.Tensor) -> tf.Tensor):
-            The hidden network for :math:`q(z|x)`.
-        x_dims (int): The number of `x` dimensions.
-        z_dims (int): The number of `z` dimensions.
-        std_epsilon (float): The minimum value of std for `x` and `z`.
-        name (str): Optional name of this module
-            (argument of :class:`tfsnippet.utils.VarScopeObject`).
-        scope (str): Optional scope of this module
-            (argument of :class:`tfsnippet.utils.VarScopeObject`).
+        hidden_net_p_x_z (Module or (tf.Tensor) -> tf.Tensor):
+            :math:`p(x|z)`的隐藏网络
+        hidden_net_q_z_x (Module or (tf.Tensor) -> tf.Tensor):
+            :math:`q(z|x)`的隐藏网络
+        x_dims (int):
+            x维的数量
+            必须为正整数
+        z_dims (int):
+            z维的数量
+            必须为正整数
+        std_epsilon (float):
+            x和z的标准差最小值。
+        name (str):
+            可选模块名
+            (:class:`tfsnippet.utils.VarScopeObject`参数)
+        scope (str):
+            此模块的可选范围
+            (:class:`tfsnippet.utils.VarScopeObject`参数)
     """
 
-    def __init__(self, h_for_p_x, h_for_q_z, x_dims, z_dims, std_epsilon=1e-4,
-                 name=None, scope=None):
+    def __init__(self, hidden_net_p_x_z, hidden_net_q_z_x, x_dims, z_dims, std_epsilon=1e-4, name=None, scope=None):
         if not is_integer(x_dims) or x_dims <= 0:
             raise ValueError('`x_dims` must be a positive integer')
         if not is_integer(z_dims) or z_dims <= 0:
@@ -73,7 +73,7 @@ class Donut(VarScopeObject):
                 h_for_p_x=Lambda(
                     partial(
                         wrap_params_net,
-                        h_for_dist=h_for_p_x,
+                        h_for_dist=hidden_net_p_x_z,
                         mean_layer=partial(
                             tf.layers.dense, units=x_dims, name='x_mean'
                         ),
@@ -87,7 +87,7 @@ class Donut(VarScopeObject):
                 h_for_q_z=Lambda(
                     partial(
                         wrap_params_net,
-                        h_for_dist=h_for_q_z,
+                        h_for_dist=hidden_net_q_z_x,
                         mean_layer=partial(
                             tf.layers.dense, units=z_dims, name='z_mean'
                         ),
