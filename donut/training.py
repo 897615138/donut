@@ -1,6 +1,7 @@
 import six
 import numpy as np
 import tensorflow as tf
+import os
 from tfsnippet.scaffold import TrainLoop
 from tfsnippet.utils import (VarScopeObject,
                              reopen_variable_scope,
@@ -13,6 +14,7 @@ from .model import Donut
 from .utils import BatchSlidingWindow
 
 __all__ = ['DonutTrainer']
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 class DonutTrainer(VarScopeObject):
@@ -143,12 +145,11 @@ class DonutTrainer(VarScopeObject):
                 loss += tf.losses.get_regularization_loss()
             self._loss = loss
 
-        # get the training variables
-        train_params = get_variables_as_dict(
-            scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
+        # 获得训练变量
+        train_params = get_variables_as_dict(scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
         self._train_params = train_params
 
-        # create the trainer
+        # 创建训练器
         if optimizer_params is None:
             optimizer_params = {}
         else:
@@ -156,173 +157,154 @@ class DonutTrainer(VarScopeObject):
         optimizer_params['learning_rate'] = self._learning_rate
         self._optimizer = optimizer(**optimizer_params)
 
-        # derive the training gradient
-        origin_grad_vars = self._optimizer.compute_gradients(
-            self._loss, list(six.itervalues(self._train_params))
-        )
+        # 推导训练梯度 对var_list中的变量计算loss的梯度
+        # 该函数为函数minimize()的第一部分，返回一个以元组(gradient, variable)组成的列表
+        origin_grad_vars = self._optimizer.compute_gradients(self._loss, list(six.itervalues(self._train_params)))
         grad_vars = []
         for grad, var in origin_grad_vars:
             if grad is not None and var is not None:
                 if grad_clip_norm:
                     grad = tf.clip_by_norm(grad, grad_clip_norm)
                 if check_numerics:
-                    grad = tf.check_numerics(
-                        grad,
-                        'gradient for {} has numeric issue'.format(var.name)
-                    )
+                    grad = tf.check_numerics(grad, 'gradient for {} has numeric issue'.format(var.name))
                 grad_vars.append((grad, var))
-
-        # build the training op
+        # 构建训练op
         with tf.control_dependencies(
                 tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self._train_op = self._optimizer.apply_gradients(
-                grad_vars, global_step=self._global_step)
+            # 将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作
+            self._train_op = self._optimizer.apply_gradients(grad_vars, global_step=self._global_step)
 
-        # the training summary in case `summary_dir` is specified
+        # 如果指定了`summary_dir`，则为训练摘要
         with tf.name_scope('summary'):
             self._summary_op = tf.summary.merge([
                 tf.summary.histogram(v.name.rsplit(':', 1)[0], v)
                 for v in six.itervalues(self._train_params)
             ])
 
-        # initializer for the variables
+        # 变量的初始化
         self._trainer_initializer = tf.variables_initializer(
             list(six.itervalues(self.get_variables_as_dict()))
         )
 
+    @property
+    def model(self):
+        """
+        Get the :class:`Donut` model instance.
 
-@property
-def model(self):
-    """
-    Get the :class:`Donut` model instance.
+        Returns:
+            Donut: The :class:`Donut` model instance.
+        """
+        return self._model
 
-    Returns:
-        Donut: The :class:`Donut` model instance.
-    """
-    return self._model
+    def fit(self, values, labels, missing, mean, std, excludes=None,
+            valid_portion=0.3, summary_dir=None):
+        """
+        根据所给数据训练:class:`Donut`模型
 
+        Args:
+            values (np.ndarray):
+                一维32位浮点数组，标准化的KPI数据
+            labels (np.ndarray):
+                一维32位整型数组，异常标签
+            missing (np.ndarray):
+                一维32位数组，指出缺失点
+            mean (float):
+                标准化之前的平均值
+            std (float):
+                标准化之前的标准差
+            excludes (np.ndarray):
+                一维布尔数组，表明是否包含该点，如果包含，任何包含该点的窗口都包含在内
+                (default :obj:`None`,没有点包含)
+            valid_portion (float):
+                验证数据与所有指定的训练数据之比。
+                (default 0.3)
+            summary_dir (str):
+                :class:`tf.summary.FileWriter`的可选的概要目录。
+                 (default :obj:`None`,无目录)
+        """
+        # 获得默认session
+        sess = get_default_session_or_error()
+        # 分割训练和验证集
+        values = np.asarray(values, dtype=np.float32)
+        labels = np.asarray(labels, dtype=np.int32)
+        missing = np.asarray(missing, dtype=np.int32)
+        # 一维数组检验
+        if len(values.shape) != 1:
+            raise ValueError('values must be a 1-D array')
+        # 标注维数必须与数值维数相同
+        if labels.shape != values.shape:
+            raise ValueError('labels must has same shape with values ,shape :labels - values {} - {}'
+                             .format(labels.shape, values.shape))
+        # 缺失点维数必须与数值维数相同
+        if missing.shape != values.shape:
+            raise ValueError('missing must has same shape with values ,shape :missing - values {} - {}'
+                             .format(missing.shape, values.shape))
+        valid_num = int(len(values) * valid_portion)
+        train_values, v_x = values[:-valid_num], values[-valid_num:]
+        train_labels, valid_labels = labels[:-valid_num], labels[-valid_num:]
+        train_missing, valid_missing = missing[:-valid_num], missing[-valid_num:]
+        v_y = np.logical_or(valid_labels, valid_missing).astype(np.int32)
+        if excludes is None:
+            train_excludes, valid_excludes = None, None
+        else:
+            train_excludes, valid_excludes = excludes[:-valid_num], excludes[-valid_num:]
 
-def fit(self, values, labels, missing, mean, std, excludes=None,
-        valid_portion=0.3, summary_dir=None):
-    """
-    Train the :class:`Donut` model with given data.
+        # 数据扩展对象和滑动窗口迭代器
+        aug = MissingDataInjection(mean, std, self._missing_data_injection_rate)
+        train_sliding_window = BatchSlidingWindow(
+            array_size=len(train_values),
+            window_size=self.model.x_dims,
+            batch_size=self._batch_size,
+            excludes=train_excludes,
+            shuffle=True,
+            ignore_incomplete_batch=True)
+        valid_sliding_window = BatchSlidingWindow(
+            array_size=len(v_x),
+            window_size=self.model.x_dims,
+            batch_size=self._valid_batch_size,
+            excludes=valid_excludes)
 
-    Args:
-        values (np.ndarray): 1-D `float32` array, the standardized
-            KPI observations.
-        labels (np.ndarray): 1-D `int32` array, the anomaly labels.
-        missing (np.ndarray): 1-D `int32` array, the indicator of
-            missing points.
-        mean (float): The mean of KPI observations before standardization.
-        std (float): The standard deviation of KPI observations before
-            standardization.
-        excludes (np.ndarray): 1-D `bool` array, indicators of whether
-            or not to totally exclude a point.  If a point is excluded,
-            any window which contains that point is excluded.
-            (default :obj:`None`, no point is totally excluded)
-        valid_portion (float): Ratio of validation data out of all the
-            specified training data. (default 0.3)
-        summary_dir (str): Optional summary directory for
-            :class:`tf.summary.FileWriter`. (default :obj:`None`,
-            summary is disabled)
-    """
-    sess = get_default_session_or_error()
+        # 初始化训练器和模型的变量
+        sess.run(self._trainer_initializer)
+        ensure_variables_initialized(self._train_params)
 
-    # split the training & validation set
-    values = np.asarray(values, dtype=np.float32)
-    labels = np.asarray(labels, dtype=np.int32)
-    missing = np.asarray(missing, dtype=np.int32)
-    if len(values.shape) != 1:
-        raise ValueError('`values` must be a 1-D array')
-    if labels.shape != values.shape:
-        raise ValueError('The shape of `labels` does not agree with '
-                         'the shape of `values` ({} vs {})'.
-                         format(labels.shape, values.shape))
-    if missing.shape != values.shape:
-        raise ValueError('The shape of `missing` does not agree with '
-                         'the shape of `values` ({} vs {})'.
-                         format(missing.shape, values.shape))
+        # 循环训练
+        lr = self._lr_initial
+        with TrainLoop(param_vars=self._train_params, early_stopping=True, summary_dir=summary_dir,
+                       max_epoch=self._max_epoch, max_step=self._max_step) as loop:
+            loop.print_training_summary()
+            for epoch in loop.iter_epochs():
+                x, y1, y2 = aug.augment(train_values, train_labels, train_missing)
+                y = np.logical_or(y1, y2).astype(np.int32)
+                train_iterator = train_sliding_window.get_iterator([x, y])
+                for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
+                    # 运行一次训练步骤
+                    feed_dict = dict(six.iteritems(self._feed_dict))
+                    feed_dict[self._learning_rate] = lr
+                    feed_dict[self._input_x] = batch_x
+                    feed_dict[self._input_y] = batch_y
+                    train = [self._loss, self._train_op]
+                    loss = sess.run(train, feed_dict=feed_dict)
+                    loop.collect_metrics({'loss': loss})
+                    if step % self._valid_step_freq == 0:
+                        # 收集变量目录
+                        if summary_dir is not None:
+                            loop.add_summary(sess.run(self._summary_op))
+                        # 批量进行验证
+                        with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
+                            v_it = valid_sliding_window.get_iterator([v_x, v_y])
+                            for b_v_x, b_v_y in v_it:
+                                feed_dict = dict(
+                                    six.iteritems(self._valid_feed_dict))
+                                feed_dict[self._input_x] = b_v_x
+                                feed_dict[self._input_y] = b_v_y
+                                loss = sess.run(self._loss, feed_dict=feed_dict)
+                                mc.collect(loss, weight=len(b_v_x))
 
-    n = int(len(values) * valid_portion)
-    train_values, v_x = values[:-n], values[-n:]
-    train_labels, valid_labels = labels[:-n], labels[-n:]
-    train_missing, valid_missing = missing[:-n], missing[-n:]
-    v_y = np.logical_or(valid_labels, valid_missing).astype(np.int32)
-    if excludes is None:
-        train_excludes, valid_excludes = None, None
-    else:
-        train_excludes, valid_excludes = excludes[:-n], excludes[-n:]
+                        # 打印最近步骤的日志
+                        loop.print_logs()
 
-    # data augmentation object and the sliding window iterator
-    aug = MissingDataInjection(mean, std, self._missing_data_injection_rate)
-    train_sliding_window = BatchSlidingWindow(
-        array_size=len(train_values),
-        window_size=self.model.x_dims,
-        batch_size=self._batch_size,
-        excludes=train_excludes,
-        shuffle=True,
-        ignore_incomplete_batch=True,
-    )
-    valid_sliding_window = BatchSlidingWindow(
-        array_size=len(v_x),
-        window_size=self.model.x_dims,
-        batch_size=self._valid_batch_size,
-        excludes=valid_excludes,
-    )
-
-    # initialize the variables of the trainer, and the model
-    sess.run(self._trainer_initializer)
-    ensure_variables_initialized(self._train_params)
-
-    # training loop
-    lr = self._lr_initial
-    with TrainLoop(
-            param_vars=self._train_params,
-            early_stopping=True,
-            summary_dir=summary_dir,
-            max_epoch=self._max_epoch,
-            max_step=self._max_step) as loop:  # type: TrainLoop
-        loop.print_training_summary()
-
-        for epoch in loop.iter_epochs():
-            x, y1, y2 = aug.augment(
-                train_values, train_labels, train_missing)
-            y = np.logical_or(y1, y2).astype(np.int32)
-
-            train_iterator = train_sliding_window.get_iterator([x, y])
-            for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
-                # run a training step
-                feed_dict = dict(six.iteritems(self._feed_dict))
-                feed_dict[self._learning_rate] = lr
-                feed_dict[self._input_x] = batch_x
-                feed_dict[self._input_y] = batch_y
-                loss, _ = sess.run(
-                    [self._loss, self._train_op], feed_dict=feed_dict)
-                loop.collect_metrics({'loss': loss})
-
-                if step % self._valid_step_freq == 0:
-                    # collect variable summaries
-                    if summary_dir is not None:
-                        loop.add_summary(sess.run(self._summary_op))
-
-                    # do validation in batches
-                    with loop.timeit('valid_time'), \
-                            loop.metric_collector('valid_loss') as mc:
-                        v_it = valid_sliding_window.get_iterator([v_x, v_y])
-                        for b_v_x, b_v_y in v_it:
-                            feed_dict = dict(
-                                six.iteritems(self._valid_feed_dict))
-                            feed_dict[self._input_x] = b_v_x
-                            feed_dict[self._input_y] = b_v_y
-                            loss = sess.run(self._loss, feed_dict=feed_dict)
-                            mc.collect(loss, weight=len(b_v_x))
-
-                    # print the logs of recent steps
-                    loop.print_logs()
-
-            # anneal the learning rate
-            if self._lr_anneal_epochs and \
-                    epoch % self._lr_anneal_epochs == 0:
-                lr *= self._lr_anneal_factor
-                loop.println('Learning rate decreased to {}'.format(lr),
-                             with_tag=True)
+                # 退火的学习率
+                if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
+                    lr *= self._lr_anneal_factor
+                    loop.println('Learning rate decreased to {}'.format(lr),with_tag=True)

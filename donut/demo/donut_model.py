@@ -1,5 +1,5 @@
 import tensorflow as tf
-from donut import Donut
+from donut import Donut, DonutTrainer, DonutPredictor
 from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
@@ -33,11 +33,3 @@ with tf.variable_scope('model') as model_vs:
         x_dims=120,
         z_dims=5,
     )
-
-input_x = tf.placeholder(
-    dtype=tf.float32, shape=[None, model.x_dims], name='input_x')
-input_y = tf.placeholder(
-    dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
-
-loss = model.get_training_loss(x=input_x, y=input_y)
-print(1)

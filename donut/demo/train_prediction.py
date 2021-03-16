@@ -8,6 +8,5 @@ def train_prediction(train_values, train_labels, train_missing, test_values, tes
     trainer = DonutTrainer(model=model, model_vs=model_vs)
     predictor = DonutPredictor(model)
     with tf.Session().as_default():
-        trainer.fit(train_values, train_labels, train_missing, mean, std)
-        test_score = predictor.get_score(test_values, test_missing)
-    return test_score
+        trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
+        return predictor.get_score(test_values, test_missing)
