@@ -115,23 +115,23 @@ class Donut(VarScopeObject):
     @property
     def vae(self):
         """
-        Get the VAE object of this :class:`Donut` model.
+        获得 :class:`Donut`模型的VAE对象。
 
         Returns:
-            VAE: The VAE object of this model.
+            该:class:`Donut`模型的VAE对象。
         """
         return self._vae
 
-    def get_training_loss(self, x, y, n_z=None):
+    def get_training_loss(self, x, y, x_z_n=None):
         """
         Get the training loss for `x` and `y`.
 
         Args:
             x (tf.Tensor): 2-D `float32` :class:`tf.Tensor`, the windows of
                 KPI observations in a mini-batch.
-            y (tf.Tensor): 2-D `int32` :class:`tf.Tensor`, the windows of
-                ``(label | missing)`` in a mini-batch.
-            n_z (int or None): Number of `z` samples to take for each `x`.
+            y (tf.Tensor):
+                2-D `int32` :class:`tf.Tensor`, the windows of ``(label | missing)`` in a mini-batch.
+            x_z_n (int or None): Number of `z` samples to take for each `x`.
                 (default :obj:`None`, one sample without explicit sampling
                 dimension)
 
@@ -140,7 +140,7 @@ class Donut(VarScopeObject):
                 by gradient descent algorithms.
         """
         with tf.name_scope('Donut.training_loss'):
-            chain = self.vae.chain(x, n_z=n_z)
+            chain = self.vae.chain(x, n_z=x_z_n)
             x_log_prob = chain.model['x'].log_prob(group_ndims=0)
             alpha = tf.cast(1 - y, dtype=tf.float32)
             beta = tf.reduce_mean(alpha, axis=-1)

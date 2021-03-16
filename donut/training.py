@@ -98,7 +98,7 @@ class DonutTrainer(VarScopeObject):
 
         # 记忆参数
         self._model = model
-        self._n_z = x_z_n
+        self._x_z_n = x_z_n
         if feed_dict is not None:
             # 迭代器->字典
             self._feed_dict = dict(six.iteritems(feed_dict))
@@ -139,8 +139,7 @@ class DonutTrainer(VarScopeObject):
 
             # compose the training loss
             with tf.name_scope('loss'):
-                loss = model.get_training_loss(
-                    x=self._input_x, y=self._input_y, n_z=x_z_n)
+                loss = model.get_training_loss(x=self._input_x, y=self._input_y, x_z_n=x_z_n)
                 if use_regularization_loss:
                     loss += tf.losses.get_regularization_loss()
                 self._loss = loss

@@ -88,6 +88,7 @@ class ModelTestCase(tf.test.TestCase):
                 return self.q_net
 
         # payloads
+        test=tf.range(20, dtype=tf.float32)
         x = tf.reshape(tf.range(20, dtype=tf.float32), [4, 5])
         y = tf.constant(
             [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0],
@@ -131,7 +132,7 @@ class ModelTestCase(tf.test.TestCase):
         with self.test_session() as sess:
             ensure_variables_initialized()
 
-            loss = donut.get_training_loss(x, y, n_z=7)
+            loss = donut.get_training_loss(x, y, x_z_n=7)
             np.testing.assert_equal(capture.q_net['z'].eval(),
                                     np.arange(84).reshape([7, 4, 3]))
             p_net = donut.vae.model(z=capture.q_net['z'], x=x, n_z=7)
