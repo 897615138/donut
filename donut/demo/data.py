@@ -25,7 +25,7 @@ def show_photos(base_timestamp, base_values, train_timestamp, train_values, test
     ax2.plot(test_timestamp, test_values, label='test_data', color='b')
     plot_missing(ax2, train_missing, train_timestamp, train_values, test_missing, test_timestamp, test_values)
     ax2.set_title("training and testing data")
-    plt.show()
+    # plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
 
@@ -44,7 +44,7 @@ def show_photo(base_timestamp, base_values, train_timestamp, train_values, test_
     plt.xlabel('timestamp')
     plt.ylabel('value')
     plt.legend()
-    plt.show()
+    # plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
 
