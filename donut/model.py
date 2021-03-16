@@ -1,4 +1,4 @@
-import warnings
+# import warnings
 from functools import partial
 
 import tensorflow as tf
@@ -156,10 +156,9 @@ class Donut(VarScopeObject):
             loss = tf.reduce_mean(vi.training.sgvb())
             return loss
 
-    def get_training_objective(self, *args, **kwargs):  # pragma: no cover
-        warnings.warn('`get_training_objective` is deprecated, use '
-                      '`get_training_loss` instead.', DeprecationWarning)
-        return self.get_training_loss(*args, **kwargs)
+    # def get_training_objective(self, *args, **kwargs):  # pragma: no cover
+    #     warnings.warn('`get_training_objective` is deprecated, use`get_training_loss` instead.', DeprecationWarning)
+    #     return self.get_training_loss(*args, **kwargs)
 
     def get_score(self, x, y=None, n_z=None, mcmc_iteration=None,
                   last_point_only=True):

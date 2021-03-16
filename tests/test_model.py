@@ -32,6 +32,7 @@ class ModelTestCase(tf.test.TestCase):
                 x_dims=5,
                 z_dims=3,
             )
+
         tf.set_random_seed(1234)
         donut1 = get_donut()
         donut2 = get_donut()
@@ -61,13 +62,13 @@ class ModelTestCase(tf.test.TestCase):
             _ = Donut(lambda x: x, lambda x: x, x_dims=-1, z_dims=1)
         with pytest.raises(
                 ValueError, match='`x_dims` must be a positive integer'):
-            _ = Donut(lambda x: x, lambda x: x, x_dims=object(), z_dims=1)
+            _ = Donut(lambda x: x, lambda x: x, x_dims=int(), z_dims=1)
         with pytest.raises(
                 ValueError, match='`z_dims` must be a positive integer'):
             _ = Donut(lambda x: x, lambda x: x, x_dims=1, z_dims=0)
         with pytest.raises(
                 ValueError, match='`z_dims` must be a positive integer'):
-            _ = Donut(lambda x: x, lambda x: x, x_dims=1, z_dims=object())
+            _ = Donut(lambda x: x, lambda x: x, x_dims=1, z_dims=int())
 
     def test_training_loss(self):
         class Capture(object):
@@ -78,7 +79,7 @@ class ModelTestCase(tf.test.TestCase):
                 self.q_net = None
 
             def _variational(self, x, z=None, n_z=None):
-                assert(z is None)
+                assert (z is None)
                 if n_z is None:
                     z = tf.reshape(tf.range(12, dtype=tf.float32), [4, 3])
                 else:
@@ -88,7 +89,7 @@ class ModelTestCase(tf.test.TestCase):
                 return self.q_net
 
         # payloads
-        test=tf.range(20, dtype=tf.float32)
+        test = tf.range(20, dtype=tf.float32)
         x = tf.reshape(tf.range(20, dtype=tf.float32), [4, 5])
         y = tf.constant(
             [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0],
@@ -119,10 +120,10 @@ class ModelTestCase(tf.test.TestCase):
                                     np.arange(12).reshape([4, 3]))
             p_net = donut.vae.model(z=capture.q_net['z'], x=x)
             sgvb = (
-                tf.reduce_sum(p_net['x'].log_prob(group_ndims=0) * alpha,
-                              axis=-1) +
-                p_net['z'].log_prob() * beta -
-                capture.q_net['z'].log_prob()
+                    tf.reduce_sum(p_net['x'].log_prob(group_ndims=0) * alpha,
+                                  axis=-1) +
+                    p_net['z'].log_prob() * beta -
+                    capture.q_net['z'].log_prob()
             )
             self.assertEqual(sgvb.get_shape(), tf.TensorShape([4]))
             loss2 = -tf.reduce_mean(sgvb)
@@ -137,10 +138,10 @@ class ModelTestCase(tf.test.TestCase):
                                     np.arange(84).reshape([7, 4, 3]))
             p_net = donut.vae.model(z=capture.q_net['z'], x=x, n_z=7)
             sgvb = (
-                tf.reduce_sum(p_net['x'].log_prob(group_ndims=0) * alpha,
-                              axis=-1) +
-                p_net['z'].log_prob() * beta -
-                capture.q_net['z'].log_prob()
+                    tf.reduce_sum(p_net['x'].log_prob(group_ndims=0) * alpha,
+                                  axis=-1) +
+                    p_net['z'].log_prob() * beta -
+                    capture.q_net['z'].log_prob()
             )
             self.assertEqual(sgvb.get_shape(), tf.TensorShape([7, 4]))
             loss2 = -tf.reduce_mean(sgvb)

@@ -37,5 +37,4 @@ with tf.Session().as_default():
     trainer.fit(train_values, train_labels, train_missing, mean, std)
     test_score = predictor.get_score(test_values, test_missing)
 
-
 # test_score = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)

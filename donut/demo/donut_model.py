@@ -33,3 +33,11 @@ with tf.variable_scope('model') as model_vs:
         x_dims=120,
         z_dims=5,
     )
+
+input_x = tf.placeholder(
+    dtype=tf.float32, shape=[None, model.x_dims], name='input_x')
+input_y = tf.placeholder(
+    dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
+
+loss = model.get_training_loss(x=input_x, y=input_y)
+print(1)

@@ -128,8 +128,7 @@ class DonutPredictor(VarScopeObject):
             if missing is not None:
                 missing = np.asarray(missing, dtype=np.int32)
                 if missing.shape != values.shape:
-                    raise ValueError('The shape of `missing` does not agree '
-                                     'with the shape of `values` ({} vs {})'.
+                    raise ValueError('The shape of `missing` does not agree with the shape of `values` ({} vs {})'.
                                      format(missing.shape, values.shape))
                 for b_x, b_y in sliding_window.get_iterator([values, missing]):
                     feed_dict = dict(six.iteritems(self._feed_dict))
