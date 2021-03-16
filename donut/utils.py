@@ -9,7 +9,7 @@ def minibatch_slices_iterator(length, batch_size,
     Iterate through all the mini-batch slices.
 
     Args:
-        length (int): Total length of data in an epoch.
+        length (int): Total length of csv_data in an epoch.
         batch_size (int): Size of each mini-batch.
         ignore_incomplete_batch (bool): If :obj:`True`, discard the final
             batch if it contains less than `batch_size` number of items.

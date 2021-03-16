@@ -7,11 +7,11 @@ __all__ = ['DataAugmentation', 'MissingDataInjection']
 @DocInherit
 class DataAugmentation(object):
     """
-    Base class for data augmentation in training.
+    Base class for csv_data augmentation in training.
 
     Args:
-        mean (float): Mean of the training data.
-        std (float): Standard deviation of the training data.
+        mean (float): Mean of the training csv_data.
+        std (float): Standard deviation of the training csv_data.
     """
 
     def __init__(self, mean, std):
@@ -22,7 +22,7 @@ class DataAugmentation(object):
 
     def augment(self, values, labels, missing):
         """
-        Generate augmented data.
+        Generate augmented csv_data.
 
         Args:
             values (np.ndarray): 1-D float32 array of shape `(data_length,)`,
@@ -52,28 +52,28 @@ class DataAugmentation(object):
     def _augment(self, values, labels, missing):
         """
         Derived classes should override this to actually implement the
-        data augmentation algorithm.
+        csv_data augmentation algorithm.
         """
         raise NotImplementedError()
 
     @property
     def mean(self):
-        """Get the mean of the training data."""
+        """Get the mean of the training csv_data."""
         return self._mean
 
     @property
     def std(self):
-        """Get the standard deviation of training data."""
+        """Get the standard deviation of training csv_data."""
         return self._std
 
 
 class MissingDataInjection(DataAugmentation):
     """
-    Data augmentation by injecting missing points into training data.
+    Data augmentation by injecting missing points into training csv_data.
 
     Args:
-        mean (float): Mean of the training data.
-        std (float): Standard deviation of the training data.
+        mean (float): Mean of the training csv_data.
+        std (float): Standard deviation of the training csv_data.
         missing_rate (float): The ratio of missing points to inject.
     """
 

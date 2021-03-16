@@ -1,4 +1,5 @@
-import streamlit as st
-
-x = st.slider('x')
-st.write(x, 'squared is', x * x)
+# import streamlit as st
+#调取operating system模块
+import os
+cwd = os.getcwd()
+print(cwd)

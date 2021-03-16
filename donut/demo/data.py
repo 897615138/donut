@@ -15,16 +15,16 @@ def show_photos(base_timestamp, base_values, train_timestamp, train_values, test
     """
     plt.figure(figsize=(50, 10), dpi=1024)
     plt.figure(1)
-    plt.title("prepare the data")
+    plt.title("prepare the csv_data")
     ax1 = plt.subplot(211)
-    ax1.plot(base_timestamp, base_values, color='r', label='original data')
-    ax1.set_title("original data")
+    ax1.plot(base_timestamp, base_values, color='r', label='original csv_data')
+    ax1.set_title("original csv_data")
 
     ax2 = plt.subplot(212)
     ax2.plot(train_timestamp, train_values, label='train_data', color="y")
     ax2.plot(test_timestamp, test_values, label='test_data', color='b')
     plot_missing(ax2, train_missing, train_timestamp, train_values, test_missing, test_timestamp, test_values)
-    ax2.set_title("training and testing data")
+    ax2.set_title("training and testing csv_data")
     # plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
@@ -33,9 +33,9 @@ def show_test_score( test_timestamp, test_values, test_scores):
       测试数据与分数单图显示
     """
     plt.figure(figsize=(50, 10), dpi=1024)
-    plt.plot(test_timestamp, test_values, label='test data')
+    plt.plot(test_timestamp, test_values, label='test csv_data')
     plt.plot(test_timestamp, test_scores, label='test score')
-    plt.title("test data and score")
+    plt.title("test csv_data and score")
     plt.xlabel('timestamp')
     # plt.ylabel('value')
     plt.legend()
@@ -49,11 +49,11 @@ def show_photo(base_timestamp, base_values, train_timestamp, train_values, test_
       原始数据与测试训练数据单图显示
     """
     plt.figure(figsize=(50, 10), dpi=1024)
-    plt.plot(base_timestamp, base_values, label='original data')
+    plt.plot(base_timestamp, base_values, label='original csv_data')
     plt.plot(train_timestamp, train_values, label='train_data')
     plt.plot(test_timestamp, test_values, label='test_data')
     plot_missing(plt, train_missing, train_timestamp, train_values, test_missing, test_timestamp, test_values)
-    plt.title("prepare the data")
+    plt.title("prepare the csv_data")
     plt.xlabel('timestamp')
     plt.ylabel('value')
     plt.legend()

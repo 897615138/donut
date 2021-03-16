@@ -8,7 +8,7 @@ def masked_reconstruct(reconstruct, x, mask, validate_shape=True, name=None):
     """
     Replace masked elements of `x` with reconstructed outputs.
 
-    This method can be used to do missing data imputation on `x`, with
+    This method can be used to do missing csv_data imputation on `x`, with
     the reconstruction outputs for `x`.
 
     Args:

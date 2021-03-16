@@ -178,7 +178,7 @@ class Donut(VarScopeObject):
                 (default :obj:`None`, one sample without explicit sampling
                 dimension)
             mcmc_iteration (int or tf.Tensor): Iteration count for MCMC
-                missing data imputation. (default :obj:`None`, no iteration)
+                missing csv_data imputation. (default :obj:`None`, no iteration)
             last_point_only (bool): Whether to obtain the reconstruction
                 probability of only the last point in each window?
                 (default :obj:`True`)
@@ -192,7 +192,7 @@ class Donut(VarScopeObject):
                 any window.
         """
         with tf.name_scope('Donut.get_score'):
-            # MCMC missing data imputation
+            # MCMC missing csv_data imputation
             if y is not None and mcmc_iteration:
                 x_r = iterative_masked_reconstruct(
                     reconstruct=self.vae.reconstruct,

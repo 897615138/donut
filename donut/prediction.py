@@ -20,7 +20,7 @@ class DonutPredictor(VarScopeObject):
             If :obj:`None`, one sample without explicit sampling dimension.
             (default 1024)
         mcmc_iteration: (int or tf.Tensor): Iteration count for MCMC
-            missing data imputation. (default 10)
+            missing csv_data imputation. (default 10)
         batch_size (int): Size of each mini-batch for prediction.
             (default 32)
         feed_dict (dict[tf.Tensor, any]): User provided feed dict for
@@ -102,7 +102,7 @@ class DonutPredictor(VarScopeObject):
         Args:
             values (np.ndarray): 1-D float32 array, the KPI observations.
             missing (np.ndarray): 1-D int32 array, the indicator of missing
-                points.  If :obj:`None`, the MCMC missing data imputation
+                points.  If :obj:`None`, the MCMC missing csv_data imputation
                 will be disabled. (default :obj:`None`)
 
         Returns:
