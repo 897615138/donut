@@ -1,4 +1,3 @@
-# import warnings
 from functools import partial
 
 import tensorflow as tf
@@ -58,11 +57,12 @@ class Donut(VarScopeObject):
             (:class:`tfsnippet.utils.VarScopeObject`参数)
     """
 
-    def __init__(self, hidden_net_p_x_z, hidden_net_q_z_x, x_dims, z_dims, std_epsilon=1e-4, name=None, scope=None):
+    def __init__(self, hidden_net_p_x_z, hidden_net_q_z_x, x_dims, z_dims, std_epsilon=1e-4,
+                 name=None, scope=None):
         if not is_integer(x_dims) or x_dims <= 0:
-            raise ValueError('`x_dims` must be a positive integer')
+            raise ValueError('`x_dims`需要为正整数')
         if not is_integer(z_dims) or z_dims <= 0:
-            raise ValueError('`z_dims` must be a positive integer')
+            raise ValueError('`z_dims`需要为正整数')
 
         super(Donut, self).__init__(name=name, scope=scope)
         with reopen_variable_scope(self.variable_scope):
@@ -122,16 +122,16 @@ class Donut(VarScopeObject):
         """
         return self._vae
 
-    def get_training_loss(self, x, y, x_z_n=None):
+    def get_training_loss(self, x, y, n_z=None):
         """
         Get the training loss for `x` and `y`.
 
         Args:
             x (tf.Tensor): 2-D `float32` :class:`tf.Tensor`, the windows of
                 KPI observations in a mini-batch.
-            y (tf.Tensor):
-                2-D `int32` :class:`tf.Tensor`, the windows of ``(label | missing)`` in a mini-batch.
-            x_z_n (int or None): Number of `z` samples to take for each `x`.
+            y (tf.Tensor): 2-D `int32` :class:`tf.Tensor`, the windows of
+                ``(label | missing)`` in a mini-batch.
+            n_z (int or None): Number of `z` samples to take for each `x`.
                 (default :obj:`None`, one sample without explicit sampling
                 dimension)
 
@@ -140,7 +140,7 @@ class Donut(VarScopeObject):
                 by gradient descent algorithms.
         """
         with tf.name_scope('Donut.training_loss'):
-            chain = self.vae.chain(x, n_z=x_z_n)
+            chain = self.vae.chain(x, n_z=n_z)
             x_log_prob = chain.model['x'].log_prob(group_ndims=0)
             alpha = tf.cast(1 - y, dtype=tf.float32)
             beta = tf.reduce_mean(alpha, axis=-1)

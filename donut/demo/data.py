@@ -28,7 +28,20 @@ def show_photos(base_timestamp, base_values, train_timestamp, train_values, test
     # plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
-
+def show_test_score( test_timestamp, test_values, test_scores):
+    """
+      测试数据与分数单图显示
+    """
+    plt.figure(figsize=(50, 10), dpi=1024)
+    plt.plot(test_timestamp, test_values, label='test data')
+    plt.plot(test_timestamp, test_scores, label='test score')
+    plt.title("test data and score")
+    plt.xlabel('timestamp')
+    # plt.ylabel('value')
+    plt.legend()
+    # plt.show()
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
 
 def show_photo(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing,
                test_missing):

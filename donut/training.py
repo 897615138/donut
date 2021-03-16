@@ -16,7 +16,6 @@ from .utils import BatchSlidingWindow
 __all__ = ['DonutTrainer']
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-
 class DonutTrainer(VarScopeObject):
     """
     Donut训练器
@@ -27,7 +26,7 @@ class DonutTrainer(VarScopeObject):
         model_vs (str or tf.compat.v1.VariableScope):
             如果指定，将只从这个范围收集可训练变量。
             (default :obj:`None`，如果为 :obj:`None`，将收集所有在当前的图表的可训练的变量。)
-        x_z_n (int or None):
+        n_z (int or None):
             每个x要取的z样本数。
             (default :obj:`None`, 即一个没有明确抽样维度的样本)
         feed_dict (dict[tf.Tensor, any]):
@@ -57,7 +56,7 @@ class DonutTrainer(VarScopeObject):
         valid_step_freq (int):
             在每个‘valid_step_freq’数量的训练步骤之后进行验证。
             (default 100)
-        lr_initial (float):
+        initial_lr (float):
             初始学习速率.
             (default 0.001)
         lr_anneal_epochs (int):
@@ -86,13 +85,13 @@ class DonutTrainer(VarScopeObject):
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
     """
 
-    def __init__(self, model, model_vs=None, x_z_n=None,
+    def __init__(self, model, model_vs=None, n_z=None,
                  feed_dict=None, valid_feed_dict=None,
                  missing_data_injection_rate=0.01,
                  use_regularization_loss=True,
                  max_epoch=256, max_step=None, batch_size=256,
                  valid_batch_size=1024, valid_step_freq=100,
-                 lr_initial=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75,
+                 initial_lr=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75,
                  optimizer=tf.train.AdamOptimizer, optimizer_params=None,
                  grad_clip_norm=10.0, check_numerics=True,
                  name=None, scope=None):
@@ -100,7 +99,7 @@ class DonutTrainer(VarScopeObject):
 
         # 记忆参数
         self._model = model
-        self._x_z_n = x_z_n
+        self._n_z = n_z
         if feed_dict is not None:
             # 迭代器->字典
             self._feed_dict = dict(six.iteritems(feed_dict))
@@ -120,7 +119,7 @@ class DonutTrainer(VarScopeObject):
         self._batch_size = batch_size
         self._valid_batch_size = valid_batch_size
         self._valid_step_freq = valid_step_freq
-        self._lr_initial = lr_initial
+        self._initial_lr = initial_lr
         self._lr_anneal_epochs = lr_anneal_epochs
         self._lr_anneal_factor = lr_anneal_factor
 
@@ -140,51 +139,61 @@ class DonutTrainer(VarScopeObject):
                 dtype=tf.float32, shape=(), name='learning_rate')
 
             # 弥补训练损失
-            loss = model.get_training_loss(x=self._input_x, y=self._input_y, x_z_n=x_z_n)
-            if use_regularization_loss:
-                loss += tf.losses.get_regularization_loss()
-            self._loss = loss
+            with tf.name_scope('loss'):
+                loss = model.get_training_loss(
+                    x=self._input_x, y=self._input_y, n_z=n_z)
+                if use_regularization_loss:
+                    loss += tf.losses.get_regularization_loss()
+                self._loss = loss
 
-        # 获得训练变量
-        train_params = get_variables_as_dict(scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
-        self._train_params = train_params
+            # 获得训练变量
+            train_params = get_variables_as_dict(
+                scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
+            self._train_params = train_params
 
-        # 创建训练器
-        if optimizer_params is None:
-            optimizer_params = {}
-        else:
-            optimizer_params = dict(six.iteritems(optimizer_params))
-        optimizer_params['learning_rate'] = self._learning_rate
-        self._optimizer = optimizer(**optimizer_params)
+            # 创建训练器
+            if optimizer_params is None:
+                optimizer_params = {}
+            else:
+                optimizer_params = dict(six.iteritems(optimizer_params))
+            optimizer_params['learning_rate'] = self._learning_rate
+            self._optimizer = optimizer(**optimizer_params)
 
-        # 推导训练梯度 对var_list中的变量计算loss的梯度
-        # 该函数为函数minimize()的第一部分，返回一个以元组(gradient, variable)组成的列表
-        origin_grad_vars = self._optimizer.compute_gradients(self._loss, list(six.itervalues(self._train_params)))
-        grad_vars = []
-        for grad, var in origin_grad_vars:
-            if grad is not None and var is not None:
-                if grad_clip_norm:
-                    grad = tf.clip_by_norm(grad, grad_clip_norm)
-                if check_numerics:
-                    grad = tf.check_numerics(grad, 'gradient for {} has numeric issue'.format(var.name))
-                grad_vars.append((grad, var))
-        # 构建训练op
-        with tf.control_dependencies(
-                tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            # 将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作
-            self._train_op = self._optimizer.apply_gradients(grad_vars, global_step=self._global_step)
+            # 推导训练梯度 对var_list中的变量计算loss的梯度
+            # 该函数为函数minimize()的第一部分，返回一个以元组(gradient, variable)组成的列表
+            origin_grad_vars = self._optimizer.compute_gradients(
+                self._loss, list(six.itervalues(self._train_params))
+            )
+            grad_vars = []
+            for grad, var in origin_grad_vars:
+                if grad is not None and var is not None:
+                    if grad_clip_norm:
+                        grad = tf.clip_by_norm(grad, grad_clip_norm)
+                    if check_numerics:
+                        grad = tf.check_numerics(
+                            grad,
+                            'gradient for {} has numeric issue'.format(var.name)
+                        )
+                    grad_vars.append((grad, var))
 
-        # 如果指定了`summary_dir`，则为训练摘要
-        with tf.name_scope('summary'):
-            self._summary_op = tf.summary.merge([
-                tf.summary.histogram(v.name.rsplit(':', 1)[0], v)
-                for v in six.itervalues(self._train_params)
-            ])
+            # 构建训练op
+            with tf.control_dependencies(
+                    tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+                # 将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作
+                self._train_op = self._optimizer.apply_gradients(
+                    grad_vars, global_step=self._global_step)
 
-        # 变量的初始化
-        self._trainer_initializer = tf.variables_initializer(
-            list(six.itervalues(self.get_variables_as_dict()))
-        )
+            # 如果指定了`summary_dir`，则为训练摘要
+            with tf.name_scope('summary'):
+                self._summary_op = tf.summary.merge([
+                    tf.summary.histogram(v.name.rsplit(':', 1)[0], v)
+                    for v in six.itervalues(self._train_params)
+                ])
+
+            # 变量的初始化
+            self._trainer_initializer = tf.variables_initializer(
+                list(six.itervalues(self.get_variables_as_dict()))
+            )
 
     @property
     def model(self):
@@ -257,25 +266,34 @@ class DonutTrainer(VarScopeObject):
             batch_size=self._batch_size,
             excludes=train_excludes,
             shuffle=True,
-            ignore_incomplete_batch=True)
+            ignore_incomplete_batch=True,
+        )
         valid_sliding_window = BatchSlidingWindow(
             array_size=len(v_x),
             window_size=self.model.x_dims,
             batch_size=self._valid_batch_size,
-            excludes=valid_excludes)
+            excludes=valid_excludes,
+        )
 
         # 初始化训练器和模型的变量
         sess.run(self._trainer_initializer)
         ensure_variables_initialized(self._train_params)
 
         # 循环训练
-        lr = self._lr_initial
-        with TrainLoop(param_vars=self._train_params, early_stopping=True, summary_dir=summary_dir,
-                       max_epoch=self._max_epoch, max_step=self._max_step) as loop:
+        lr = self._initial_lr
+        with TrainLoop(
+                param_vars=self._train_params,
+                early_stopping=True,
+                summary_dir=summary_dir,
+                max_epoch=self._max_epoch,
+                max_step=self._max_step) as loop:  # type: TrainLoop
             loop.print_training_summary()
+
             for epoch in loop.iter_epochs():
-                x, y1, y2 = aug.augment(train_values, train_labels, train_missing)
+                x, y1, y2 = aug.augment(
+                    train_values, train_labels, train_missing)
                 y = np.logical_or(y1, y2).astype(np.int32)
+
                 train_iterator = train_sliding_window.get_iterator([x, y])
                 for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
                     # 运行一次训练步骤
@@ -283,15 +301,18 @@ class DonutTrainer(VarScopeObject):
                     feed_dict[self._learning_rate] = lr
                     feed_dict[self._input_x] = batch_x
                     feed_dict[self._input_y] = batch_y
-                    train = [self._loss, self._train_op]
-                    loss = sess.run(train, feed_dict=feed_dict)
+                    loss, _ = sess.run(
+                        [self._loss, self._train_op], feed_dict=feed_dict)
                     loop.collect_metrics({'loss': loss})
+
                     if step % self._valid_step_freq == 0:
                         # 收集变量目录
                         if summary_dir is not None:
                             loop.add_summary(sess.run(self._summary_op))
+
                         # 批量进行验证
-                        with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
+                        with loop.timeit('valid_time'), \
+                                loop.metric_collector('valid_loss') as mc:
                             v_it = valid_sliding_window.get_iterator([v_x, v_y])
                             for b_v_x, b_v_y in v_it:
                                 feed_dict = dict(
@@ -304,7 +325,9 @@ class DonutTrainer(VarScopeObject):
                         # 打印最近步骤的日志
                         loop.print_logs()
 
-                # 退火的学习率
-                if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
+                # 退火学习率
+                if self._lr_anneal_epochs and \
+                        epoch % self._lr_anneal_epochs == 0:
                     lr *= self._lr_anneal_factor
-                    loop.println('Learning rate decreased to {}'.format(lr),with_tag=True)
+                    loop.println('Learning rate decreased to {}'.format(lr),
+                                 with_tag=True)

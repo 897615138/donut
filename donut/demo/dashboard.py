@@ -31,9 +31,10 @@ if st.button('单图'):
         data.prepare_data("test.csv", 0)
 st.text('mean:' + str(mean) + '     std:' + str(std))
 
-
 model, model_vs = get_model()
-test_score =train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+test_score = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+
+data.show_test_score(test_timestamp, test_values, test_score)
 # trainer = DonutTrainer(model=model, model_vs=model_vs)
 # predictor = DonutPredictor(model)
 # with tf.Session().as_default():

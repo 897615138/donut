@@ -1,27 +1,27 @@
-# coding=utf-8
 import numpy as np
 
 __all__ = ['complete_timestamp', 'standardize_kpi']
 
 
-def complete_timestamp(timestamp, src_arrays=None):
+def complete_timestamp(timestamp, arrays=None):
     """
-    1.补齐时间戳，使时间间隔是齐次的。/1. Complement the timestamp so that the interval is homogeneous.
-    2.标记非缺失点。/2. Marking non-missing points.
+    1.补齐时间戳，使时间间隔是齐次的。
+    2.标记非缺失点。
 
     Args:
-        timestamp (np.ndarray):  时间戳 一维64位整数数组 可以无序 \
-            1-D int64 src_array, the timestamp values.It can be unsorted.
-        src_arrays (Iterable[np.ndarray]): (values,labels) (数值，标签) 与时间戳相关的一维数组 \
-            The 1-D arrays to be filled with zeros according to `timestamp`.
+        timestamp (np.ndarray):
+            时间戳 一维64位整数数组 可以无序
+        arrays (Iterable[np.ndarray]): (values,labels)
+            (数值，标签) 与时间戳相关的一维数组
 
     Returns:
-        np.ndarray: 一维64位整型数组 补充完整的时间戳 \
-            A 1-D int64 src_array, the completed timestamp.
-        np.ndarray: 一维32位整型数组 标注时间戳对应数据是否为缺失数据 \
-            A 1-D int32 src_array, indicating whether the data corresponding to the timestamp is missing.
-        list[np.ndarray]: 已经进行缺失值补0的时间戳对应值数组\
-            The arrays, missing points filled with zeros.(optional, return only if `arrays` is specified)
+        np.ndarray:
+            一维64位整型数组 补充完整的时间戳
+        np.ndarray:
+            一维32位整型数组 标注时间戳对应数据是否为缺失数据
+        list[np.ndarray]:
+            已经进行缺失值补0的时间戳对应值数组
+            (可选，仅当指定arrays时返回)
     """
     # 1.检验数据合法性
     # np src_array-> src_array
@@ -30,9 +30,9 @@ def complete_timestamp(timestamp, src_arrays=None):
     if len(timestamp.shape) != 1:
         raise ValueError('`timestamp` must be a 1-D src_array')
     # 数组是否为空
-    has_array = src_arrays is not None
+    has_array = arrays is not None
     # np arrays-> arrays
-    src_arrays = [np.asarray(src_array) for src_array in src_arrays]
+    src_arrays = [np.asarray(src_array) for src_array in arrays]
     # 相同维度
     for i, src_array in enumerate(src_arrays):
         if src_array.shape != timestamp.shape:
@@ -81,21 +81,25 @@ def standardize_kpi(values, mean=None, std=None, excludes=None):
     """
     标准化 Standardize
     Args:
-        values (np.ndarray): 一维浮点数组，KPI数据  1-D `float32` array, the KPIs.
+        values (np.ndarray):
+            一维浮点数组，KPI数据
         mean (float):
             如果不为None，将使用平均值来标准化values。
             默认为None。
             注意:mean和std同时为None或不为None。
-
-        std (float): 标准差， 与mean类似
+        std (float):
+            标准差， 与mean类似。
         excludes (np.ndarray):
             可选，一维布尔或者32位整型数组,指示是否应该排除某个点计算mean和std。如果mean和std不是None，则忽略。
             默认为None。
 
     Returns:
-        np.ndarray: 标准化数据/The standardized `values`.
-        float: 计算得出的平均值或提供的平均值/The computed `mean` or the given `mean`.
-        float: 计算得出的标准差或提供的标准差/The computed `std` or the given `std`.
+        np.ndarray:
+            标准化数据。
+        float:
+            计算得出的平均值或提供的平均值。
+        float:
+            算得出的标准差或提供的标准差。
     """
     # 1.转化数组格式 校验数据类型
     values = np.asarray(values, dtype=np.float32)
