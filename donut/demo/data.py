@@ -74,7 +74,7 @@ def plot_missing(p, train_missing, train_timestamp, train_values, test_missing, 
             p.plot(test_timestamp[i], test_values[i], 'r')
 
 
-def prepare_data(file_name, show_configure):
+def prepare_data(file_name):
     """
       数据准备
       1.解析csv文件
@@ -112,12 +112,6 @@ def prepare_data(file_name, show_configure):
     exclude_array = np.logical_or(train_labels, train_missing)
     train_values, mean, std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
     test_values, _, _ = standardize_kpi(test_values, mean=mean, std=std)
-    if show_configure == 1:
-        show_photos(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
-                    train_missing, test_missing)
-    else:
-        show_photo(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
-                   train_missing, test_missing)
     return base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing,\
            train_labels,test_labels,mean,std
 
