@@ -17,102 +17,119 @@ __all__ = ['DonutTrainer']
 
 class DonutTrainer(VarScopeObject):
     """
-    Donut trainer.
+    Donut训练器
 
     Args:
-        model (Donut): The :class:`Donut` model instance.
-        model_vs (str or tf.compat.v1.VariableScope): If specified, will collect
-            trainable variables only from this scope.  If :obj:`None`,
-            will collect all trainable variables within current graph.
-            (default :obj:`None`)
-        n_z (int or None): Number of `z` samples to take for each `x`.
-            (default :obj:`None`, one sample without explicit sampling
-            dimension)
-        feed_dict (dict[tf.Tensor, any]): User provided feed dict for
-            training. (default :obj:`None`, indicating no feeding)
-        valid_feed_dict (dict[tf.Tensor, any]): User provided feed dict for
-            validation.  If :obj:`None`, follow `feed_dict` of training.
-            (default :obj:`None`)
-        missing_data_injection_rate (float): Ratio of missing data injection.
+        model (Donut):
+            :class:`Donut` 模型实例
+        model_vs (str or tf.compat.v1.VariableScope):
+            如果指定，将只从这个范围收集可训练变量。
+            (default :obj:`None`，如果为 :obj:`None`，将收集所有在当前的图表的可训练的变量。)
+        x_z_n (int or None):
+            每个x要取的z样本数。
+            (default :obj:`None`, 即一个没有明确抽样维度的样本)
+        feed_dict (dict[tf.Tensor, any]):
+            用户提供的训练用种子字典。
+            (default :obj:`None`, 表示没有输送)
+        valid_feed_dict (dict[tf.Tensor, any]):
+            用户提供的提要字典用于验证。
+            (default :obj:`None` ，即使用`feed_dict`)
+        missing_data_injection_rate (float):
+            缺失数据注入的比率。
             (default 0.01)
-        use_regularization_loss (bool): Whether or not to add regularization
-            loss from `tf.GraphKeys.REGULARIZATION_LOSSES` to the training
-            loss? (default :obj:`True`)
-        max_epoch (int or None): Maximum epochs to run.  If :obj:`None`,
-            will not stop at any particular epoch. (default 256)
-        max_step (int or None): Maximum steps to run.  If :obj:`None`,
-            will not stop at any particular step.  At least one of `max_epoch`
-            and `max_step` should be specified. (default :obj:`None`)
-        batch_size (int): Size of mini-batches for training. (default 256)
-        valid_batch_size (int): Size of mini-batches for validation.
+        use_regularization_loss (bool):
+            是否在训练损失中添加`tf.GraphKeys.REGULARIZATION_LOSSES`。
+            (default :obj:`True`)
+        max_epoch (int or None):
+            最大的运行遍数。
+            (default 256,如果为:obj:`None`，不会在任何特定的遍数停止，必须至少指定 `max_epoch`和`max_step`中的一个。)
+        max_step (int or None):
+            运行最大步长.
+            (default :obj:`None`，如果为 :obj:`None`，将不会在任何特定的步骤停止。必须至少指定 `max_epoch`和`max_step`中的一个。)
+        batch_size (int):
+            训练用的小批数量。
+            (default 256)
+        valid_batch_size (int):
+            验证用的小批数量。
             (default 1024)
-        valid_step_freq (int): Run validation after every `valid_step_freq`
-            number of training steps. (default 100)
-        initial_lr (float): Initial learning rate. (default 0.001)
-        lr_anneal_epochs (int): Anneal the learning rate after every
-            `lr_anneal_epochs` number of epochs. (default 10)
-        lr_anneal_factor (float): Anneal the learning rate with this
-            discount factor, i.e., ``learning_rate = learning_rate
-            * lr_anneal_factor``. (default 0.75)
-        optimizer (Type[tf.train.Optimizer]): The class of TensorFlow
-            optimizer. (default :class:`tf.train.AdamOptimizer`)
-        optimizer_params (dict[str, any] or None): The named arguments
-            for constructing the optimizer. (default :obj:`None`)
-        grad_clip_norm (float or None): Clip gradient by this norm.
-            If :obj:`None`, disable gradient clip by norm. (default 10.0)
-        check_numerics (bool): Whether or not to add TensorFlow assertions
-            for numerical issues? (default :obj:`True`)
-        name (str): Optional name of this trainer
+        valid_step_freq (int):
+            在每个‘valid_step_freq’数量的训练步骤之后进行验证。
+            (default 100)
+        lr_initial (float):
+            初始学习速率.
+            (default 0.001)
+        lr_anneal_epochs (int):
+            在每一个‘lr_anneal_epoch’的遍数之后退火学习率。
+            (default 10)
+        lr_anneal_factor (float):
+            用这个折现因子来计算学习率，即 learning_rate = learning_rate * lr_anneal_factor。
+            (default 0.75)
+        optimizer (Type[tf.train.Optimizer]):
+            TensorFlow优化器的类.
+            (default :class:`tf.train.AdamOptimizer`)
+        optimizer_params (dict[str, any] or None):
+            用于构造优化器的命名参数。
+            (default :obj:`None`)
+        grad_clip_norm (float or None):
+            根据这个标准渐变裁剪。
+            (default 10.0 ，如果为:obj:`None`按标准禁用渐变裁剪)
+        check_numerics (bool):
+            是否在数值问题中添加TensorFlow断言
+            (default :obj:`True`)
+        name (str):
+            可选训练器的名称
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
-        scope (str): Optional scope of this trainer
+        scope (str):
+            可选的训练范围
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
     """
 
-    def __init__(self, model, model_vs=None, n_z=None,
+    def __init__(self, model, model_vs=None, x_z_n=None,
                  feed_dict=None, valid_feed_dict=None,
                  missing_data_injection_rate=0.01,
                  use_regularization_loss=True,
                  max_epoch=256, max_step=None, batch_size=256,
                  valid_batch_size=1024, valid_step_freq=100,
-                 initial_lr=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75,
+                 lr_initial=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75,
                  optimizer=tf.train.AdamOptimizer, optimizer_params=None,
                  grad_clip_norm=10.0, check_numerics=True,
                  name=None, scope=None):
         super(DonutTrainer, self).__init__(name=name, scope=scope)
 
-        # memorize the arguments
+        # 记忆参数
         self._model = model
-        self._n_z = n_z
+        self._n_z = x_z_n
         if feed_dict is not None:
+            # 迭代器->字典
             self._feed_dict = dict(six.iteritems(feed_dict))
         else:
             self._feed_dict = {}
         if valid_feed_dict is not None:
             self._valid_feed_dict = dict(six.iteritems(valid_feed_dict))
         else:
+            # 为空使用feed_dict
             self._valid_feed_dict = self._feed_dict
         self._missing_data_injection_rate = missing_data_injection_rate
+        # 必须有最大限制
         if max_epoch is None and max_step is None:
-            raise ValueError('At least one of `max_epoch` and `max_step` '
-                             'should be specified')
+            raise ValueError('At least one of `max_epoch` and `max_step` should be specified')
         self._max_epoch = max_epoch
         self._max_step = max_step
         self._batch_size = batch_size
         self._valid_batch_size = valid_batch_size
         self._valid_step_freq = valid_step_freq
-        self._initial_lr = initial_lr
+        self._lr_initial = lr_initial
         self._lr_anneal_epochs = lr_anneal_epochs
         self._lr_anneal_factor = lr_anneal_factor
 
-        # build the trainer
+        # 构建训练器
         with reopen_variable_scope(self.variable_scope):
-            # the global step for this model
+            # 模型的全局步长
             self._global_step = tf.get_variable(
                 dtype=tf.int64, name='global_step', trainable=False,
                 initializer=tf.constant(0, dtype=tf.int64)
             )
-
-            # input placeholders
+            # 输入占位符
             self._input_x = tf.placeholder(
                 dtype=tf.float32, shape=[None, model.x_dims], name='input_x')
             self._input_y = tf.placeholder(
@@ -123,7 +140,7 @@ class DonutTrainer(VarScopeObject):
             # compose the training loss
             with tf.name_scope('loss'):
                 loss = model.get_training_loss(
-                    x=self._input_x, y=self._input_y, n_z=n_z)
+                    x=self._input_x, y=self._input_y, n_z=x_z_n)
                 if use_regularization_loss:
                     loss += tf.losses.get_regularization_loss()
                 self._loss = loss
@@ -258,7 +275,7 @@ class DonutTrainer(VarScopeObject):
         ensure_variables_initialized(self._train_params)
 
         # training loop
-        lr = self._initial_lr
+        lr = self._lr_initial
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,

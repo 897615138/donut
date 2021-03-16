@@ -105,6 +105,7 @@ def prepare_data(file_name, show_configure):
     else:
         show_photo(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
                    train_missing, test_missing)
-    return base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing
+    return base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing,\
+           train_labels,test_labels,mean,std
 
 # prepare_data("1.csv", 1)
