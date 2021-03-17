@@ -4,7 +4,7 @@ import streamlit as st
 import data
 import numpy as np
 
-from donut.demo.show_photo_sl import prepare_data_one, prepare_data_two, show_test_score,source_data
+from donut.demo.show_photo_sl import prepare_data_one, prepare_data_two, show_test_score, source_data
 from donut.demo.donut_model import get_model
 from donut.demo.train_prediction import train_prediction
 from donut.utils import get_time
@@ -12,8 +12,8 @@ from donut.utils import get_time
 st.title('Donut')
 st.markdown("- 准备数据")
 file_name = str(st.text_input('file name', "donut/1.csv"))
-button_pd=st.button("分析数据")
-button_fm=st.button("填充缺失数据")
+button_pd = st.button("分析数据")
+button_fm = st.button("填充缺失数据")
 
 if button_pd:
     start_time = time.time()
@@ -35,10 +35,9 @@ if button_pd:
             train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamp, test_timestamp = \
                 data.get_test_training_data(values, labels, missing, timestamp, test_portion)
             end_time = time.time()
-            prepare_data_one(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
-                             train_missing, test_missing)
-            prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
-                             train_missing, test_missing)
+            prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
+            # prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
+            #                  train_missing, test_missing)
             st.text("训练数据量：{}，测试数据量：{}【共用时{}】"
                     .format(train_values.size, test_values.size, get_time(start_time, end_time)))
             if st.button("标准化训练和测试数据"):
@@ -46,10 +45,9 @@ if button_pd:
                 train_values, test_values, train_missing, train_labels, mean, std = \
                     data.standardize_data(train_labels, train_missing, train_values, test_values)
                 end_time = time.time()
-                prepare_data_one(base_timestamp, base_values, train_timestamp, train_values, test_timestamp,
-                                 test_values, train_missing, test_missing)
-                prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp,
-                                 test_values, train_missing, test_missing)
+                prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
+                # prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp,
+                #                  test_values, train_missing, test_missing)
                 st.text("平均值：{}，标准差：{}【共用时{}】".format(mean, std, get_time(start_time, end_time)))
                 if st.button("训练模型与预测获得测试分数"):
                     model, model_vs = get_model()
