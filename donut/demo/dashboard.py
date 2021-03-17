@@ -69,10 +69,14 @@ if button_pd:
     #                  test_values, train_missing, test_missing)
     st.text("平均值：{}，标准差：{}【标准化训练和测试数据共用时{}】".format(mean, std, get_time(start_time, end_time)))
     # if st.button("训练模型与预测获得测试分数"):
-    # start_time = time.time()
-    # test_scores = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
-    # end_time = time.time()
-    # sl.show_test_score(test_timestamp, test_values, test_scores)
-    # st.text("训练模型与预测获得测试分数{}】".format(get_time(start_time, end_time)))
+    start_time = time.time()
+    test_scores = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+    end_time = time.time()
+    sl.show_test_score(test_timestamp, test_values, test_scores)
+    st.text("训练模型与预测获得测试分数{}】".format(get_time(start_time, end_time)))
+
+
+
+
 # base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, train_labels, test_labels, mean, std = \
 #     data.prepare_data("donut/1.csv", test_portion)
