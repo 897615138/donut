@@ -65,7 +65,7 @@ def gain_data(file_name="donut/1.csv"):
     # 2.转化为初始np.array
     timestamp = np.array(base_timestamp, dtype='int64')
     labels = np.array(base_labels, dtype='int32')
-    return timestamp, labels, base_values
+    return timestamp, labels, base_timestamp,base_values
 
 
 def fill_data(timestamp, labels, base_values):

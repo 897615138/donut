@@ -4,7 +4,7 @@ import streamlit as st
 import data
 import numpy as np
 
-from donut.demo.show_photo_sl import prepare_data_one, prepare_data_two, show_test_score
+from donut.demo.show_photo_sl import prepare_data_one, prepare_data_two, show_test_score,source_data
 from donut.demo.donut_model import get_model
 from donut.demo.train_prediction import train_prediction
 from donut.utils import get_time
@@ -12,25 +12,17 @@ from donut.utils import get_time
 st.title('Donut')
 st.markdown("- 准备数据")
 file_name = str(st.text_input('file name', "donut/1.csv"))
-base_timestamp = []
-base_values = []
-train_timestamp = np.array([])
-train_values = np.array([])
-test_timestamp = np.array([])
-test_values = np.array([])
-train_missing = np.array([])
-test_missing = np.array([])
-train_labels = np.array([])
-test_labels = np.array([])
-mean = 0.0
-std = 0.0
-if st.button("分析数据"):
+button_pd=st.button("分析数据")
+button_fm=st.button("填充缺失数据")
+
+if button_pd:
     start_time = time.time()
-    timestamp, labels = data.gain_data(file_name)
+    timestamp, labels, base_timestamp, base_values = data.gain_data(file_name)
     end_time = time.time()
     base_sum = timestamp.size
-    st.text("共{}条数据,有{}个标注【共用时{}】".format(timestamp.size, labels.size, get_time(start_time, end_time)))
-    if st.button("填充缺失数据"):
+    source_data(base_timestamp, base_values)
+    st.text("共{}条数据,有{}个标注【共用时{}】".format(timestamp.size, np.sum(labels == 1), get_time(start_time, end_time)))
+    if button_fm:
         start_time = time.time()
         timestamp, missing, values, labels = data.fill_data(timestamp, labels, base_values)
         end_time = time.time()
@@ -61,7 +53,8 @@ if st.button("分析数据"):
                 st.text("平均值：{}，标准差：{}【共用时{}】".format(mean, std, get_time(start_time, end_time)))
                 if st.button("训练模型与预测获得测试分数"):
                     model, model_vs = get_model()
-                    test_scores = train_prediction(train_values, train_labels, train_missing, test_values, test_missing,mean, std)
+                    test_scores = train_prediction(train_values, train_labels, train_missing, test_values, test_missing,
+                                                   mean, std)
                     show_test_score(test_timestamp, test_values, test_scores)
 # base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, train_labels, test_labels, mean, std = \
 #     data.prepare_data("donut/1.csv", test_portion)

@@ -1,9 +1,10 @@
-
 import matplotlib.pyplot as plt
 import streamlit as st
 from donut.demo.show_photo_plt import plot_missing
 
-def prepare_data_one(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing,
+
+def prepare_data_one(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
+                     train_missing,
                      test_missing):
     """
       原始数据与测试训练数据多图显示
@@ -23,7 +24,23 @@ def prepare_data_one(base_timestamp, base_values, train_timestamp, train_values,
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
 
-def prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing,
+
+def source_data(base_timestamp, base_values):
+    """
+      原始数据与测试训练数据多图显示
+    """
+    plt.figure(figsize=(50, 10), dpi=1024)
+    plt.plot(base_timestamp, base_values, label='original csv_data')
+    plt.title("prepare the csv_data")
+    plt.xlabel('timestamp')
+    plt.ylabel('value')
+    plt.legend()
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
+
+
+def prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
+                     train_missing,
                      test_missing):
     """
       原始数据与测试训练数据单图显示
