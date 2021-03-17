@@ -2,6 +2,10 @@ import numpy as np
 
 __all__ = ['minibatch_slices_iterator', 'BatchSlidingWindow']
 
+def get_time(start_time,end_time):
+    return str(end_time - start_time)+"秒"
+
+
 
 def minibatch_slices_iterator(length, batch_size,
                               ignore_incomplete_batch=False):
