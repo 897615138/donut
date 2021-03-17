@@ -1,8 +1,7 @@
+git+https://github.com.cnpmjs.org/thu-ml/zhusuan.git
+git+https://github.com.cnpmjs.org/haowen-xu/tfsnippet.git@v0.1.2
 numpy
 six
-git+https://github.com/thu-ml/zhusuan.git
-git+https://github.com/haowen-xu/tfsnippet.git@v0.1.2
-
 matplotlib
 streamlit
 donut

@@ -1,32 +1,6 @@
 DONUT
 =====
-
-.. image:: https://travis-ci.org/haowen-xu/donut.svg?branch=master
-    :target: https://travis-ci.org/haowen-xu/donut
-.. image:: https://coveralls.io/repos/github/haowen-xu/donut/badge.svg?branch=master
-    :target: https://coveralls.io/github/haowen-xu/donut?branch=master
-
 Donut is an anomaly detection algorithm for seasonal KPIs.
-
-Citation
---------
-
-.. code-block:: bibtex
-
-    @inproceedings{donut,
-      title={Unsupervised Anomaly Detection via Variational Auto-Encoder for Seasonal KPIs in Web Applications},
-      author={Xu, Haowen and Chen, Wenxiao and Zhao, Nengwen and Li, Zeyan and Bu, Jiahao and Li, Zhihan and Liu, Ying and Zhao, Youjian and Pei, Dan and Feng, Yang and others},
-      booktitle={Proceedings of the 2018 World Wide Web Conference on World Wide Web},
-      pages={187--196},
-      year={2018},
-      organization={International World Wide Web Conferences Steering Committee}
-    }
-
-Dependencies
-------------
-
-TensorFlow >= 1.5
-
 Installation
 ------------
 
@@ -34,8 +8,8 @@ Checkout this repository and execute:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/thu-ml/zhusuan.git
-    pip install git+https://github.com/haowen-xu/tfsnippet.git@v0.1.2
+    pip install git+https://github.com.cnpmjs.org/thu-ml/zhusuan.git
+    pip install git+https://github.com.cnpmjs.org/haowen-xu/tfsnippet.git@v0.1.2
     pip install .
 
 This will first install `ZhuSuan <https://github.com/thu-ml/zhusuan>`_ and
