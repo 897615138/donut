@@ -6,7 +6,7 @@ from donut import complete_timestamp, standardize_kpi
 __all__ = ['prepare_data']
 
 
-def prepare_data(file_name,test_portion:0.3):
+def prepare_data(file_name, test_portion=0.3):
     """
       数据准备
       1.解析csv文件
