@@ -10,8 +10,6 @@ from tfsnippet.variational import VariationalInference
 from .reconstruction import iterative_masked_reconstruct
 
 __all__ = ['Donut']
-
-
 def softplus_std(inputs, units, epsilon, name):
     return tf.nn.softplus(tf.layers.dense(inputs, units, name=name)) + epsilon
 
