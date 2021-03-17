@@ -41,7 +41,7 @@ def prepare_data_two(base_timestamp, base_values, train_timestamp, train_values,
     st.pyplot()
 
 
-def test_score(test_timestamp, test_values, test_scores):
+def show_test_score(test_timestamp, test_values, test_scores):
     """
       测试数据与分数单图显示
     """
