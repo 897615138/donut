@@ -10,6 +10,8 @@ from tfsnippet.variational import VariationalInference
 from .reconstruction import iterative_masked_reconstruct
 
 __all__ = ['Donut']
+
+
 def softplus_std(inputs, units, epsilon, name):
     return tf.nn.softplus(tf.layers.dense(inputs, units, name=name)) + epsilon
 
@@ -122,20 +124,20 @@ class Donut(VarScopeObject):
 
     def get_training_loss(self, x, y, n_z=None):
         """
-        Get the training loss for `x` and `y`.
+        得到x和y的训练损失。
 
         Args:
-            x (tf.Tensor): 2-D `float32` :class:`tf.Tensor`, the windows of
-                KPI observations in a mini-batch.
-            y (tf.Tensor): 2-D `int32` :class:`tf.Tensor`, the windows of
-                ``(label | missing)`` in a mini-batch.
-            n_z (int or None): Number of `z` samples to take for each `x`.
-                (default :obj:`None`, one sample without explicit sampling
-                dimension)
+            x (tf.Tensor):
+                二维32位浮点 :class:`tf.Tensor`，小批量的KPI观察窗口。
+            y (tf.Tensor):
+                二维32位整型 :class:`tf.Tensor`,“(标签|缺失点)”在一个小批量中的窗口。
+            n_z (int or None):
+                每个x需要取的z样本数量。
+                (default :obj:`None`, 没有显式抽样维数的样本)
 
         Returns:
-            tf.Tensor: 0-d tensor, the training loss, which can be optimized
-                by gradient descent algorithms.
+            tf.Tensor:
+                0维tensor, 训练损失（可以通过梯度下降算法进行优化）。
         """
         with tf.name_scope('Donut.training_loss'):
             chain = self.vae.chain(x, n_z=n_z)

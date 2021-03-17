@@ -62,7 +62,7 @@ def show_test_score(test_timestamp, test_values, test_scores):
       测试数据与分数单图显示
     """
     plt.figure(figsize=(40, 10), dpi=1024)
-    plt.plot(test_timestamp, test_values, label='test csv_data')
+    plt.plot(test_timestamp, test_values, label='test data')
     plt.plot(test_timestamp, test_scores, label='test score')
     plt.title("test csv_data and score")
     plt.xlabel('timestamp')
