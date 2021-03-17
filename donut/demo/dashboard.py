@@ -7,9 +7,9 @@ from donut.demo.train_prediction import train_prediction
 
 st.title('Donut')
 st.markdown("- 准备数据")
-
+test_portion = st.text_input('test portion')
 base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, train_labels, test_labels, mean, std = \
-    data.prepare_data("donut/1.csv")
+    data.prepare_data("donut/1.csv",test_portion)
 prepare_data_one(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
                  train_missing, test_missing)
 prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,

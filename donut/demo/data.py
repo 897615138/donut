@@ -6,7 +6,7 @@ from donut import complete_timestamp, standardize_kpi
 __all__ = ['prepare_data']
 
 
-def prepare_data(file_name):
+def prepare_data(file_name,test_portion:0.3):
     """
       数据准备
       1.解析csv文件
@@ -34,7 +34,6 @@ def prepare_data(file_name):
     # 3.补充缺失时间戳(与数据)获得缺失点
     timestamp, missing, (values, labels) = complete_timestamp(timestamp, (base_values, labels))
     # 4.按照比例获得训练和测试数据
-    test_portion = 0.3
     test_amount = int(len(values) * test_portion)
     train_values, test_values = np.asarray(values[:-test_amount]), np.asarray(values[-test_amount:])
     train_labels, test_labels = labels[:-test_amount], labels[-test_amount:]
