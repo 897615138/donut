@@ -47,8 +47,7 @@ def prepare_data(file_name, test_portion=0.3):
            train_labels, test_labels, mean, std
 
 
-# prepare_data("../1.csv")
-def gain_data(file_name="donut/1.csv"):
+def gain_data(file_name="sample_data/1.csv"):
     base_timestamp = []
     base_values = []
     # 默认无标签

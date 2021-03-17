@@ -3,7 +3,7 @@ import pandas as pd
 import csv
 
 # 调取operating system模块
-with open("donut/1.csv", 'r') as f:
+with open("../../sample_data/1.csv", 'r') as f:
     base_timestamp = []
     base_values = []
     # 默认无标签
