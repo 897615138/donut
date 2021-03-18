@@ -2,7 +2,6 @@ import tensorflow as tf
 from donut import Donut, DonutTrainer, DonutPredictor
 from tensorflow import keras as K
 from tfsnippet.modules import Sequential
-import numpy as np
 
 
 def train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std):
@@ -30,6 +29,6 @@ def train_prediction(train_values, train_labels, train_missing, test_values, tes
         trainer = DonutTrainer(model=model, model_vs=model_vs)
         predictor = DonutPredictor(model)
         with tf.Session().as_default():
-            trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
+            epoch_list,lr_list=trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
             test_score = predictor.get_score(test_values, test_missing)
-            return test_score
+            return test_score,epoch_list,lr_list

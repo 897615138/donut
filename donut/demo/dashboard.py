@@ -39,12 +39,10 @@ if button_pd:
     end_time = time.time()
     base_sum = timestamp.size
     sl.line_chart(base_timestamp, base_values, 'original csv_data')
-    # has_gain_data = 1
     source_sum = timestamp.size
     label_num = np.sum(labels == 1)
     st.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】".format(source_sum, label_num, label_num / source_sum,
                                                                   get_time(start_time, end_time)))
-    # if button_fm and has_gain_data:
     start_time = time.time()
     timestamp, missing, values, labels = data.fill_data(timestamp, labels, base_values)
     end_time = time.time()
@@ -52,29 +50,23 @@ if button_pd:
     sl.line_chart(timestamp.tolist(), values.tolist(), 'fill_data')
     st.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
             .format(fill_sum, timestamp[1] - timestamp[0], fill_sum - base_sum, get_time(start_time, end_time)))
-    # if st.button("按照比例获得测试与训练数据"):
     start_time = time.time()
     train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamp, test_timestamp = \
         data.get_test_training_data(values, labels, missing, timestamp, test_portion)
     end_time = time.time()
     sl.prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
-    # prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values,
-    #                  train_missing, test_missing)
     st.text("训练数据量：{}，测试数据量：{} \n【填充缺失数据,共用时{}】"
             .format(train_values.size, test_values.size, get_time(start_time, end_time)))
-    # if st.button("标准化训练和测试数据"):
     start_time = time.time()
     train_values, test_values, train_missing, train_labels, mean, std = \
         data.standardize_data(train_labels, train_missing, train_values, test_values)
     end_time = time.time()
     sl.prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
-    # prepare_data_two(base_timestamp, base_values, train_timestamp, train_values, test_timestamp,
-    #                  test_values, train_missing, test_missing)
     st.text("平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, get_time(start_time, end_time)))
-    # if st.button("训练模型与预测获得测试分数"):
     start_time = time.time()
-    test_score = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+    test_score,epoch_list,lr_list = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
     end_time = time.time()
+    sl.line_chart(epoch_list, lr_list, 'annealing_learning_rate')
     test_score = data.handle_test_data(test_score, test_values.size)
     sl.show_test_score(test_timestamp, test_values, test_score)
     labels_num, catch_num, catch_index, labels_index, labels_score_min = data.label_catch(test_labels, test_score)
@@ -93,6 +85,3 @@ if button_pd:
         for i, timestamp in enumerate(special_anomaly_t):
             st.text("时间戳:{},值:{},分数：{}".format(timestamp, special_anomaly_v[i], special_anomaly_s[i]))
     st.text("【训练模型与预测获得测试分数,共用时{}】".format(get_time(start_time, end_time)))
-
-    # base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, train_labels, test_labels, mean, std = \
-    #     data.prepare_data("donut/1.csv", test_portion)

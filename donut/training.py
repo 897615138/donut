@@ -2,6 +2,7 @@ import six
 import numpy as np
 import tensorflow as tf
 import os
+import donut.demo.show_photo_sl as sl
 from tfsnippet.scaffold import TrainLoop
 from tfsnippet.utils import (VarScopeObject,
                              reopen_variable_scope,
@@ -15,6 +16,7 @@ from .utils import BatchSlidingWindow
 
 __all__ = ['DonutTrainer']
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 
 class DonutTrainer(VarScopeObject):
     """
@@ -281,6 +283,8 @@ class DonutTrainer(VarScopeObject):
 
         # 循环训练
         lr = self._initial_lr
+        epoch_list=[]
+        lr_list=[]
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,
@@ -288,12 +292,9 @@ class DonutTrainer(VarScopeObject):
                 max_epoch=self._max_epoch,
                 max_step=self._max_step) as loop:  # type: TrainLoop
             loop.print_training_summary()
-
             for epoch in loop.iter_epochs():
-                x, y1, y2 = aug.augment(
-                    train_values, train_labels, train_missing)
+                x, y1, y2 = aug.augment(train_values, train_labels, train_missing)
                 y = np.logical_or(y1, y2).astype(np.int32)
-
                 train_iterator = train_sliding_window.get_iterator([x, y])
                 for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
                     # 运行一次训练步骤
@@ -304,15 +305,12 @@ class DonutTrainer(VarScopeObject):
                     loss, _ = sess.run(
                         [self._loss, self._train_op], feed_dict=feed_dict)
                     loop.collect_metrics({'loss': loss})
-
                     if step % self._valid_step_freq == 0:
                         # 收集变量目录
                         if summary_dir is not None:
                             loop.add_summary(sess.run(self._summary_op))
-
                         # 批量进行验证
-                        with loop.timeit('valid_time'), \
-                                loop.metric_collector('valid_loss') as mc:
+                        with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
                             v_it = valid_sliding_window.get_iterator([v_x, v_y])
                             for b_v_x, b_v_y in v_it:
                                 feed_dict = dict(
@@ -321,13 +319,14 @@ class DonutTrainer(VarScopeObject):
                                 feed_dict[self._input_y] = b_v_y
                                 loss = sess.run(self._loss, feed_dict=feed_dict)
                                 mc.collect(loss, weight=len(b_v_x))
-
                         # 打印最近步骤的日志
                         loop.print_logs()
+                        # sl.print_log(loop)
 
                 # 退火学习率
-                if self._lr_anneal_epochs and \
-                        epoch % self._lr_anneal_epochs == 0:
+                if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
                     lr *= self._lr_anneal_factor
-                    loop.println('Learning rate decreased to {}'.format(lr),
-                                 with_tag=True)
+                    loop.println('Learning rate decreased to {}'.format(lr), with_tag=True)
+                    epoch_list.append(epoch)
+                    lr_list.append(lr)
+        return epoch_list,lr_list
