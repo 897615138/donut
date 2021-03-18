@@ -1,9 +1,15 @@
-import streamlit as st
 import pandas as pd
 import csv
+import streamlit as st
+
+import time
+import altair as alt
+from altair import Chart, X, Y, Axis, SortField, \
+    OpacityValue  # ---------------------------------------------------------------#
 
 # 调取operating system模块
-with open("../../sample_data/1.csv", 'r') as f:
+
+with open("sample_data/1.csv", 'r') as f:
     base_timestamp = []
     base_values = []
     # 默认无标签
