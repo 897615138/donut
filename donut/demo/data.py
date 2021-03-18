@@ -1,6 +1,7 @@
 # coding=utf-8
 import csv
 import numpy as np
+import donut.demo.show_sl as sl
 from donut import complete_timestamp, standardize_kpi
 
 __all__ = ['prepare_data']
@@ -97,11 +98,14 @@ def handle_test_data(test_score, test_num):
 
 
 def label_catch(test_labels, test_score):
-    labels_index = np.where(test_labels == 1)
+    labels_index = np.where(test_labels == 1)[0].tolist()
     labels_score = test_score[labels_index]
-    labels_score_max = np.max(labels_score)
-    labels_score_min = np.min(labels_score)
-    catch_index = np.where(test_score > labels_score_min)
+    labels_score_mean=np.mean(labels_score)
+    sl.text(labels_score)
+    sl.text(labels_score_mean)
+    # labels_score_max = np.max(labels_score)
+    # labels_score_min = np.min(labels_score)
+    catch_index = np.where(test_score > labels_score_mean)[0].tolist()
     catch_num = np.size(catch_index)
     labels_num = np.size(labels_index)
-    return labels_num, catch_num, catch_index, labels_index, labels_score_min
+    return labels_num, catch_num, catch_index, labels_index, labels_score_mean

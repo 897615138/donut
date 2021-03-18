@@ -10,6 +10,10 @@ import streamlit as st
 import pandas as pd
 
 
+def text(content):
+    st.text(content)
+
+
 def prepare_data_one(train_timestamp, train_values, test_timestamp, test_values):
     """
     原始数据与测试训练数据多图显示

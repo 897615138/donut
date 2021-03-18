@@ -2,7 +2,7 @@ import six
 import numpy as np
 import tensorflow as tf
 import os
-import donut.demo.show_photo_sl as sl
+import donut.demo.show_sl as sl
 from tfsnippet.scaffold import TrainLoop
 from tfsnippet.utils import (VarScopeObject,
                              reopen_variable_scope,
