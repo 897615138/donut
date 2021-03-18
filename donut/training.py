@@ -1,3 +1,5 @@
+import time
+
 import six
 import numpy as np
 import tensorflow as tf
@@ -11,8 +13,9 @@ from tfsnippet.utils import (VarScopeObject,
                              get_variables_as_dict)
 
 from .augmentation import MissingDataInjection
+from .demo import data
 from .model import Donut
-from .utils import BatchSlidingWindow
+from .utils import BatchSlidingWindow, get_time
 
 __all__ = ['DonutTrainer']
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -283,8 +286,8 @@ class DonutTrainer(VarScopeObject):
 
         # 循环训练
         lr = self._initial_lr
-        epoch_list=[]
-        lr_list=[]
+        epoch_list = []
+        lr_list = []
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,
@@ -292,6 +295,7 @@ class DonutTrainer(VarScopeObject):
                 max_epoch=self._max_epoch,
                 max_step=self._max_step) as loop:  # type: TrainLoop
             loop.print_training_summary()
+            start_time = time.time()
             for epoch in loop.iter_epochs():
                 x, y1, y2 = aug.augment(train_values, train_labels, train_missing)
                 y = np.logical_or(y1, y2).astype(np.int32)
@@ -329,4 +333,5 @@ class DonutTrainer(VarScopeObject):
                     loop.println('Learning rate decreased to {}'.format(lr), with_tag=True)
                     epoch_list.append(epoch)
                     lr_list.append(lr)
-        return epoch_list,lr_list
+            end_time = time.time()
+        return epoch_list, lr_list,get_time(start_time, end_time)

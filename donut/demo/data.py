@@ -92,15 +92,20 @@ def standardize_data(train_labels, train_missing, train_values, test_values):
 
 def handle_test_data(test_score, test_num):
     # 因为对于每个窗口的检测实际返回的是最后一个窗口的 score，也就是说第一个窗口的前面一部分的点都没有检测，默认为正常数据。因此需要在检测结果前面补零或者测试数据的真实 label。
-    test_score = np.pad(test_score, (test_num - test_score.size, 0), 'constant', constant_values=(0, 0))
+    zero_num = test_num - test_score.size
+    test_score = np.pad(test_score, (zero_num, 0), 'constant', constant_values=(0, 0))
     test_score = 0 - test_score
-    return test_score
+    return test_score, zero_num
 
 
-def label_catch(test_labels, test_score):
+def label_catch(test_labels, test_score, zero_num):
     labels_index = np.where(test_labels == 1)[0].tolist()
+    labels_index = np.where(labels_index > zero_num)[0].tolist()
+    if len(labels_index) == 0:
+        return 0, 0, None, None, np.mean(test_score)
     labels_score = test_score[labels_index]
-    labels_score_mean=np.mean(labels_score)
+    labels_score_mean = np.mean(labels_score)
+    sl.text(labels_index)
     sl.text(labels_score)
     sl.text(labels_score_mean)
     # labels_score_max = np.max(labels_score)
