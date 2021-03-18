@@ -75,9 +75,9 @@ if button_pd:
     sl.text("【训练模型与预测获得测试分数,共用时{}】".format(get_time(start_time, end_time)))
     test_score, zero_num = data.handle_test_data(test_score, test_values.size)
     sl.show_test_score(test_timestamp, test_values, test_score)
-    labels_num, catch_num, catch_index, labels_index, labels_score_mean = data.label_catch(test_labels, test_score,
-                                                                                           zero_num)
-    sl.text("默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(labels_score_mean, catch_num, labels_num))
+    labels_num, catch_num, catch_index, labels_index, score_mean = data.label_catch(test_labels, test_score,
+                                                                                    zero_num)
+    sl.text("默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(score_mean, catch_num, labels_num))
     # 准确度
     if catch_num != 0:
         accuracy = labels_num / catch_num

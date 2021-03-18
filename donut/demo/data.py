@@ -102,15 +102,13 @@ def label_catch(test_labels, test_score, zero_num):
     labels_index = np.where(test_labels == 1)[0].tolist()
     labels_index = np.where(labels_index > zero_num)[0].tolist()
     if len(labels_index) == 0:
-        return 0, 0, None, None, np.mean(test_score)
-    labels_score = test_score[labels_index]
-    labels_score_mean = np.mean(labels_score)
-    sl.text(labels_index)
-    sl.text(labels_score)
-    sl.text(labels_score_mean)
+        mean = np.mean(test_score)
+    else:
+        labels_score = test_score[labels_index]
+        mean = np.mean(labels_score)
     # labels_score_max = np.max(labels_score)
     # labels_score_min = np.min(labels_score)
-    catch_index = np.where(test_score > labels_score_mean)[0].tolist()
+    catch_index = np.where(test_score > mean)[0].tolist()
     catch_num = np.size(catch_index)
     labels_num = np.size(labels_index)
-    return labels_num, catch_num, catch_index, labels_index, labels_score_mean
+    return labels_num, catch_num, catch_index, labels_index, mean
