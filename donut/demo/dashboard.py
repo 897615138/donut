@@ -40,9 +40,10 @@ if button_pd:
     base_sum = timestamp.size
     sl.source_data(base_timestamp, base_values)
     # has_gain_data = 1
-    source_sum=timestamp.size
-    label_num=np.sum(labels == 1)
-    st.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】".format(source_sum, label_num,label_num/source_sum, get_time(start_time, end_time)))
+    source_sum = timestamp.size
+    label_num = np.sum(labels == 1)
+    st.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】".format(source_sum, label_num, label_num / source_sum,
+                                                                  get_time(start_time, end_time)))
     # if button_fm and has_gain_data:
     start_time = time.time()
     timestamp, missing, values, labels = data.fill_data(timestamp, labels, base_values)
@@ -72,13 +73,13 @@ if button_pd:
     st.text("平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, get_time(start_time, end_time)))
     # if st.button("训练模型与预测获得测试分数"):
     start_time = time.time()
-    test_scores = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+    test_score = train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
     end_time = time.time()
-    sl.show_test_score(test_timestamp, test_values, test_scores)
+    # 因为对于每个窗口的检测实际返回的是最后一个窗口的 score，也就是说第一个窗口的前面一部分的点都没有检测，默认为正常数据。因此需要在检测结果前面补零或者测试数据的真实 label。
+    test_score = np.pad(test_score, (test_values.size - test_score.size, 0), 'constant', constant_values=(0, 0))
+    test_score = 0 - test_score
+    sl.show_test_score(test_timestamp, test_values, test_score)
     st.text("【训练模型与预测获得测试分数,共用时{}】".format(get_time(start_time, end_time)))
-
-
-
 
 # base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, train_labels, test_labels, mean, std = \
 #     data.prepare_data("donut/1.csv", test_portion)

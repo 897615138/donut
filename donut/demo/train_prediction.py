@@ -32,6 +32,4 @@ def train_prediction(train_values, train_labels, train_missing, test_values, tes
         with tf.Session().as_default():
             trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
             test_score = predictor.get_score(test_values, test_missing)
-            # 因为对于每个窗口的检测实际返回的是最后一个窗口的 score，也就是说第一个窗口的前面 119 的点都没有检测，默认为正常数据。因此需要在检测结果前面添加 119 个 0 或者测试数据的真实 label。
-            test_score = np.pad(test_score, (test_values.size - test_score.size, 0), 'constant', constant_values=(0, 0))
             return test_score
