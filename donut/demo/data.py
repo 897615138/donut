@@ -104,5 +104,4 @@ def label_catch(test_labels, test_score):
     catch_index = np.where(test_score > labels_score_min)
     catch_num = np.size(catch_index)
     labels_num = np.size(labels_index)
-    return
-
+    return labels_num, catch_num, catch_index, labels_index, labels_score_min
