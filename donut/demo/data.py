@@ -263,12 +263,48 @@ def handle_threshold_value(src_threshold_value):
 def gain_data_cache(file_name, test_portion, threshold_value):
     # return test_score, epoch_list, lr_list, epoch_time, zero_num
     name = file_name_converter(file_name, test_portion, threshold_value)
-    sl.text(name)
-    db = shelve.open(name)
+    sl.text("读取缓存开始")
+    start_time = time.time()
+    db = shelve.open(file_name_converter(file_name, test_portion, threshold_value))
+    src_timestamps = db["src_timestamps"]
+    src_labels = db["src_labels"]
+    src_values = db["src_values"]
+    src_data_num = db["src_data_num"]
+    src_label_num = db["src_label_num"]
+    src_label_proportion = db["src_label_proportion"]
+    first_time = db["first_time"]
+    fill_timestamps = db["fill_timestamps"]
+    fill_values = db["fill_values"]
+    fill_data_num = db["fill_data_num"]
+    fill_step = db["fill_step"]
+    fill_num = db["fill_num"]
+    second_time = db["second_time"]
+    third_time = db["third_time"]
+    train_data_num = db["train_data_num"]
+    train_label_num = db["train_label_num"]
+    train_label_proportion = db["train_label_proportion"]
+    test_data_num = db["test_data_num"]
+    test_label_num = db["test_label_num"]
+    test_label_proportion = db["test_label_proportion"]
+    mean = db["mean"]
+    std = db["std"]
+    forth_time = db["forth_time"]
     epoch_list = db["epoch_list"]
     lr_list = db["lr_list"]
     epoch_time = db["epoch_time"]
-    sl.text("读取结束")
+    fifth_time = db["fifth_time"]
+    catch_num = db["catch_num"]
+    labels_num = db["labels_num"]
+    accuracy = db["accuracy"]
+    special_anomaly_num = db["special_anomaly_num"]
+    interval_num = db["interval_num"]
+    interval_str = db["interval_str"]
+    special_anomaly_t = db["special_anomaly_t"]
+    special_anomaly_v = db["special_anomaly_v"]
+    special_anomaly_s = db["special_anomaly_s"]
+    src_threshold_value = db["src_threshold_value"]
+    end_time = time.time()
+    sl.text("读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
@@ -285,70 +321,57 @@ def is_has_cache(name):
     return os.path.exists(name)
 
 
-def save_data_cache(file_name, test_portion, threshold_value, src_timestamps, src_labels, src_values, src_data_num,
-                    src_label_num, src_label_proportion,
+def save_data_cache(file_name, test_portion, threshold_value,
+                    src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
                     test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
                     catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s):
+    sl.text("缓存开始")
+    start_time = time.time()
     db = shelve.open(file_name_converter(file_name, test_portion, threshold_value))
-
-    db["test_score"] = test_score
+    db["src_timestamps"] = src_timestamps
+    db["src_labels"] = src_labels
+    db["src_values"] = src_values
+    db["src_data_num"] = src_data_num
+    db["src_label_num"] = src_label_num
+    db["src_label_proportion"] = src_label_proportion
+    db["first_time"] = first_time
+    db["fill_timestamps"] = fill_timestamps
+    db["fill_values"] = fill_values
+    db["fill_data_num"] = fill_data_num
+    db["fill_step"] = fill_step
+    db["fill_num"] = fill_num
+    db["second_time"] = second_time
+    db["third_time"] = third_time
+    db["train_data_num"] = train_data_num
+    db["train_label_num"] = train_label_num
+    db["train_label_proportion"] = train_label_proportion
+    db["test_data_num"] = test_data_num
+    db["test_label_num"] = test_label_num
+    db["test_label_proportion"] = test_label_proportion
+    db["mean"] = mean
+    db["std"] = std
+    db["forth_time"] = forth_time
     db["epoch_list"] = epoch_list
     db["lr_list"] = lr_list
     db["epoch_time"] = epoch_time
-    db["zero_num"] = zero_num
-    sl.text("缓存结束")
+    db["fifth_time"] = fifth_time
+    db["catch_num"] = catch_num
+    db["labels_num"] = labels_num
+    db["accuracy"] = accuracy
+    db["special_anomaly_num"] = special_anomaly_num
+    db["interval_num"] = interval_num
+    db["interval_str"] = interval_str
+    db["special_anomaly_t"] = special_anomaly_t
+    db["special_anomaly_v"] = special_anomaly_v
+    db["special_anomaly_s"] = special_anomaly_s
+    end_time = time.time()
+    sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
 
 
-# else:
-# with open(name + "_score", "ab")as f:
-#     f.write(test_score)
-# with open(name) as csv_file:
-# dict = {}
-# for i
-# for i in range(len(df)):
-#     document = df[i:i + 1]
-#     title = document['title'][i]
-#     score = document['score'][i]
-#     dict[title] = score
-#
-# new_df = pd.DataFrame.from_dict(dict, orient='index')
-# new_df.to_csv('pandas_new.csv')
-# return None
-
-# obj1 = pickle.dumps(obj1)
-# with open("userinfo", "ab")as f:
-#     f.write(obj1)
-# obj2 = A("qa", "2")
-# obj2 = pickle.dumps(obj2)
-# with open("userinfo", "ab")as f:
-#     f.write(obj2)
-# obj3 = A("qs", "3")
-# obj3 = pickle.dumps(obj3)
-# with open("userinfo", "ab")as f:
-#     f.write(obj3)
-#
-# # 读取文件中的对象文件
-# # pickle.load()一次只读取一个对象文件
-# f = open("userinfo", "rb")
-# while 1:
-#     try:
-#         obj = pickle.load(f)
-#         print(obj.a, obj)
-#     except:
-#         break
-# f.close()
-# f = open("userinfo", "rb")
-# while 1:
-#     try:
-#         obj = pickle.load(f)
-#         print(obj.a, obj)
-#     except:
-#         break
-# f.close()
 def show_cache_data(file_name, test_portion, src_threshold_value):
     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
     fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
@@ -448,7 +471,7 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     sl.text("【训练模型与预测获得测试分数,共用时{}】".format(fifth_time))
     sl.show_test_score(test_timestamp, test_values, test_score)
     labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
-        data.label_catch(test_labels, test_score, zero_num, src_threshold_value)
+        label_catch(test_labels, test_score, zero_num, src_threshold_value)
     sl.text("默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
     if accuracy is not None:
         sl.text("标签准确度:{:.2%}".format(accuracy))
