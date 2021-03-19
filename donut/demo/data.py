@@ -425,7 +425,7 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     end_time = time.time()
     fill_data_num = fill_timestamps.size
     fill_num = fill_data_num - src_data_num
-    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
+    sl.line_chart(fill_timestamps, fill_values.tolist(), 'fill_data')
     fill_step = fill_timestamps[1] - fill_timestamps[0]
     second_time = get_time(start_time, end_time)
     sl.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
