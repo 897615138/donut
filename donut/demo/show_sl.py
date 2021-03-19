@@ -46,6 +46,7 @@ def line_chart(x, y, name):
         y: y轴数据
         name: 显示名称
     """
+    st.text([name])
     df = pd.DataFrame(y, index=x, columns=[name])
     st.line_chart(df)
 
