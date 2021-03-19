@@ -385,7 +385,7 @@ def show_cache_data(file_name, test_portion, src_threshold_value):
 
 def show_new_data(file_name, test_portion, src_threshold_value):
     start_time = time.time()
-    src_timestamps, src_labels, src_values = data.gain_data("sample_data/" + file_name)
+    src_timestamps, src_labels, src_values = gain_data("sample_data/" + file_name)
     end_time = time.time()
     sl.line_chart(src_timestamps, src_values, 'original csv_data')
     # 原数据数量
@@ -399,7 +399,7 @@ def show_new_data(file_name, test_portion, src_threshold_value):
             .format(src_data_num, src_label_num, src_label_proportion, first_time))
 
     start_time = time.time()
-    fill_timestamps, src_misses, fill_values, fill_labels = data.fill_data(src_timestamps, src_labels, src_values)
+    fill_timestamps, src_misses, fill_values, fill_labels = fill_data(src_timestamps, src_labels, src_values)
     end_time = time.time()
     fill_data_num = fill_timestamps.size
     fill_num = fill_data_num - src_data_num
@@ -411,7 +411,7 @@ def show_new_data(file_name, test_portion, src_threshold_value):
 
     start_time = time.time()
     train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamp, test_timestamp = \
-        data.get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion)
+        get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion)
     end_time = time.time()
     third_time = get_time(start_time, end_time)
     sl.prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
