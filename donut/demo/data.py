@@ -319,7 +319,6 @@ def file_name_converter(file_name, test_portion, threshold_value):
 
 def is_has_cache(file_name, test_portion, src_threshold_value):
     name = file_name_converter(file_name, test_portion, src_threshold_value)
-    sl.text(name)
     return os.path.exists(name+'.db')
 
 
