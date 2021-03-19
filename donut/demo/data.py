@@ -382,7 +382,6 @@ def show_cache_data(file_name, test_portion, src_threshold_value):
     sl.line_chart(src_timestamps, src_values, 'original csv_data')
     sl.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
             .format(src_data_num, src_label_num, src_label_proportion, first_time))
-    sl.text(fill_timestamps+fill_values)
     sl.line_chart(fill_timestamps, fill_values, 'fill_data')
     sl.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
             .format(fill_data_num, fill_step, fill_num, second_time))
@@ -427,7 +426,6 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     end_time = time.time()
     fill_data_num = fill_timestamps.size
     fill_num = fill_data_num - src_data_num
-    sl.text(fill_timestamps + fill_values)
     sl.line_chart(fill_timestamps, fill_values, 'fill_data')
     fill_step = fill_timestamps[1] - fill_timestamps[0]
     second_time = get_time(start_time, end_time)
