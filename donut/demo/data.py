@@ -100,24 +100,24 @@ def fill_data(timestamp, labels, values):
     return timestamp, missing, values, labels
 
 
-def get_test_training_data(values, labels, missing, timestamp, test_portion=0.3):
+def get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion=0.3):
     """
     获得测试与训练数据集
     Args:
-        values: 值数据集
-        labels: 异常标识数据集
-        missing: 缺失点数据集
-        timestamp: 时间戳数据集
+        fill_values: 值数据集
+        fill_labels: 异常标识数据集
+        src_misses: 缺失点数据集
+        fill_timestamps: 时间戳数据集
         test_portion: 测试数据占比
 
     Returns:
 
     """
-    test_amount = int(len(values) * test_portion)
-    train_values, test_values = np.asarray(values[:-test_amount]), np.asarray(values[-test_amount:])
-    train_labels, test_labels = labels[:-test_amount], labels[-test_amount:]
-    train_missing, test_missing = missing[:-test_amount], missing[-test_amount:]
-    train_timestamp, test_timestamp = timestamp[:-test_amount], timestamp[-test_amount:]
+    test_amount = int(len(fill_values) * test_portion)
+    train_values, test_values = np.asarray(fill_values[:-test_amount]), np.asarray(fill_values[-test_amount:])
+    train_labels, test_labels = fill_labels[:-test_amount], fill_labels[-test_amount:]
+    train_missing, test_missing = src_misses[:-test_amount], src_misses[-test_amount:]
+    train_timestamp, test_timestamp = fill_timestamps[:-test_amount], fill_timestamps[-test_amount:]
     return train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamp, test_timestamp
 
 
@@ -372,7 +372,11 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
     sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
     db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
+
+    sl.text(fill_timestamps)
+    sl.text(fill_values)
     sl.line_chart(fill_timestamps,fill_values,'fill_data')
+
     fill_timestamps = db["fill_timestamps"]
     fill_values = db["fill_values"]
     sl.line_chart(fill_timestamps,fill_values,'fill_data')
