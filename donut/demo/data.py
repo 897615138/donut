@@ -375,11 +375,11 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
 
     sl.text(fill_timestamps)
     sl.text(fill_values)
-    sl.line_chart(fill_timestamps,fill_values,'fill_data')
+    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
 
     fill_timestamps = db["fill_timestamps"]
     fill_values = db["fill_values"]
-    sl.line_chart(fill_timestamps,fill_values,'fill_data')
+    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
     db.close()
 
 
@@ -497,10 +497,10 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     sl.text(interval_str)
     for i, fill_timestamps in enumerate(special_anomaly_t):
         sl.text("时间戳:{},值:{},分数：{}".format(fill_timestamps, special_anomaly_v[i], special_anomaly_s[i]))
-    save_data_cache(file_name, test_portion, src_threshold_value, src_timestamps, src_labels, src_values,
-                    src_data_num, src_label_num, src_label_proportion, first_time, fill_timestamps,
-                    fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, train_data_num,
-                    train_label_num, train_label_proportion, test_data_num, test_label_num,
+    save_data_cache(file_name, test_portion, src_threshold_value,
+                    src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
+                    first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
+                    third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
                     test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
-                    catch_num, labels_num, accuracy, special_anomaly_num, interval_num,
-                    interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s)
+                    catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
+                    special_anomaly_t, special_anomaly_v, special_anomaly_s)
