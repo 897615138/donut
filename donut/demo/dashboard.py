@@ -1,6 +1,6 @@
 import streamlit as st
 import donut.demo.show_sl as sl
-from donut.demo.data import show_new_data, handle_threshold_value, is_has_cache, gain_data_cache
+from donut.demo.data import show_cache_data, show_new_data, handle_threshold_value, is_has_cache, gain_data_cache
 
 st.title('Donut')
 file_name = str(st.text_input('文件名【sample_data目录下】', "test.csv"))

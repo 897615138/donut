@@ -29,7 +29,6 @@ def train_prediction(train_values, train_labels, train_missing, test_values, tes
         trainer = DonutTrainer(model=model, model_vs=model_vs)
         predictor = DonutPredictor(model)
         with tf.Session().as_default():
-            epoch_list, lr_list, epoch_time = trainer.fit(values=train_values, labels=train_labels,
-                                                          missing=train_missing, mean=mean, std=std)
+            epoch_list,lr_list,epoch_time=trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
             test_score = predictor.get_score(test_values, test_missing)
-            return test_score, epoch_list, lr_list, epoch_time
+            return test_score,epoch_list,lr_list,epoch_time
