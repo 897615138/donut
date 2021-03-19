@@ -317,7 +317,8 @@ def file_name_converter(file_name, test_portion, threshold_value):
     return "cache/" + file_name + "_" + str(test_portion) + "_" + str(threshold_value)
 
 
-def is_has_cache(name):
+def is_has_cache(file_name, test_portion, src_threshold_value):
+    name = file_name_converter(file_name, test_portion, src_threshold_value)
     return os.path.exists(name)
 
 
