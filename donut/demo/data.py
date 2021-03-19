@@ -329,7 +329,7 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s):
     sl.text("缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, threshold_value))
+    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
     db["src_timestamps"] = src_timestamps
     db["src_labels"] = src_labels
     db["src_values"] = src_values

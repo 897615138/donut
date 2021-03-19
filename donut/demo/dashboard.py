@@ -9,7 +9,7 @@ src_threshold_value = st.text_input('阈值（不设置则使用默认值）', "
 src_threshold_value = handle_threshold_value(src_threshold_value)
 if is_has_cache(file_name, test_portion, src_threshold_value):
     st.text("该配置有缓存,建议使用缓存数据")
-    remark = st.selectbox('数据更新（缓存）【测试分数】', ('使用缓存数据', '新建(更新)缓存数据（文件、比例或阈值变更）'))
+    remark = st.selectbox('数据更新（缓存）', ('使用缓存数据', '新建(更新)缓存数据（文件、比例或阈值变更）'))
 else:
     st.text("该配置无缓存,默认缓存数据")
     remark = '新建(更新)缓存数据（文件、比例或阈值变更）'
