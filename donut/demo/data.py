@@ -371,16 +371,6 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
     end_time = time.time()
     sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
-
-    sl.text(fill_timestamps)
-    sl.text(fill_values)
-    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
-
-    fill_timestamps = db["fill_timestamps"]
-    fill_values = db["fill_values"]
-    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
-    db.close()
 
 
 def show_cache_data(file_name, test_portion, src_threshold_value):
@@ -495,8 +485,8 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
     sl.text("共有{}段(处)异常".format(interval_num))
     sl.text(interval_str)
-    for i, fill_timestamps in enumerate(special_anomaly_t):
-        sl.text("时间戳:{},值:{},分数：{}".format(fill_timestamps, special_anomaly_v[i], special_anomaly_s[i]))
+    for i, timestamp in enumerate(special_anomaly_t):
+        sl.text("时间戳:{},值:{},分数：{}".format(timestamp, special_anomaly_v[i], special_anomaly_s[i]))
     save_data_cache(file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
