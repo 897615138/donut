@@ -1,6 +1,5 @@
 import matplotlib
 
-# import altair as alt
 
 # 显示plot结果图
 from tfsnippet.utils import humanize_duration

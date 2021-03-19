@@ -2,7 +2,8 @@
 import csv
 import shelve
 import time
-
+import streamlit as st
+import pandas as pd
 import numpy as np
 from donut.demo.train_prediction import train_prediction
 
@@ -382,7 +383,8 @@ def show_cache_data(file_name, test_portion, src_threshold_value):
     sl.line_chart(src_timestamps, src_values, 'original csv_data')
     sl.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
             .format(src_data_num, src_label_num, src_label_proportion, first_time))
-    sl.text(fill_timestamps+fill_values)
+    df = pd.DataFrame(fill_values, index=fill_timestamps, columns=['fill_data'])
+    st.line_chart(df)
     sl.line_chart(fill_timestamps, fill_values, 'fill_data')
     sl.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
             .format(fill_data_num, fill_step, fill_num, second_time))
