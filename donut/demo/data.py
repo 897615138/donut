@@ -260,12 +260,10 @@ def handle_threshold_value(src_threshold_value):
     return src_threshold_value
 
 
-def gain_data_cache(file_name, test_portion, threshold_value):
-    # return test_score, epoch_list, lr_list, epoch_time, zero_num
-    name = file_name_converter(file_name, test_portion, threshold_value)
+def gain_data_cache(file_name, test_portion, src_threshold_value):
     sl.text("读取缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, threshold_value))
+    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
     src_timestamps = db["src_timestamps"]
     src_labels = db["src_labels"]
     src_values = db["src_values"]
@@ -319,10 +317,10 @@ def file_name_converter(file_name, test_portion, threshold_value):
 
 def is_has_cache(file_name, test_portion, src_threshold_value):
     name = file_name_converter(file_name, test_portion, src_threshold_value)
-    return os.path.exists(name+'.db')
+    return os.path.exists(name + '.db')
 
 
-def save_data_cache(file_name, test_portion, threshold_value,
+def save_data_cache(file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
@@ -368,6 +366,7 @@ def save_data_cache(file_name, test_portion, threshold_value,
     db["special_anomaly_t"] = special_anomaly_t
     db["special_anomaly_v"] = special_anomaly_v
     db["special_anomaly_s"] = special_anomaly_s
+    db["src_threshold_value"] = src_threshold_value
     end_time = time.time()
     sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
