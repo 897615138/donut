@@ -372,6 +372,7 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
     sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
     db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
+    sl.line_chart(fill_timestamps,fill_values,'fill_data')
     fill_timestamps = db["fill_timestamps"]
     fill_values = db["fill_values"]
     sl.line_chart(fill_timestamps,fill_values,'fill_data')
