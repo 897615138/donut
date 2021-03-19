@@ -3,7 +3,7 @@ import csv
 import shelve
 import time
 import numpy as np
-from donut.demo.train_prediction import train_prediction
+from donut.demo.train_prediction import score
 
 from donut.utils import get_time
 
@@ -460,7 +460,7 @@ def show_new_data(file_name, test_portion, src_threshold_value):
 
     start_time = time.time()
     test_score, epoch_list, lr_list, epoch_time = \
-        train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+        score(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
     end_time = time.time()
     test_score, zero_num = handle_test_data(test_score, test_values.size)
     fifth_time = get_time(start_time, end_time)
