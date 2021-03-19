@@ -4,7 +4,7 @@ from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
 
-def score(train_values, train_labels, train_missing, test_values, test_missing, mean, std):
+def train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std):
     with tf.variable_scope('model') as model_vs:
         model = Donut(
             # 构建`p(x|z)`的隐藏网络
