@@ -19,6 +19,6 @@ button_pd = st.button("分析数据")
 if button_pd:
     # 读取缓存数据
     if remark == "使用缓存数据" and has_cache:
-        show_cache_data(file_name, test_portion, src_threshold_value)
+        show_cache_data(False, file_name, test_portion, src_threshold_value)
     else:
-        show_new_data(file_name, test_portion, src_threshold_value)
+        show_new_data(False, file_name, test_portion, src_threshold_value)

@@ -2,14 +2,13 @@
 import csv
 import shelve
 import time
-import streamlit as st
-import pandas as pd
 import numpy as np
 from donut.demo.train_prediction import train_prediction
 
 from donut.utils import get_time
 
 import donut.demo.show_sl as sl
+import donut.demo.show_plt as plt
 import os
 from donut import complete_timestamp, standardize_kpi
 
@@ -302,6 +301,9 @@ def gain_data_cache(file_name, test_portion, src_threshold_value):
     special_anomaly_v = db["special_anomaly_v"]
     special_anomaly_s = db["special_anomaly_s"]
     src_threshold_value = db["src_threshold_value"]
+    test_timestamps = db["test_timestamps"]
+    test_values = db["test_values"]
+    test_scores = db["test_scores"]
     end_time = time.time()
     sl.text("读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
@@ -309,7 +311,8 @@ def gain_data_cache(file_name, test_portion, src_threshold_value):
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
            mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
-           accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s
+           accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
+           test_timestamps, test_values, test_scores
 
 
 def file_name_converter(file_name, test_portion, threshold_value):
@@ -327,7 +330,7 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
                     test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
                     catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
-                    special_anomaly_t, special_anomaly_v, special_anomaly_s):
+                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores):
     sl.text("缓存开始")
     start_time = time.time()
     db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
@@ -368,50 +371,83 @@ def save_data_cache(file_name, test_portion, src_threshold_value,
     db["special_anomaly_v"] = special_anomaly_v
     db["special_anomaly_s"] = special_anomaly_s
     db["src_threshold_value"] = src_threshold_value
+    db["test_timestamps"] = test_timestamps
+    db["test_values"] = test_values
+    db["test_scores"] = test_scores
     end_time = time.time()
     sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
 
 
-def show_cache_data(file_name, test_portion, src_threshold_value):
-    src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
-    fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
-    train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
-    mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
-    accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s \
-        = gain_data_cache(file_name, test_portion, src_threshold_value)
-    sl.line_chart(src_timestamps, src_values, 'original csv_data')
-    sl.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
-            .format(src_data_num, src_label_num, src_label_proportion, first_time))
-    sl.line_chart(fill_timestamps, fill_values, 'fill_data')
-    sl.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
-            .format(fill_data_num, fill_step, fill_num, second_time))
-    sl.text("训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-            "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-            "【填充缺失数据,共用时{}】"
-            .format(train_data_num, train_label_num, train_label_proportion,
-                    test_data_num, test_label_num, test_label_proportion,
-                    third_time))
-    sl.text("平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
-    sl.line_chart(epoch_list, lr_list, 'annealing_learning_rate')
-    sl.text("退火学习率随epoch变化")
-    sl.text("【所有epoch共用时：{}】".format(epoch_time))
-    sl.text("【训练模型与预测获得测试分数,共用时{}】".format(fifth_time))
-    sl.text("默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(src_threshold_value, catch_num, labels_num))
-    if accuracy is not None:
-        sl.text("标签准确度:{:.2%}".format(accuracy))
-    sl.text("未标记但超过阈值的点（数量：{}）：".format(special_anomaly_num))
-    sl.text("共有{}段(处)异常".format(interval_num))
-    sl.text(interval_str)
-    for i, fill_timestamps in enumerate(special_anomaly_t):
-        sl.text("时间戳:{},值:{},分数：{}".format(fill_timestamps, special_anomaly_v[i], special_anomaly_s[i]))
+def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
+    if use_plt:
+        pass
+    else:
+        src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
+        fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
+        train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
+        mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
+        accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
+        test_timestamps, test_values, test_scores = gain_data_cache(file_name, test_portion, src_threshold_value)
+
+        show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
+        print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
+                   .format(src_data_num, src_label_num, src_label_proportion, first_time))
+        show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
+        print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
+                   .format(fill_data_num, fill_step, fill_num, second_time))
+        print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                            "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                            "【填充缺失数据,共用时{}】"
+                   .format(train_data_num, train_label_num, train_label_proportion,
+                           test_data_num, test_label_num, test_label_proportion, third_time))
+        print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
+
+        show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
+        print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
+        show_test_score(use_plt, test_timestamps, test_values, test_scores)
+        if accuracy is not None:
+            print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
+        print_text(use_plt,
+                   "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
+        for i, t in enumerate(special_anomaly_t):
+            print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
 
 
-def show_new_data(file_name, test_portion, src_threshold_value):
+def show_line_chart(use_plt, x, y, name):
+    if use_plt:
+        plt.line_chart(x, y, name)
+    else:
+        sl.line_chart(x, y, name)
+
+
+def print_text(use_plt, content):
+    if use_plt:
+        print(content)
+    else:
+        sl.text(content)
+
+
+def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+                          test_values):
+    if use_plt:
+        plt.prepare_data_one(src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+                             test_values)
+    else:
+        sl.prepare_data_one(train_timestamps, train_values, test_timestamps, test_values)
+
+
+def show_test_score(use_plt, test_timestamps, test_values, test_scores):
+    if use_plt:
+        plt.show_test_score(test_timestamps, test_values, test_scores)
+    else:
+        sl.show_test_score(test_timestamps, test_values, test_scores)
+
+
+def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     start_time = time.time()
     src_timestamps, src_labels, src_values = gain_data("sample_data/" + file_name)
     end_time = time.time()
-    sl.line_chart(src_timestamps, src_values, 'original csv_data')
     # 原数据数量
     src_data_num = src_timestamps.size
     # 原数据标签数
@@ -419,78 +455,74 @@ def show_new_data(file_name, test_portion, src_threshold_value):
     # 原数据标签占比
     src_label_proportion = src_label_num / src_data_num
     first_time = get_time(start_time, end_time)
-    sl.text("共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
-            .format(src_data_num, src_label_num, src_label_proportion, first_time))
-
+    show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
+    print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
+               .format(src_data_num, src_label_num, src_label_proportion, first_time))
     start_time = time.time()
     fill_timestamps, src_misses, fill_values, fill_labels = fill_data(src_timestamps, src_labels, src_values)
     end_time = time.time()
     fill_data_num = fill_timestamps.size
     fill_num = fill_data_num - src_data_num
-    sl.line_chart(fill_timestamps, fill_values.tolist(), 'fill_data')
+    show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
     fill_step = fill_timestamps[1] - fill_timestamps[0]
     second_time = get_time(start_time, end_time)
-    sl.text("填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
-            .format(fill_data_num, fill_step, fill_num, second_time))
-
+    print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
+               .format(fill_data_num, fill_step, fill_num, second_time))
     start_time = time.time()
-    train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamp, test_timestamp = \
+    train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamps, test_timestamps = \
         get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion)
     end_time = time.time()
     third_time = get_time(start_time, end_time)
-    sl.prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
+    show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+                          test_values)
     train_data_num = train_values.size
     train_label_num = np.sum(train_labels == 1)
     train_label_proportion = train_label_num / train_data_num
     test_data_num = test_values.size
     test_label_num = np.sum(test_labels == 1)
     test_label_proportion = test_label_num / test_data_num
-    sl.text("训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-            "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-            "【填充缺失数据,共用时{}】"
-            .format(train_data_num, train_label_num, train_label_proportion,
-                    test_data_num, test_label_num, test_label_proportion,
-                    third_time))
+    print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                        "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                        "【填充缺失数据,共用时{}】"
+               .format(train_data_num, train_label_num, train_label_proportion,
+                       test_data_num, test_label_num, test_label_proportion, third_time))
 
     start_time = time.time()
     train_values, test_values, train_missing, train_labels, mean, std = \
         standardize_data(train_labels, train_missing, train_values, test_values)
     end_time = time.time()
-    sl.prepare_data_one(train_timestamp, train_values, test_timestamp, test_values)
     forth_time = get_time(start_time, end_time)
-    sl.text("平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
-
+    show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+                          test_values)
+    print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
     start_time = time.time()
-    test_score, epoch_list, lr_list, epoch_time = \
+    test_scores, epoch_list, lr_list, epoch_time = \
         train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
     end_time = time.time()
-    test_score, zero_num = handle_test_data(test_score, test_values.size)
+    test_scores, zero_num = handle_test_data(test_scores, test_values.size)
     fifth_time = get_time(start_time, end_time)
-    sl.line_chart(epoch_list, lr_list, 'annealing_learning_rate')
-    sl.text("退火学习率随epoch变化")
-    sl.text("【所有epoch共用时：{}】".format(epoch_time))
-    sl.text("【训练模型与预测获得测试分数,共用时{}】".format(fifth_time))
-    sl.show_test_score(test_timestamp, test_values, test_score)
+    show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
+    print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
+    show_test_score(use_plt, test_timestamps, test_values, test_scores)
     labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
-        label_catch(test_labels, test_score, zero_num, src_threshold_value)
-    sl.text("默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
+        label_catch(test_labels, test_scores, zero_num, src_threshold_value)
+    print_text(use_plt, "默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
     if accuracy is not None:
-        sl.text("标签准确度:{:.2%}".format(accuracy))
+        print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
     special_anomaly_index = list(set(catch_index) - set(labels_index))
-    special_anomaly_t = test_timestamp[special_anomaly_index]
-    special_anomaly_s = test_score[special_anomaly_index]
+    special_anomaly_t = test_timestamps[special_anomaly_index]
+    special_anomaly_s = test_scores[special_anomaly_index]
     special_anomaly_v = test_values[special_anomaly_index]
     special_anomaly_num = len(special_anomaly_t)
-    sl.text("未标记但超过阈值的点（数量：{}）：".format(special_anomaly_num))
     interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
-    sl.text("共有{}段(处)异常".format(interval_num))
-    sl.text(interval_str)
-    for i, timestamp in enumerate(special_anomaly_t):
-        sl.text("时间戳:{},值:{},分数：{}".format(timestamp, special_anomaly_v[i], special_anomaly_s[i]))
+    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
+    for i, t in enumerate(special_anomaly_t):
+        print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
     save_data_cache(file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
-                    third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
+                    third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
+                    test_label_num,
                     test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
                     catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
-                    special_anomaly_t, special_anomaly_v, special_anomaly_s)
+                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores)
