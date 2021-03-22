@@ -1,16 +1,16 @@
 # coding=utf-8
 import csv
+import os
 import shelve
 import time
+
 import numpy as np
-from donut.demo.train_prediction import train_prediction
 
-from donut.utils import get_time
-
-import donut.demo.show_sl as sl
 import donut.demo.show_plt as plt
-import os
+import donut.demo.show_sl as sl
 from donut import complete_timestamp, standardize_kpi
+from donut.demo.train_prediction import train_prediction
+from donut.utils import get_time
 
 __all__ = ['prepare_data']
 

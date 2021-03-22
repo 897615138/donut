@@ -1,7 +1,7 @@
-import show_plt as sp
 import data
+import show_plt as sp
+from donut.demo.data import show_cache_data, show_new_data, is_has_cache
 from donut.demo.train_prediction import train_prediction
-from donut.demo.data import show_cache_data, show_new_data, handle_threshold_value, is_has_cache
 
 
 def dashboard_plt(file_name, test_portion, src_threshold_value, use_cache):

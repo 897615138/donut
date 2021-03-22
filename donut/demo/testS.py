@@ -1,11 +1,7 @@
-import pandas as pd
 import csv
-import streamlit as st
 
-import time
-import altair as alt
-from altair import Chart, X, Y, Axis, SortField, \
-    OpacityValue  # ---------------------------------------------------------------#
+import pandas as pd
+import streamlit as st
 
 # 调取operating system模块
 
