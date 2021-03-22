@@ -1,14 +1,86 @@
 import numpy as np
 
-__all__ = ['minibatch_slices_iterator', 'BatchSlidingWindow']
+__all__ = ['mini_batch_slices_iterator', 'BatchSlidingWindow']
 
-def get_time(start_time,end_time):
-    return str(end_time - start_time)+"秒"
-
+from donut.demo.out import print_text
 
 
-def minibatch_slices_iterator(length, batch_size,
-                              ignore_incomplete_batch=False):
+def get_time(start_time, end_time):
+    return str(end_time - start_time) + "秒"
+
+
+def file_name_converter(file_name, test_portion, threshold_value):
+    return "cache/" + file_name + "_" + str(test_portion) + "_" + str(threshold_value)
+
+
+def get_constant_timestamp(use_plt, timestamps, step):
+    """
+    获得连续的时间戳区间字符串
+    Args:
+        use_plt: 输出格式是否为plt
+        timestamps: 时间戳
+        step: 时间戳步长
+    Returns:
+        时间戳区间字符串
+
+    """
+    if np.size(timestamps) == 0:
+        return None
+    else:
+        timestamps = np.sort(timestamps)
+        print_text(use_plt, "其中时间戳分布为")
+        has_dot = 0
+        has_head = 0
+        interval_str = ''
+        last = 0
+        interval_num = 0
+        for i, t in enumerate(timestamps):
+            if has_head == 0:
+                interval_str = interval_str + " " + str(t)
+                has_head = 1
+                last = t
+                interval_num = interval_num + 1
+            else:
+                if int(t) == int(last) + int(step):
+                    if has_dot == 0:
+                        interval_str = interval_str + "..."
+                    else:
+                        last = t
+                else:
+                    interval_str = interval_str + str(last)
+                    last = t
+                    has_head = 0
+        return interval_num, interval_str
+
+
+def handle_threshold_value(src_threshold_value):
+    if src_threshold_value.isdecimal():
+        src_threshold_value = float(src_threshold_value)
+    else:
+        src_threshold_value = None
+    return src_threshold_value
+
+
+def compute_threshold_value(values):
+    """
+    默认阈值 至少10个数据，至多20个数据
+    Args:
+        values: 数据集
+    Returns: 默认阈值
+    """
+    values = np.sort(values)
+    num = np.size(values)
+    count = round(num * 0.1 / 100)
+    if count >= 20:
+        return values[num - 20]
+    elif count <= 10:
+        return values[num - 10]
+    else:
+        return values[num - count]
+
+
+def mini_batch_slices_iterator(length, batch_size,
+                               ignore_incomplete_batch=False):
     """
     Iterate through all the mini-batch slices.
 
@@ -126,7 +198,7 @@ class BatchSlidingWindow(object):
             np.random.shuffle(self._indices)
 
         # iterate through the mini-batches
-        for s in minibatch_slices_iterator(
+        for s in mini_batch_slices_iterator(
                 length=len(self._indices),
                 batch_size=self._batch_size,
                 ignore_incomplete_batch=self._ignore_incomplete_batch):

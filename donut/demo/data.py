@@ -1,30 +1,29 @@
 # coding=utf-8
 import csv
-import os
-import shelve
 import time
 
 import numpy as np
 
-import donut.demo.show_plt as plt
-import donut.demo.show_sl as sl
 from donut import complete_timestamp, standardize_kpi
+from donut.demo.cache import gain_data_cache, save_data_cache
+from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score
 from donut.demo.train_prediction import train_prediction
-from donut.utils import get_time
+from donut.utils import get_time, compute_threshold_value, get_constant_timestamp
 
-__all__ = ['prepare_data']
+__all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', 'standardize_data', 'handle_test_data',
+           'get_threshold_value_label', 'catch_label', 'show_cache_data', 'show_new_data']
 
 
 def prepare_data(file_name, test_portion=0.3):
     """
-      数据准备
+      数据准备1.0
       1.解析csv文件
       2.转化为初始np.array
       3.补充缺失时间戳(与数据)获得缺失点
       4.按照比例获得训练和测试数据
       5.标准化训练和测试数据
     """
-    base_timestamp = []
+    src_timestamps = []
     base_values = []
     # 默认无标签
     base_labels = []
@@ -33,12 +32,12 @@ def prepare_data(file_name, test_portion=0.3):
         reader = csv.reader(f)
         next(reader)
         for i in reader:
-            base_timestamp.append(int(i[0]))
+            src_timestamps.append(int(i[0]))
             base_values.append(float(i[1]))
             base_labels.append(int(i[2]))
     # 检查数据
     # 2.转化为初始np.array
-    timestamp = np.array(base_timestamp, dtype='int64')
+    timestamp = np.array(src_timestamps, dtype='int64')
     labels = np.array(base_labels, dtype='int32')
     # 3.补充缺失时间戳(与数据)获得缺失点
     timestamp, missing, (values, labels) = complete_timestamp(timestamp, (base_values, labels))
@@ -47,21 +46,20 @@ def prepare_data(file_name, test_portion=0.3):
     train_values, test_values = np.asarray(values[:-test_amount]), np.asarray(values[-test_amount:])
     train_labels, test_labels = labels[:-test_amount], labels[-test_amount:]
     train_missing, test_missing = missing[:-test_amount], missing[-test_amount:]
-    train_timestamp, test_timestamp = timestamp[:-test_amount], timestamp[-test_amount:]
+    train_timestamps, test_timestamps = timestamp[:-test_amount], timestamp[-test_amount:]
     # 5.标准化训练和测试数据
     exclude_array = np.logical_or(train_labels, train_missing)
     train_values, mean, std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
     test_values, _, _ = standardize_kpi(test_values, mean=mean, std=std)
-    return base_timestamp, base_values, train_timestamp, train_values, test_timestamp, test_values, train_missing, test_missing, \
+    return src_timestamps, base_values, train_timestamps, train_values, test_timestamps, test_values, train_missing, test_missing, \
            train_labels, test_labels, mean, std
 
 
 def gain_data(file_name="sample_data/1.csv"):
     """
-    获取数据
+    1.从csv文件中获取数据 时间戳 值 异常标签
     Args:
         file_name: 文件名
-
     Returns:
         数据
     """
@@ -92,7 +90,6 @@ def fill_data(timestamp, labels, values):
         timestamp: 时间戳
         labels: 异常标志
         values: 值
-
     Returns: 填充后的信息与缺失点信息
     """
     timestamp, missing, (values, labels) = complete_timestamp(timestamp, (values, labels))
@@ -146,7 +143,7 @@ def handle_test_data(test_score, test_num):
         test_num: 测试数据数量
 
     Returns:
-
+        处理过的测试分数，补上的0的数量
     """
     # 因为对于每个窗口的检测实际返回的是最后一个窗口的 score，也就是说第一个窗口的前面一部分的点都没有检测，默认为正常数据。因此需要在检测结果前面补零或者测试数据的真实 label。
     zero_num = test_num - test_score.size
@@ -177,206 +174,43 @@ def get_threshold_value_label(labels_score, test_score, labels_num):
             return labels_score[i - 1], catch_num, catch_index, accuracy
 
 
-def label_catch(test_labels, test_score, zero_num, threshold_value):
+def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
+    """
+    根据阈值捕获异常点
+    Args:
+        use_plt: 使用plt
+        test_labels: 测试异常标签
+        test_scores: 测试数据分数
+        zero_num: 补齐的0点数量
+        threshold_value: 已有的阈值
+
+    Returns:
+        捕捉到的异常信息，阈值信息
+
+    """
     labels_index = list(np.where(test_labels == 1)[0])
     labels_index = [ele for ele in labels_index if ele > test_labels[0] + zero_num]
     labels_num = np.size(labels_index)
     accuracy = None
     if threshold_value is not None:
-        catch_index = np.where(test_score > float(threshold_value))[0].tolist()
+        catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
         if accuracy <= 0.9:
-            sl.text("建议提高阈值或使用【默认阈值】")
+            print_text(use_plt, "建议提高阈值或使用【默认阈值】")
         elif accuracy > 1:
-            sl.text("建议降低阈值或使用【默认阈值】")
+            print_text(use_plt, "建议降低阈值或使用【默认阈值】")
     elif len(labels_index) == 0:
-        threshold_value = get_threshold_value(test_score)
-        catch_index = np.where(test_score > float(threshold_value))[0].tolist()
+        threshold_value = compute_threshold_value(test_scores)
+        catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
     else:
-        labels_score = test_score[labels_index]
+        labels_score = test_scores[labels_index]
         threshold_value, catch_num, catch_index, accuracy = get_threshold_value_label(labels_score,
-                                                                                      test_score, labels_num)
+                                                                                      test_scores, labels_num)
         # 准确度
         accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
-
-
-def get_threshold_value(values):
-    """
-    默认阈值 至少10个数据，至多20个数据
-    Args:
-        values: 数据集
-
-    Returns: 默认阈值
-    """
-    values = np.sort(values)
-    num = np.size(values)
-    count = round(num * 0.1 / 100)
-    if count >= 20:
-        return values[num - 20]
-    elif count <= 10:
-        return values[num - 10]
-    else:
-        return values[num - count]
-
-
-def get_constant_timestamp(special_anomaly_t, step):
-    if np.size(special_anomaly_t) == 0:
-        pass
-    else:
-        special_anomaly_t = np.sort(special_anomaly_t)
-        sl.text("其中时间戳分布为")
-        has_dot = 0
-        has_head = 0
-        interval_str = ''
-        last = 0
-        interval_num = 0
-        for i, t in enumerate(special_anomaly_t):
-            if has_head == 0:
-                interval_str = interval_str + " " + str(t)
-                has_head = 1
-                last = t
-                interval_num = interval_num + 1
-            else:
-                if int(t) == int(last) + int(step):
-                    if has_dot == 0:
-                        interval_str = interval_str + "..."
-                    else:
-                        last = t
-                else:
-                    interval_str = interval_str + str(last)
-                    last = t
-                    has_head = 0
-        return interval_num, interval_str
-
-
-def handle_threshold_value(src_threshold_value):
-    if src_threshold_value.isdecimal():
-        src_threshold_value = float(src_threshold_value)
-    else:
-        src_threshold_value = None
-    return src_threshold_value
-
-
-def gain_data_cache(file_name, test_portion, src_threshold_value):
-    sl.text("读取缓存开始")
-    start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
-    src_timestamps = db["src_timestamps"]
-    src_labels = db["src_labels"]
-    src_values = db["src_values"]
-    src_data_num = db["src_data_num"]
-    src_label_num = db["src_label_num"]
-    src_label_proportion = db["src_label_proportion"]
-    first_time = db["first_time"]
-    fill_timestamps = db["fill_timestamps"]
-    fill_values = db["fill_values"]
-    fill_data_num = db["fill_data_num"]
-    fill_step = db["fill_step"]
-    fill_num = db["fill_num"]
-    second_time = db["second_time"]
-    third_time = db["third_time"]
-    train_data_num = db["train_data_num"]
-    train_label_num = db["train_label_num"]
-    train_label_proportion = db["train_label_proportion"]
-    test_data_num = db["test_data_num"]
-    test_label_num = db["test_label_num"]
-    test_label_proportion = db["test_label_proportion"]
-    mean = db["mean"]
-    std = db["std"]
-    forth_time = db["forth_time"]
-    epoch_list = db["epoch_list"]
-    lr_list = db["lr_list"]
-    epoch_time = db["epoch_time"]
-    fifth_time = db["fifth_time"]
-    catch_num = db["catch_num"]
-    labels_num = db["labels_num"]
-    accuracy = db["accuracy"]
-    special_anomaly_num = db["special_anomaly_num"]
-    interval_num = db["interval_num"]
-    interval_str = db["interval_str"]
-    special_anomaly_t = db["special_anomaly_t"]
-    special_anomaly_v = db["special_anomaly_v"]
-    special_anomaly_s = db["special_anomaly_s"]
-    src_threshold_value = db["src_threshold_value"]
-    test_timestamps = db["test_timestamps"]
-    test_values = db["test_values"]
-    test_scores = db["test_scores"]
-    end_time = time.time()
-    sl.text("读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
-    db.close()
-    return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
-           fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
-           train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
-           mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
-           accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-           test_timestamps, test_values, test_scores
-
-
-def file_name_converter(file_name, test_portion, threshold_value):
-    return "cache/" + file_name + "_" + str(test_portion) + "_" + str(threshold_value)
-
-
-def is_has_cache(file_name, test_portion, src_threshold_value):
-    name = file_name_converter(file_name, test_portion, src_threshold_value)
-    return os.path.exists(name + '.db')
-
-
-def save_data_cache(file_name, test_portion, src_threshold_value,
-                    src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
-                    first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
-                    third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
-                    test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
-                    catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
-                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores):
-    sl.text("缓存开始")
-    start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
-    db["src_timestamps"] = src_timestamps
-    db["src_labels"] = src_labels
-    db["src_values"] = src_values
-    db["src_data_num"] = src_data_num
-    db["src_label_num"] = src_label_num
-    db["src_label_proportion"] = src_label_proportion
-    db["first_time"] = first_time
-    db["fill_timestamps"] = fill_timestamps
-    db["fill_values"] = fill_values
-    db["fill_data_num"] = fill_data_num
-    db["fill_step"] = fill_step
-    db["fill_num"] = fill_num
-    db["second_time"] = second_time
-    db["third_time"] = third_time
-    db["train_data_num"] = train_data_num
-    db["train_label_num"] = train_label_num
-    db["train_label_proportion"] = train_label_proportion
-    db["test_data_num"] = test_data_num
-    db["test_label_num"] = test_label_num
-    db["test_label_proportion"] = test_label_proportion
-    db["mean"] = mean
-    db["std"] = std
-    db["forth_time"] = forth_time
-    db["epoch_list"] = epoch_list
-    db["lr_list"] = lr_list
-    db["epoch_time"] = epoch_time
-    db["fifth_time"] = fifth_time
-    db["catch_num"] = catch_num
-    db["labels_num"] = labels_num
-    db["accuracy"] = accuracy
-    db["special_anomaly_num"] = special_anomaly_num
-    db["interval_num"] = interval_num
-    db["interval_str"] = interval_str
-    db["special_anomaly_t"] = special_anomaly_t
-    db["special_anomaly_v"] = special_anomaly_v
-    db["special_anomaly_s"] = special_anomaly_s
-    db["src_threshold_value"] = src_threshold_value
-    db["test_timestamps"] = test_timestamps
-    db["test_values"] = test_values
-    db["test_scores"] = test_scores
-    end_time = time.time()
-    sl.text("缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
-    db.close()
 
 
 def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
@@ -388,7 +222,8 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
         train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
         mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
         accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-        test_timestamps, test_values, test_scores = gain_data_cache(file_name, test_portion, src_threshold_value)
+        test_timestamps, test_values, test_scores \
+            = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
 
         show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
         print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
@@ -412,36 +247,6 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
                    "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
         for i, t in enumerate(special_anomaly_t):
             print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
-
-
-def show_line_chart(use_plt, x, y, name):
-    if use_plt:
-        plt.line_chart(x, y, name)
-    else:
-        sl.line_chart(x, y, name)
-
-
-def print_text(use_plt, content):
-    if use_plt:
-        print(content)
-    else:
-        sl.text(content)
-
-
-def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
-                          test_values):
-    if use_plt:
-        plt.prepare_data_one(src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
-                             test_values)
-    else:
-        sl.prepare_data_one(train_timestamps, train_values, test_timestamps, test_values)
-
-
-def show_test_score(use_plt, test_timestamps, test_values, test_scores):
-    if use_plt:
-        plt.show_test_score(test_timestamps, test_values, test_scores)
-    else:
-        sl.show_test_score(test_timestamps, test_values, test_scores)
 
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
@@ -505,7 +310,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
     labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
-        label_catch(test_labels, test_scores, zero_num, src_threshold_value)
+        catch_label(use_plt, test_labels, test_scores, zero_num, src_threshold_value)
     print_text(use_plt, "默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
@@ -514,11 +319,11 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     special_anomaly_s = test_scores[special_anomaly_index]
     special_anomaly_v = test_values[special_anomaly_index]
     special_anomaly_num = len(special_anomaly_t)
-    interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
+    interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
     for i, t in enumerate(special_anomaly_t):
         print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
-    save_data_cache(file_name, test_portion, src_threshold_value,
+    save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
