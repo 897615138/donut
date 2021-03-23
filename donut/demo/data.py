@@ -8,7 +8,7 @@ from donut import complete_timestamp, standardize_kpi
 from donut.demo.cache import gain_data_cache, save_data_cache
 from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score
 from donut.demo.train_prediction import train_prediction
-from donut.utils import get_time, compute_threshold_value, get_constant_timestamp
+from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp
 
 __all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', 'standardize_data', 'handle_test_data',
            'get_threshold_value_label', 'catch_label', 'show_cache_data', 'show_new_data']
@@ -201,7 +201,7 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         elif accuracy > 1:
             print_text(use_plt, "建议降低阈值或使用【默认阈值】")
     elif len(labels_index) == 0:
-        threshold_value = compute_threshold_value(test_scores)
+        threshold_value = compute_default_threshold_value(test_scores)
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
     else:

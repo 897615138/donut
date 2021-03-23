@@ -2,13 +2,13 @@ import streamlit as st
 
 from donut.demo.cache import is_has_cache
 from donut.demo.data import show_cache_data, show_new_data
-from donut.utils import handle_threshold_value
+from donut.utils import handle_src_threshold_value
 
 st.title('Donut')
 file_name = str(st.text_input('文件名【sample_data目录下】', "test.csv"))
 test_portion = float(st.text_input('test portion', 0.3))
 src_threshold_value = st.text_input('阈值（不设置则使用默认值）', "默认阈值")
-src_threshold_value = handle_threshold_value(src_threshold_value)
+src_threshold_value = handle_src_threshold_value(src_threshold_value)
 has_cache = is_has_cache(file_name, test_portion, src_threshold_value)
 if has_cache:
     st.text("该配置有缓存,建议使用缓存数据")

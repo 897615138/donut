@@ -89,12 +89,11 @@ class IterativeMaskedReconstructTestCase(tf.test.TestCase):
             np.testing.assert_equal(x_r.eval(), [[0, 71, 2], [73, 74, 5]])
 
             # test error of static call
-            with pytest.raises(ValueError, match='iter_count must be positive'):
+            with pytest.raises(ValueError, match='iter_count 必须为正'):
                 _ = iterative_masked_reconstruct(
                     reconstruct, x, mask, iter_count=0)
 
             # test error of dynamic call
-            with pytest.raises(Exception, match='iter_count must be positive'):
+            with pytest.raises(Exception, match='iter_count 必须为正'):
                 _ = iterative_masked_reconstruct(
                     reconstruct, x, mask, iter_count=tf.constant(0)).eval()
-

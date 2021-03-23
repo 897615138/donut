@@ -28,7 +28,7 @@ def complete_timestamp(timestamp, arrays=None):
     timestamp = np.asarray(timestamp, np.int64)
     # 一维数组检验
     if len(timestamp.shape) != 1:
-        raise ValueError('`timestamp` must be a 1-D src_array')
+        raise ValueError('`timestamp`必须为一维数组')
     # 数组是否为空
     has_array = arrays is not None
     # np arrays-> arrays
@@ -36,8 +36,8 @@ def complete_timestamp(timestamp, arrays=None):
     # 相同维度
     for i, src_array in enumerate(src_arrays):
         if src_array.shape != timestamp.shape:
-            raise ValueError('component of src_array must has same shape with timestamp ,shape :timestamp - src_array '
-                             '{} - {} ,src_array index {}'.format(timestamp.shape, src_array.shape, i))
+            raise ValueError('`timestamp` 的形状必须与`src_array`的形状相同 ({} vs {}) src_array index {}'
+                             .format(timestamp.shape, src_array.shape, i))
     # 2.检验时间戳数据 补充为有序等间隔时间戳数组
     # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
     src_index = np.argsort(timestamp)
@@ -48,11 +48,14 @@ def complete_timestamp(timestamp, arrays=None):
     interval = np.min(intervals)
     # 有重复值抛异常 数据有误
     if interval == 0:
-        raise ValueError('Duplicated values in `timestamp`')
+        r_timestamp = timestamp - np.unique(timestamp)
+        s_timestamp = set(r_timestamp)
+        for t in s_timestamp:
+            raise ValueError('`timestamp`中有重复值')
     # 所有间隔数是否与最小间隔为整除关系
     for i in intervals:
         if i % interval != 0:
-            raise ValueError('Not all intervals in `timestamp` are multiples of the minimum interval')
+            raise ValueError('并不是“timestamp”中的所有时间间隔都是最小时间间隔的倍数')
     # 最终时间戳数量为 时间跨度/时间间隔+1
     amount = (timestamp_sorted[-1] - timestamp_sorted[0]) // interval + 1
     # 重构时间戳数组
@@ -105,16 +108,15 @@ def standardize_kpi(values, mean=None, std=None, excludes=None):
     values = np.asarray(values, dtype=np.float32)
     # 一维数组检验
     if len(values.shape) != 1:
-        raise ValueError('values must be a 1-D array')
+        raise ValueError('values 必须为一维数组')
     # mean 和 std 同时为None或非None
     if (mean is None) != (std is None):
-        raise ValueError('mean and std must be both None or not None')
+        raise ValueError('mean和std 必须同为None或者同不为None')
     # 排除点维数必须与数值维数相同
     if excludes is not None:
         excludes = np.asarray(excludes, dtype=np.bool)
         if excludes.shape != values.shape:
-            raise ValueError('excludes must has same shape with values ,shape :excludes - values {} - {}'
-                             .format(excludes.shape, values.shape))
+            raise ValueError('`excludes` 的形状必须与`values`的形状相同 ({} vs {})'.format(excludes.shape, values.shape))
     if mean is None:
         if excludes is not None:
             val = values[np.logical_not(excludes)]
@@ -122,5 +124,4 @@ def standardize_kpi(values, mean=None, std=None, excludes=None):
             val = values
         mean = val.mean()
         std = val.std()
-
     return (values - mean) / std, mean, std

@@ -60,9 +60,9 @@ class Donut(VarScopeObject):
     def __init__(self, hidden_net_p_x_z, hidden_net_q_z_x, x_dims, z_dims, std_epsilon=1e-4,
                  name=None, scope=None):
         if not is_integer(x_dims) or x_dims <= 0:
-            raise ValueError('`x_dims`需要为正整数')
+            raise ValueError('`x_dims`必须为正整数')
         if not is_integer(z_dims) or z_dims <= 0:
-            raise ValueError('`z_dims`需要为正整数')
+            raise ValueError('`z_dims`必须为正整数')
 
         super(Donut, self).__init__(name=name, scope=scope)
         with reopen_variable_scope(self.variable_scope):
@@ -104,12 +104,12 @@ class Donut(VarScopeObject):
 
     @property
     def x_dims(self):
-        """Get the number of `x` dimensions."""
+        """获取“x”维数"""
         return self._x_dims
 
     @property
     def z_dims(self):
-        """Get the number of `z` dimensions."""
+        """获取“z”维数"""
         return self._z_dims
 
     @property
@@ -156,43 +156,31 @@ class Donut(VarScopeObject):
             loss = tf.reduce_mean(vi.training.sgvb())
             return loss
 
-    # def get_training_objective(self, *args, **kwargs):  # pragma: no cover
-    #     warnings.warn('`get_training_objective` is deprecated, use`get_training_loss` instead.', DeprecationWarning)
-    #     return self.get_training_loss(*args, **kwargs)
-
     def get_score(self, x, y=None, n_z=None, mcmc_iteration=None,
                   last_point_only=True):
         """
-        Get the reconstruction probability for `x` and `y`.
-
-        The larger `reconstruction probability`, the less likely a point
-        is anomaly.  You may take the negative of the score, if you want
-        something to directly indicate the severity of anomaly.
+        获得x，y的重构概率
+        “重建概率”越大，异常点的可能性就越小。如果想要直接表明异常的严重程度，可以取这个分数的负值。
 
         Args:
-            x (tf.Tensor): 2-D `float32` :class:`tf.Tensor`, the windows of
-                KPI observations in a mini-batch.
-            y (tf.Tensor): 2-D `int32` :class:`tf.Tensor`, the windows of
-                missing point indicators in a mini-batch.
-            n_z (int or None): Number of `z` samples to take for each `x`.
-                (default :obj:`None`, one sample without explicit sampling
-                dimension)
-            mcmc_iteration (int or tf.Tensor): Iteration count for MCMC
-                missing csv_data imputation. (default :obj:`None`, no iteration)
-            last_point_only (bool): Whether to obtain the reconstruction
-                probability of only the last point in each window?
+            x (tf.Tensor): 二维32位浮点数:class:`tf.Tensor`, 小切片的KPI观测窗口。
+            y (tf.Tensor): 二维32位整型 :class:`tf.Tensor`, 在一个小切片中有缺失点的窗口的指示器。
+            n_z (int or None): 每个“x”要取的“z”样本数。
+                (default :obj:`None`, 一个没有明确抽样维度的样本)
+            mcmc_iteration (int or tf.Tensor): 缺失点注入的迭代次数
+                (default :obj:`None`, 不迭代)
+            last_point_only (bool): 是否获得窗口最后一个点的重构概率
                 (default :obj:`True`)
 
         Returns:
-            tf.Tensor: The reconstruction probability, with the shape
-                ``(len(x) - self.x_dims + 1,)`` if `last_point_only` is
-                :obj:`True`, or ``(len(x) - self.x_dims + 1, self.x_dims)``
-                if `last_point_only` is :obj:`False`.  This is because the
-                first ``self.x_dims - 1`` points are not the last point of
-                any window.
+            tf.Tensor: 重构概率,
+                如果`last_point_only` 是:obj:`True`,shape为 ``(len(x) - self.x_dims + 1,)``
+                反之，则为``(len(x) - self.x_dims + 1, self.x_dims)``
+                这是因为第一个``self.x_dims - 1`` 点不是任何窗口的最后一个点。
         """
         with tf.name_scope('Donut.get_score'):
-            # MCMC missing csv_data imputation
+            # MCMC缺失点注入
+            # 如果没有缺失且需要迭代重构
             if y is not None and mcmc_iteration:
                 x_r = iterative_masked_reconstruct(
                     reconstruct=self.vae.reconstruct,
@@ -201,22 +189,33 @@ class Donut(VarScopeObject):
                     iter_count=mcmc_iteration,
                     back_prop=False,
                 )
+            # 使用原数据
             else:
                 x_r = x
 
-            # get the reconstruction probability
+            # 获得重构概率
+            # 派生一个:math:`q(z|h(x))`实例，变分网。如果未观察到z，则对每个x取z的样本数。
             q_net = self.vae.variational(x=x_r, n_z=n_z)  # notice: x=x_r
+            # 派生一个:math:`p(x|h(z))`实例，模型网。
             p_net = self.vae.model(z=q_net['z'], x=x, n_z=n_z)  # notice: x=x
+            # 计算:class:`StochasticTensor`的对数密度。覆盖已配置的'group_ndimm'为0。
             r_prob = p_net['x'].log_prob(group_ndims=0)
+            # 如果未观察到z，则对每个x取z的样本数。样本数不为None
             if n_z is not None:
+                # 验证' n_samples '参数。用装饰器，定义支持with语句上下文管理器的工厂函数
                 n_z = validate_n_samples(n_z, 'n_z')
                 assert_shape_op = tf.assert_equal(
                     tf.shape(r_prob),
                     tf.stack([n_z, tf.shape(x)[0], self.x_dims]),
                     message='Unexpected shape of reconstruction prob'
                 )
+                # 控制依赖的上下文管理器，使用with关键字可以让在这个上下文环境中的操作都在[assert_shape_op]执行。'
+                # graph. control_dependencies() '的包装器，使用默认的图形。
                 with tf.control_dependencies([assert_shape_op]):
+                    # 计算张量的维数中元素的均值。
+                    # 沿着给定的维数0减少r_prob。在0中的每一项张量的秩都会减少1。
                     r_prob = tf.reduce_mean(r_prob, axis=0)
+            # 获得窗口最后一个点的重构概率
             if last_point_only:
                 r_prob = r_prob[:, -1]
             return r_prob

@@ -1,10 +1,9 @@
+import os
 import time
 
-import six
 import numpy as np
+import six
 import tensorflow as tf
-import os
-import donut.demo.show_sl as sl
 from tfsnippet.scaffold import TrainLoop
 from tfsnippet.utils import (VarScopeObject,
                              reopen_variable_scope,
@@ -13,7 +12,6 @@ from tfsnippet.utils import (VarScopeObject,
                              get_variables_as_dict)
 
 from .augmentation import MissingDataInjection
-from .demo import data
 from .model import Donut
 from .utils import BatchSlidingWindow, get_time
 
@@ -56,7 +54,7 @@ class DonutTrainer(VarScopeObject):
             训练用的小批数量。
             (default 256)
         valid_batch_size (int):
-            验证用的小批数量。
+            验证用的小切片数量。
             (default 1024)
         valid_step_freq (int):
             在每个‘valid_step_freq’数量的训练步骤之后进行验证。
@@ -118,7 +116,7 @@ class DonutTrainer(VarScopeObject):
         self._missing_data_injection_rate = missing_data_injection_rate
         # 必须有最大限制
         if max_epoch is None and max_step is None:
-            raise ValueError('At least one of `max_epoch` and `max_step` should be specified')
+            raise ValueError('`max_epoch`和`max_step`至少有一个被指定')
         self._max_epoch = max_epoch
         self._max_step = max_step
         self._batch_size = batch_size
@@ -244,15 +242,13 @@ class DonutTrainer(VarScopeObject):
         missing = np.asarray(missing, dtype=np.int32)
         # 一维数组检验
         if len(values.shape) != 1:
-            raise ValueError('values must be a 1-D array')
+            raise ValueError('values必须是一维数组')
         # 标注维数必须与数值维数相同
         if labels.shape != values.shape:
-            raise ValueError('labels must has same shape with values ,shape :labels - values {} - {}'
-                             .format(labels.shape, values.shape))
+            raise ValueError('`labels` 的形状必须与`values`的形状相同 ({} vs {})'.format(labels.shape, values.shape))
         # 缺失点维数必须与数值维数相同
         if missing.shape != values.shape:
-            raise ValueError('missing must has same shape with values ,shape :missing - values {} - {}'
-                             .format(missing.shape, values.shape))
+            raise ValueError('`missing` 的形状必须与`values`的形状相同 ({} vs {})'.format(missing.shape, values.shape))
         valid_num = int(len(values) * valid_portion)
         train_values, v_x = values[:-valid_num], values[-valid_num:]
         train_labels, valid_labels = labels[:-valid_num], labels[-valid_num:]
@@ -326,7 +322,6 @@ class DonutTrainer(VarScopeObject):
                         # 打印最近步骤的日志
                         loop.print_logs()
                         # sl.print_log(loop)
-
                 # 退火学习率
                 if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
                     lr *= self._lr_anneal_factor
@@ -334,4 +329,4 @@ class DonutTrainer(VarScopeObject):
                     epoch_list.append(epoch)
                     lr_list.append(lr)
             end_time = time.time()
-        return epoch_list, lr_list,get_time(start_time, end_time)
+        return epoch_list, lr_list, get_time(start_time, end_time)

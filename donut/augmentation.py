@@ -7,58 +7,50 @@ __all__ = ['DataAugmentation', 'MissingDataInjection']
 @DocInherit
 class DataAugmentation(object):
     """
-    Base class for csv_data augmentation in training.
+    训练过程中的数据增强基础类
 
     Args:
-        mean (float): Mean of the training csv_data.
-        std (float): Standard deviation of the training csv_data.
+        mean (float): 训练数据的平均值
+        std (float): 训练数据的标准差
     """
 
     def __init__(self, mean, std):
         if std <= 0.:
-            raise ValueError('`std` must be positive')
+            raise ValueError('`std` 必须为正数')
         self._mean = mean
         self._std = std
 
     def augment(self, values, labels, missing):
         """
-        Generate augmented csv_data.
+        生成增强过得csv_data.
 
         Args:
-            values (np.ndarray): 1-D float32 array of shape `(data_length,)`,
-                the standardized KPI values.
-            labels (np.ndarray): 1-D int32 array of shape `(data_length,)`,
-                the anomaly labels for `values`.
-            missing (np.ndarray): 1-D int32 array of shape `(data_length,)`,
-                the indicator of missing points.
+            values (np.ndarray): 一维32位浮点数组，形状为`(data_length,)`,规则化过得KPI数据
+            labels (np.ndarray): 一维32位整数数组，形状为`(data_length,)`,`values`的异常标签
+            missing (np.ndarray): 一维32位整型数组，形状为`(data_length,)`,指出缺失点
 
         Returns:
-            np.ndarray: The augmented KPI values.
-            np.ndarray: The augmented labels.
-            np.ndarray: The augmented indicators of missing points.
+            np.ndarray: 增强过的KPI值
+            np.ndarray: 增强过的异常标签
+            np.ndarray: 增强过的缺失值指示器
         """
         if len(values.shape) != 1:
-            raise ValueError('`values` must be a 1-D array')
+            raise ValueError('`values`必须为一维数组')
         if labels.shape != values.shape:
-            raise ValueError('The shape of `labels` does not agree with the '
-                             'shape of `values` ({} vs {})'.
-                             format(labels.shape, values.shape))
+            raise ValueError('`labels` 的形状必须与`values`的形状相同 ({} vs {})'.format(labels.shape, values.shape))
         if missing.shape != values.shape:
-            raise ValueError('The shape of `missing` does not agree with the '
-                             'shape of `values` ({} vs {})'.
-                             format(missing.shape, values.shape))
+            raise ValueError('`missing` 的形状必须与`values`的形状相同 ({} vs {})'.format(missing.shape, values.shape))
         return self._augment(values, labels, missing)
 
     def _augment(self, values, labels, missing):
         """
-        Derived classes should override this to actually implement the
-        csv_data augmentation algorithm.
+        派生类应该覆盖它来实际实现csv_data增强算法。
         """
         raise NotImplementedError()
 
     @property
     def mean(self):
-        """Get the mean of the training csv_data."""
+        """获得训练csv_data数据的平均值."""
         return self._mean
 
     @property
@@ -69,12 +61,12 @@ class DataAugmentation(object):
 
 class MissingDataInjection(DataAugmentation):
     """
-    Data augmentation by injecting missing points into training csv_data.
+    得到训练csv_data数据的标准差
 
     Args:
-        mean (float): Mean of the training csv_data.
-        std (float): Standard deviation of the training csv_data.
-        missing_rate (float): The ratio of missing points to inject.
+        mean (float): 训练csv_data数据的平均值
+        std (float): 训练csv_data数据的标准差
+        missing_rate (float): 训练csv_data数据的缺失值指示
     """
 
     def __init__(self, mean, std, missing_rate):
@@ -83,7 +75,7 @@ class MissingDataInjection(DataAugmentation):
 
     @property
     def missing_rate(self):
-        """Get the ratio of missing points to inject."""
+        """获得缺失点的比例"""
         return self._missing_rate
 
     def _augment(self, values, labels, missing):

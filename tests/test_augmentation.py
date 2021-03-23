@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import pytest
 import numpy as np
+import pytest
 from mock import Mock
 
 from donut.augmentation import DataAugmentation, MissingDataInjection
@@ -15,9 +15,9 @@ class AugmentationTestCase(unittest.TestCase):
         self.assertEqual(aug.mean, -1.)
         self.assertEqual(aug.std, 2.)
 
-        with pytest.raises(ValueError, match='`std` must be positive'):
+        with pytest.raises(ValueError, match='`std` 必须为正'):
             _ = DataAugmentation(-1., 0.)
-        with pytest.raises(ValueError, match='`std` must be positive'):
+        with pytest.raises(ValueError, match='`std` 必须为正'):
             _ = DataAugmentation(-1., -1.)
 
     def test_augment(self):
@@ -33,15 +33,13 @@ class AugmentationTestCase(unittest.TestCase):
         np.testing.assert_equal(missing, [0, 0, 0, 1, 0, 0, 1])
         self.assertTrue(aug._augment.called)
 
-        with pytest.raises(ValueError, match='`values` must be a 1-D array'):
+        with pytest.raises(ValueError, match='`values` 必须为一位数组'):
             _ = aug.augment(np.zeros([1, 2]), np.zeros([1]), np.zeros([1]))
         with pytest.raises(
-                ValueError, match='The shape of `labels` does not agree '
-                                  'with the shape of `values`'):
+                ValueError, match='`labels`的形状与`values`形状不同'):
             _ = aug.augment(np.zeros([1]), np.zeros([2]), np.zeros([1]))
         with pytest.raises(
-                ValueError, match='The shape of `missing` does not agree '
-                                  'with the shape of `values`'):
+                ValueError, match='`missing`的形状与`values`形状不同'):
             _ = aug.augment(np.zeros([1]), np.zeros([1]), np.zeros([2]))
 
 

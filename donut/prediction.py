@@ -1,5 +1,5 @@
-import six
 import numpy as np
+import six
 import tensorflow as tf
 from tfsnippet.utils import (VarScopeObject, get_default_session_or_error,
                              reopen_variable_scope)
@@ -12,25 +12,23 @@ __all__ = ['DonutPredictor']
 
 class DonutPredictor(VarScopeObject):
     """
-    Donut predictor.
+    Donut 预报器
 
     Args:
-        model (Donut): The :class:`Donut` model instance.
-        n_z (int or None): Number of `z` samples to take for each `x`.
-            If :obj:`None`, one sample without explicit sampling dimension.
-            (default 1024)
-        mcmc_iteration: (int or tf.Tensor): Iteration count for MCMC
-            missing csv_data imputation. (default 10)
-        batch_size (int): Size of each mini-batch for prediction.
+        model (Donut): :class:`Donut` 模型实例
+        n_z (int or None): 每个x的z样本数量
+            (default 1024，如果为 :obj:`None`,则是一个没有明确抽样维度的样本。)
+        mcmc_iteration: (int or tf.Tensor): MCMC缺失点注入的迭代计数。
+            (default 10)
+        batch_size (int): 用于预测的每个小切片的大小。
             (default 32)
-        feed_dict (dict[tf.Tensor, any]): User provided feed dict for
-            prediction. (default :obj:`None`)
-        last_point_only (bool): Whether to obtain the reconstruction
-            probability of only the last point in each window?
+        feed_dict (dict[tf.Tensor, any]): 用户提供的用于预测的提要字典。
+            (default :obj:`None`)
+        last_point_only (bool): 是否只获取每个窗口最后一点的重构概率
             (default :obj:`True`)
         name (str): Optional name of this predictor
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
-        scope (str): Optional scope of this predictor
+        scope (str): 这个预测器的可选范围
             (argument of :class:`tfsnippet.utils.VarScopeObject`).
     """
 
@@ -41,26 +39,32 @@ class DonutPredictor(VarScopeObject):
         self._n_z = n_z
         self._mcmc_iteration = mcmc_iteration
         self._batch_size = batch_size
+        # 有提要字典
         if feed_dict is not None:
+            # Tensor字典->字典迭代器->字典
             self._feed_dict = dict(six.iteritems(feed_dict))
         else:
             self._feed_dict = {}
         self._last_point_only = last_point_only
 
+        # 重新打开指定的变量作用域及其原始名称作用域。
         with reopen_variable_scope(self.variable_scope):
-            # input placeholders
+            # 输入占位符
             self._input_x = tf.placeholder(
                 dtype=tf.float32, shape=[None, model.x_dims], name='input_x')
             self._input_y = tf.placeholder(
                 dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
 
-            # outputs of interest
+            # 感兴趣的输出
             self._score = self._score_without_y = None
 
     def _get_score(self):
+        """
+        获取分数
+        Returns:分数
+        """
         if self._score is None:
-            with reopen_variable_scope(self.variable_scope), \
-                    tf.name_scope('score'):
+            with reopen_variable_scope(self.variable_scope), tf.name_scope('score'):
                 self._score = self.model.get_score(
                     x=self._input_x,
                     y=self._input_y,
@@ -71,6 +75,11 @@ class DonutPredictor(VarScopeObject):
         return self._score
 
     def _get_score_without_y(self):
+        """
+        没有y时获取分数
+        Returns:
+            没有y时获取的分数
+        """
         if self._score_without_y is None:
             with reopen_variable_scope(self.variable_scope), \
                     tf.name_scope('score_without_y'):
@@ -84,52 +93,51 @@ class DonutPredictor(VarScopeObject):
     @property
     def model(self):
         """
-        Get the :class:`Donut` model instance.
+       获得 :class:`Donut` 模型实例
 
         Returns:
-            Donut: The :class:`Donut` model instance.
+            Donut: :class:`Donut` 模型实例
         """
         return self._model
 
     def get_score(self, values, missing=None):
         """
-        Get the `reconstruction probability` of specified KPI observations.
+        获取指定KPI监测数据的“重构概率”。
 
-        The larger `reconstruction probability`, the less likely a point
-        is anomaly.  You may take the negative of the score, if you want
-        something to directly indicate the severity of anomaly.
+        “重建概率”越大，异常点的可能性就越小。如果想要直接表明异常的严重程度，可以取这个分数的负值。
 
         Args:
-            values (np.ndarray): 1-D float32 array, the KPI observations.
-            missing (np.ndarray): 1-D int32 array, the indicator of missing
-                points.  If :obj:`None`, the MCMC missing csv_data imputation
-                will be disabled. (default :obj:`None`)
+            values (np.ndarray): 一维32位浮点数数组，KPI监测数据
+            missing (np.ndarray): 一维32位整型数组，指明缺失点
+                (default :obj:`None`，如果为 :obj:`None`, 不会进行缺失点注入 )
 
         Returns:
-            np.ndarray: The `reconstruction probability`,
-                1-D array if `last_point_only` is :obj:`True`,
-                or 2-D array if `last_point_only` is :obj:`False`.
+            np.ndarray: 重构概率，`last_point_only`
+                如果是 :obj:`True`，就是一维数组，`last_point_only`
+                如果是 :obj:`False`，就是二维数组
         """
         with tf.name_scope('DonutPredictor.get_score'):
             sess = get_default_session_or_error()
             collector = []
 
-            # validate the arguments
+            # 校验参数
             values = np.asarray(values, dtype=np.float32)
             if len(values.shape) != 1:
-                raise ValueError('`values` must be a 1-D array')
+                raise ValueError('`values` 必须为一维数组')
 
-            # run the prediction in mini-batches
+            # 对每个小切片进行预测
+            # 滑动窗口
             sliding_window = BatchSlidingWindow(
                 array_size=len(values),
                 window_size=self.model.x_dims,
-                batch_size=self._batch_size,
+                batch_size=self._batch_size
             )
+            # 有缺失点
             if missing is not None:
                 missing = np.asarray(missing, dtype=np.int32)
+                # 缺失点shape必须与values的shape相同
                 if missing.shape != values.shape:
-                    raise ValueError('The shape of `missing` does not agree with the shape of `values` ({} vs {})'.
-                                     format(missing.shape, values.shape))
+                    raise ValueError('`missing` 的形状必须与`values`的形状相同 ({} vs {})'.format(missing.shape, values.shape))
                 for b_x, b_y in sliding_window.get_iterator([values, missing]):
                     feed_dict = dict(six.iteritems(self._feed_dict))
                     feed_dict[self._input_x] = b_x
@@ -144,6 +152,6 @@ class DonutPredictor(VarScopeObject):
                                    feed_dict=feed_dict)
                     collector.append(b_r)
 
-            # merge the results of mini-batches
+            # 合并小切片的数据
             result = np.concatenate(collector, axis=0)
             return result

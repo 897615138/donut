@@ -8,7 +8,7 @@ from donut.utils import mini_batch_slices_iterator, BatchSlidingWindow
 
 class MiniBatchSlicesIteratorTestCase(unittest.TestCase):
 
-    def test_minibatch_slices_iterator(self):
+    def test_mini_batch_slices_iterator(self):
         self.assertEqual(
             list(mini_batch_slices_iterator(0, 10, False)),
             []
@@ -55,7 +55,7 @@ class BatchSlidingWindowTestCase(unittest.TestCase):
             _ = BatchSlidingWindow(10, 5, 3, excludes=np.arange(9))
 
     def test_validate_arrays(self):
-        with pytest.raises(ValueError, match='`arrays` must not be empty'):
+        with pytest.raises(ValueError, match='`arrays` 必须不为空'):
             _ = next(BatchSlidingWindow(10, 5, 3).get_iterator([]))
         with pytest.raises(
                 ValueError, match=r'The shape of `arrays\[1\]` is expected '
