@@ -222,7 +222,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
         train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
         mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
         accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-        test_timestamps, test_values, test_scores \
+        test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
             = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
 
         show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
@@ -237,7 +237,12 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
                    .format(train_data_num, train_label_num, train_label_proportion,
                            test_data_num, test_label_num, test_label_proportion, third_time))
         print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
-
+        print_text(use_plt, "构建Donut模型【共用时{}】\n"
+                            "构建训练器【共用时{}】\n"
+                            "构造预测器【共用时{}】\n"
+                            "训练模型【共用时{}】\n"
+                            "获得重构概率【共用时{}】".format(model_time, trainer_time, predictor_time, fit_time,
+                                                   probability_time))
         show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
         print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
         show_test_score(use_plt, test_timestamps, test_values, test_scores)
@@ -250,6 +255,14 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
 
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
+    """
+    非缓存运行
+    Args:
+        use_plt: 展示方式使用plt？
+        file_name: 文件名
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+    """
     start_time = time.time()
     src_timestamps, src_labels, src_values = gain_data("sample_data/" + file_name)
     end_time = time.time()
@@ -260,26 +273,31 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     # 原数据标签占比
     src_label_proportion = src_label_num / src_data_num
     first_time = get_time(start_time, end_time)
+    # 显示原始数据信息
     show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
                .format(src_data_num, src_label_num, src_label_proportion, first_time))
     start_time = time.time()
+    # 处理时间戳 获得缺失点
     fill_timestamps, src_misses, fill_values, fill_labels = fill_data(src_timestamps, src_labels, src_values)
     end_time = time.time()
     fill_data_num = fill_timestamps.size
     fill_num = fill_data_num - src_data_num
+    # 显示填充信息
     show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
     fill_step = fill_timestamps[1] - fill_timestamps[0]
     second_time = get_time(start_time, end_time)
     print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
                .format(fill_data_num, fill_step, fill_num, second_time))
+    # 获得测试与训练数据集
     start_time = time.time()
     train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamps, test_timestamps = \
         get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion)
     end_time = time.time()
     third_time = get_time(start_time, end_time)
-    show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
-                          test_values)
+    # 显示测试与训练数据集
+    show_prepare_data_one \
+        (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
     train_data_num = train_values.size
     train_label_num = np.sum(train_labels == 1)
     train_label_proportion = train_label_num / train_data_num
@@ -291,29 +309,37 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                         "【填充缺失数据,共用时{}】"
                .format(train_data_num, train_label_num, train_label_proportion,
                        test_data_num, test_label_num, test_label_proportion, third_time))
-
+    # 标准化数据
     start_time = time.time()
     train_values, test_values, train_missing, train_labels, mean, std = \
         standardize_data(train_labels, train_missing, train_values, test_values)
     end_time = time.time()
     forth_time = get_time(start_time, end_time)
-    show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
-                          test_values)
+    # 显示标准化后的数据
+    show_prepare_data_one \
+        (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
     print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
+    # 进行训练，预测，获得重构概率
     start_time = time.time()
-    test_scores, epoch_list, lr_list, epoch_time = \
-        train_prediction(train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+    refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
+        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, mean, std)
     end_time = time.time()
-    test_scores, zero_num = handle_test_data(test_scores, test_values.size)
     fifth_time = get_time(start_time, end_time)
+    # 显示退火学习率过程
     show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
     print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
+    # 获得重构概率对应分数
+    test_scores, zero_num = handle_test_data(refactor_probability, test_values.size)
+    # 显示分数
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
+    # 根据分数捕获异常 获得阈值
     labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
         catch_label(use_plt, test_labels, test_scores, zero_num, src_threshold_value)
     print_text(use_plt, "默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
+    # 如果有标签准确率 显示
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
+    # 比较异常标注与捕捉的异常的信息
     special_anomaly_index = list(set(catch_index) - set(labels_index))
     special_anomaly_t = test_timestamps[special_anomaly_index]
     special_anomaly_s = test_scores[special_anomaly_index]
@@ -327,7 +353,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
-                    test_label_num,
-                    test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
-                    catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
-                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores)
+                    test_label_num, test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time,
+                    fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
+                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
+                    model_time, trainer_time, predictor_time, fit_time, probability_time)

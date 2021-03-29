@@ -13,10 +13,32 @@ __all__ = ['Donut']
 
 
 def softplus_std(inputs, units, epsilon, name):
+    """
+    计算softplus: `log(exp(features) + 1)`再加上偏移量epsilon。
+    Args:
+        inputs: 输入
+        units: x维数量
+        epsilon: x和z的标准差最小值
+        name: 模块名
+
+    Returns:
+        softplus: `log(exp(features) + 1)`再加上偏移量epsilon
+    """
     return tf.nn.softplus(tf.layers.dense(inputs, units, name=name)) + epsilon
 
 
 def wrap_params_net(inputs, h_for_dist, mean_layer, std_layer):
+    """
+    包装网络
+    Args:
+        inputs: 输入
+        h_for_dist: (Module or (tf.Tensor) -> tf.Tensor):
+            隐藏网络 `p(x|z)`或者`q(z|x)`
+        mean_layer: 输出空间维度为x维数量的层
+        std_layer:输出空间维度为x维数量的层的softplus再加上偏移量的层
+    Returns：
+        平均值，标准差
+    """
     with tf.variable_scope('hidden'):
         h = h_for_dist(inputs)
     return {
@@ -66,10 +88,15 @@ class Donut(VarScopeObject):
 
         super(Donut, self).__init__(name=name, scope=scope)
         with reopen_variable_scope(self.variable_scope):
+            # 基于VAE构造
             self._vae = VAE(
+                # p(z)：均值和标准差都为z维数量大小的全零数组的一元正态分布
                 p_z=Normal(mean=tf.zeros([z_dims]), std=tf.ones([z_dims])),
+                # p(x|h(z))：一元正态分布
                 p_x_given_z=Normal,
+                # q(z|h(x))：`一元正态分布
                 q_z_given_x=Normal,
+                # p(x|h(z))的隐藏网络：mean、std，由p(x|z)隐藏网络输入获得
                 h_for_p_x=Lambda(
                     partial(
                         wrap_params_net,
@@ -84,6 +111,7 @@ class Donut(VarScopeObject):
                     ),
                     name='p_x_given_z'
                 ),
+                # q(z|h(x))的隐藏网络：mean、std，由q(z|x)隐藏网络输入获得
                 h_for_q_z=Lambda(
                     partial(
                         wrap_params_net,
