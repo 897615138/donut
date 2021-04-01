@@ -260,16 +260,12 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
         sorted_time_list = sorted(time_list)
         s_time = []
         n_time = []
-        print_text(use_plt, "用时排名")
-        last_time = time.time()
+        print_text(use_plt, "用时排名正序")
         for i, t in enumerate(sorted_time_list):
-            print_text(use_plt, "第{},{}用时{}".format(i, t.name, t.use))
+            print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
             s_time.append(t.use)
             n_time.append(t.name)
-            if i == 0:
-                last_time = t.use
-            else:
-                print_text("与上一位相差{}", last_time - t.use)
+
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     """
@@ -366,6 +362,20 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
     for i, t in enumerate(special_anomaly_t):
         print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
+    # 比较用时时间
+    time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
+                 TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),
+                 TimeUse(trainer_time, "6.构造训练器"), TimeUse(predictor_time, "7.构造预测器"),
+                 TimeUse(fit_time, "8.训练模型"), TimeUse(probability_time, "9.获得重构概率")]
+    time_list = np.array(time_list)
+    sorted_time_list = sorted(time_list)
+    s_time = []
+    n_time = []
+    print_text(use_plt, "用时排名正序")
+    for i, t in enumerate(sorted_time_list):
+        print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
+        s_time.append(t.use)
+        n_time.append(t.name)
     save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
