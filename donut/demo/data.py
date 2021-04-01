@@ -266,7 +266,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
             n_time.append(t.name)
         print_text(use_plt, "为使比较结果明显，将所有时间*100000")
         chart_data = pd.DataFrame(
-            s_time,
+            [s_time],
             columns=n_time)
         bar_chart(use_plt, chart_data)
 
