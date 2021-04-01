@@ -26,8 +26,41 @@ def test_percent():
         special_anomaly_s = test_score[special_anomaly_index]
         print(special_anomaly_t, special_anomaly_t)
 
+
 def test_reduce_mean():
     x = [[1., 2.], [3., 4.]]
-    mean1 = tf.reduce_mean(x,-1)
-    mean2= tf.reduce_mean(x,1)
-    print(mean1,mean2)
+    mean1 = tf.reduce_mean(x, -1)
+    mean2 = tf.reduce_mean(x, 1)
+    print(mean1, mean2)
+
+
+def test_get_constant_time():
+    timestamps = [1470014700, 1470017100, 1470024300, 1470030600, 1470033300, 1470034200,
+                  1470036300, 1470074100, 1470075300]
+    step = 100
+
+    has_dot = False
+    has_head = False
+    interval_str = ''
+    last = 0
+    interval_num = 0
+
+    for i, t in enumerate(timestamps):
+        if not has_head:
+            interval_str = interval_str + str(t) + " "
+            has_head = True
+            last = t
+            interval_num = interval_num + 1
+        else:
+            if int(t) == int(last) + int(step):
+                if not has_dot:
+                    interval_str = interval_str + "..."
+                    has_dot = True
+                else:
+                    last = t
+            else:
+                interval_str = interval_str + str(last) + " "
+                last = t
+                has_head = False
+                has_dot = False
+    print(interval_str)

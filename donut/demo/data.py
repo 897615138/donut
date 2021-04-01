@@ -167,7 +167,7 @@ def get_threshold_value_label(labels_score, test_score, labels_num):
         catch_index = np.where(test_score > float(score))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
-        if 0.9 < accuracy <= 1:
+        if 0.99 < accuracy <= 1:
             return score, catch_num, catch_index, accuracy
         elif accuracy > 1:
             return labels_score[i - 1], catch_num, catch_index, accuracy
@@ -195,7 +195,7 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
-        if accuracy <= 0.9:
+        if accuracy <= 0.99:
             print_text(use_plt, "建议提高阈值或使用【默认阈值】")
         elif accuracy > 1:
             print_text(use_plt, "建议降低阈值或使用【默认阈值】")
