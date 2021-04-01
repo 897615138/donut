@@ -89,7 +89,7 @@ def get_constant_timestamp(use_plt, timestamps, step):
         return None
     else:
         timestamps = np.sort(timestamps)
-        print_text(timestamps)
+        print_text(use_plt,timestamps)
         print_text(use_plt, "其中时间戳分布为")
         has_dot = 0
         has_head = 0

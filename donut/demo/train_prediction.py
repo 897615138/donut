@@ -8,10 +8,12 @@ from donut import Donut, DonutTrainer, DonutPredictor, get_time
 from donut.demo.out import print_text
 
 
-def train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, train_mean, train_std, valid_num):
+def train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
+                     train_mean, train_std, valid_num):
     """
     训练与预测
     Args:
+        test_labels: 测试数据异常标签
         valid_num: 测试数据数量
         use_plt: 使用plt输出
         train_values: 训练数据值
@@ -77,7 +79,8 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
             # 4.训练模型
             start_time = time.time()
             epoch_list, lr_list, epoch_time = \
-                trainer.fit(train_values=train_values, train_labels=train_labels, train_missing=train_missing, train_mean=train_mean, train_std=train_std, valid_num=valid_num)
+                trainer.fit(train_values, train_labels, train_missing, test_values, test_labels, test_missing,
+                            valid_num, train_mean, train_std, valid_num)
             end_time = time.time()
             fit_time = get_time(start_time, end_time)
             print_text(use_plt, "训练器训练模型【共用时{}】".format(fit_time))

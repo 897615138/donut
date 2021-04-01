@@ -340,7 +340,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     # 进行训练，预测，获得重构概率
     start_time = time.time()
     refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
-        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, train_mean,
+        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,train_mean,
                          train_std,
                          test_data_num)
     end_time = time.time()
