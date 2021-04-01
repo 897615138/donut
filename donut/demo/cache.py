@@ -10,13 +10,14 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
-                    test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
-                    catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
+                    test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time,
+                    fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
-                    model_time, trainer_time, predictor_time, fit_time, probability_time):
+                    model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value):
     """
     保存缓存对象
     Args:
+        threshold_value: 阈值
         use_plt: 展示方式
         file_name: 文件名
         test_portion: 测试数据比例
@@ -114,6 +115,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db["predictor_time"] = predictor_time
     db["fit_time"] = fit_time
     db["probability_time"] = probability_time
+    db["threshold_value"] = threshold_value
     end_time = time.time()
     print_text(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
@@ -175,6 +177,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
         predictor_time: 构建预测期用时
         fit_time: 训练时长
         probability_time: 获得重构概率用时
+        threshold_value: 阈值
     """
     print_text(use_plt, "读取缓存开始")
     start_time = time.time()
@@ -222,6 +225,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     model_time = db["model_time"]
     trainer_time = db["trainer_time"]
     predictor_time = db["predictor_time"]
+    threshold_value = db["threshold_value"]
     fit_time = db["fit_time"]
     probability_time = db["probability_time"]
     end_time = time.time()
@@ -232,7 +236,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
            train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
            accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time
+           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value
 
 
 def is_has_cache(file_name, test_portion, src_threshold_value):

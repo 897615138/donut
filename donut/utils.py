@@ -89,7 +89,7 @@ def get_constant_timestamp(use_plt, timestamps, step):
         return None
     else:
         timestamps = np.sort(timestamps)
-        print_text(use_plt,timestamps)
+        print_text(use_plt, timestamps)
         print_text(use_plt, "其中时间戳分布为")
         has_dot = False
         has_head = False
@@ -135,17 +135,15 @@ def handle_src_threshold_value(src_threshold_value):
 
 def compute_default_threshold_value(values):
     """
-    默认阈值 至少10个数据，至多20个数据
+    默认阈值 至多10个数据
     Args:
         values: 数据集
     Returns: 默认阈值
     """
     values = np.sort(values)
     num = np.size(values)
-    count = round(num * 0.1 / 100)
-    if count >= 20:
-        return values[num - 20]
-    elif count <= 10:
+    count = round(num * 0.01 / 100)
+    if count >= 10:
         return values[num - 10]
     else:
         return values[num - count]

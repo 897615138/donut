@@ -49,7 +49,8 @@ def prepare_data(file_name, test_portion=0.3):
     train_timestamps, test_timestamps = timestamp[:-test_amount], timestamp[-test_amount:]
     # 5.标准化训练和测试数据
     exclude_array = np.logical_or(train_labels, train_missing)
-    train_values, train_mean, train_std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
+    train_values, train_mean, train_std = standardize_kpi(train_values,
+                                                          excludes=np.asarray(exclude_array, dtype='bool'))
     test_values, _, _ = standardize_kpi(test_values, mean=train_mean, std=train_std)
     return src_timestamps, base_values, train_timestamps, train_values, test_timestamps, test_values, train_missing, test_missing, \
            train_labels, test_labels, train_mean, train_std
@@ -167,9 +168,9 @@ def get_threshold_value_label(labels_score, test_score, labels_num):
         catch_index = np.where(test_score > float(score))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
-        if 0.99 < accuracy <= 1:
+        if 0.9 < accuracy <= 1:
             return score, catch_num, catch_index, accuracy
-        elif accuracy > 1:
+        else:
             return labels_score[i - 1], catch_num, catch_index, accuracy
 
 
@@ -195,7 +196,7 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
-        if accuracy <= 0.99:
+        if accuracy <= 0.9:
             print_text(use_plt, "建议提高阈值或使用【默认阈值】")
         elif accuracy > 1:
             print_text(use_plt, "建议降低阈值或使用【默认阈值】")
@@ -205,8 +206,8 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         catch_num = np.size(catch_index)
     else:
         labels_score = test_scores[labels_index]
-        threshold_value, catch_num, catch_index, accuracy = get_threshold_value_label(labels_score,
-                                                                                      test_scores, labels_num)
+        threshold_value, catch_num, catch_index, accuracy = get_threshold_value_label(labels_score, test_scores,
+                                                                                      labels_num)
         # 准确度
         accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
@@ -228,7 +229,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
     accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
     test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-        = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
+        , threshold_value = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
 
     show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
@@ -251,6 +252,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
     print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
+    print_text(use_plt, "阈值：{},根据阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
     print_text(use_plt,
@@ -340,7 +342,8 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     # 进行训练，预测，获得重构概率
     start_time = time.time()
     refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
-        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,train_mean,
+        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
+                         train_mean,
                          train_std,
                          test_data_num)
     end_time = time.time()
@@ -355,7 +358,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     # 根据分数捕获异常 获得阈值
     labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
         catch_label(use_plt, test_labels, test_scores, zero_num, src_threshold_value)
-    print_text(use_plt, "默认阈值：{},根据默认阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
+    print_text(use_plt, "阈值：{},根据阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
     # 如果有标签准确率 显示
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
