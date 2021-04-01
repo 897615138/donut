@@ -3,12 +3,13 @@ import csv
 import time
 
 import numpy as np
+import pandas as pd
 
 from donut import complete_timestamp, standardize_kpi
 from donut.demo.cache import gain_data_cache, save_data_cache
-from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score
+from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score, bar_chart
 from donut.demo.train_prediction import train_prediction
-from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp
+from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp, TimeUse
 
 __all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', 'standardize_data', 'handle_test_data',
            'get_threshold_value_label', 'catch_label', 'show_cache_data', 'show_new_data']
@@ -252,6 +253,21 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
                    "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
         for i, t in enumerate(special_anomaly_t):
             print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
+        time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
+                     TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),
+                     TimeUse(trainer_time, "6.构造训练器"), TimeUse(predictor_time, "7.构造预测器"),
+                     TimeUse(fit_time, "8.训练模型"), TimeUse(probability_time, "9.获得重构概率")]
+        time_list = np.array(time_list)
+        sorted_time_list = sorted(time_list)
+        s_time = []
+        n_time = []
+        for t in sorted_time_list:
+            s_time.append(t.use)
+            n_time.append(t.name)
+            chart_data = pd.DataFrame(
+                [s_time],
+                columns=n_time)
+            bar_chart(use_plt, chart_data)
 
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):

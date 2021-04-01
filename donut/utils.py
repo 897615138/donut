@@ -8,6 +8,23 @@ __all__ = ['get_time', 'get_constant_timestamp', 'file_name_converter', 'mini_ba
 from donut.demo.out import print_text
 
 
+class TimeUse:
+    def __init__(self, use, name):
+        self.use = use
+        self.name = name
+
+    def __str__(self):
+        return self.name + "【用时：{}】".format(self.use)
+
+    def __cmp__(self, other):
+        if self.use < other.use:
+            return 1
+        elif self.use == other.use:
+            return 0
+        else:
+            return -1
+
+
 def format_time(atime):
     """
     格式化时间
@@ -19,6 +36,7 @@ def format_time(atime):
 
     """
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(atime))
+
 
 def get_time(start_time, end_time):
     """

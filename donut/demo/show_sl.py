@@ -76,3 +76,12 @@ def dot_chart(x, y, name):
     """
     df = pd.DataFrame(y, index=x, columns=[name])
     st.table(df)
+
+
+def bar_chart(chart_data):
+    """
+    柱状图
+    Args:
+        chart_data: 数据
+    """
+    st.bar_chart(chart_data)

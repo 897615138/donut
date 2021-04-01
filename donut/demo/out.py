@@ -21,7 +21,11 @@ def print_text(use_plt, content):
         print(content)
     else:
         sl.text(content)
-
+def bar_chart(use_plt,chart_data):
+    if use_plt:
+        pass
+    else:
+        sl.bar_chart(chart_data)
 
 def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
                           test_values):
