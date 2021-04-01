@@ -145,6 +145,8 @@ def compute_default_threshold_value(values):
     count = round(num * 0.01 / 100)
     if count >= 10:
         return values[num - 10]
+    elif count <= 0:
+        return 2 * values[num - 1] - values[num - 2]
     else:
         return values[num - count]
 
