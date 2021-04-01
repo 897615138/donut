@@ -86,10 +86,10 @@ def get_constant_timestamp(use_plt, timestamps, step):
 
     """
     if np.size(timestamps) == 0:
-        return None
+        return 0,None
     else:
         timestamps = np.sort(timestamps)
-        print_text(use_plt,timestamps)
+        print_text(use_plt, timestamps)
         print_text(use_plt, "其中时间戳分布为")
         has_dot = False
         has_head = False
@@ -116,6 +116,7 @@ def get_constant_timestamp(use_plt, timestamps, step):
                     has_head = False
                     has_dot = False
         return interval_num, interval_str
+
 
 def handle_src_threshold_value(src_threshold_value):
     """
