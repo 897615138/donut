@@ -16,6 +16,15 @@ class TimeUse:
     def __str__(self):
         return self.name + "【用时：{}】".format(self.use)
 
+    def __eq__(self, other):
+        return self.use == other.use
+
+    def __lt__(self, other):
+        return self.use < other.use
+
+    def __gt__(self, other):
+        return self.use > other.use
+
     def __cmp__(self, other):
         if self.use < other.use:
             return 1
