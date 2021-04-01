@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 __all__ = ['get_time', 'get_constant_timestamp', 'file_name_converter', 'mini_batch_slices_iterator',
@@ -5,6 +7,18 @@ __all__ = ['get_time', 'get_constant_timestamp', 'file_name_converter', 'mini_ba
 
 from donut.demo.out import print_text
 
+
+def format_time(atime):
+    """
+    格式化时间
+    Args:
+        atime: 时间戳
+
+    Returns:
+        格式化后的时间
+
+    """
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(atime))
 
 def get_time(start_time, end_time):
     """

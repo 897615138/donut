@@ -3,7 +3,7 @@ import shelve
 import time
 
 from donut.demo.out import print_text
-from donut.utils import get_time, file_name_converter
+from donut.utils import get_time, file_name_converter, format_time
 
 
 def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
@@ -14,6 +14,58 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
                     model_time, trainer_time, predictor_time, fit_time, probability_time):
+    """
+    保存缓存对象
+    Args:
+        use_plt: 展示方式
+        file_name: 文件名
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+        src_timestamps: 初始时间戳数据
+        src_labels: 初始异常标签
+        src_values: 初始值
+        src_data_num: 初始数据数量
+        src_label_num: 初始异常标签数量
+        src_label_proportion: 初始异常标签所占比例
+        first_time: 第一阶段使用时间
+        fill_timestamps: 排序并填充的时间戳
+        fill_values: 排序并填充的值
+        fill_data_num: 填充后的数据数量
+        fill_step: 填充后时间戳步长
+        fill_num: 填充的数据的数量
+        second_time: 第二阶段的用时
+        third_time: 第三阶段用时
+        train_data_num: 训练数据数量
+        train_label_num: 训练数据标签数量
+        train_label_proportion: 训练数据中的异常标签比例
+        test_data_num: 测试数据数量
+        test_label_num: 测试数据中异常标签数量
+        test_label_proportion: 测试数据中异常标签比例
+        mean: 平均值
+        std: 标准差
+        forth_time: 第四阶段用时
+        epoch_list: 迭代遍数
+        lr_list: 学习率
+        epoch_time: 迭代时间
+        fifth_time: 第五阶段用时
+        catch_num: 根据阈值捕捉到的数量
+        labels_num: 异常标注数量
+        accuracy: 异常标注精确率
+        special_anomaly_num: 被捕捉到的异常数量
+        interval_num: 连续的异常段数量
+        interval_str: 连续异常段字符串
+        special_anomaly_t: 被捕捉到的异常的时间戳
+        special_anomaly_v: 被捕捉到的异常的值
+        special_anomaly_s: 被捕捉到的异常的分数
+        test_timestamps: 测试数据时间戳
+        test_values: 测试数据值
+        test_scores: 测试数据分数
+        model_time: 构建模型用时
+        trainer_time: 构建训练器用时
+        predictor_time: 构建预测期用时
+        fit_time: 训练时长
+        probability_time: 获得重构概率用时
+    """
     print_text(use_plt, "缓存开始")
     start_time = time.time()
     db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
@@ -68,6 +120,62 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
 
 
 def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
+    """
+    获得缓存数据
+    Args:
+        use_plt: 显示格式
+        file_name: 数据文件名称
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+
+    Returns:
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+        src_timestamps: 初始时间戳数据
+        src_labels: 初始异常标签
+        src_values: 初始值
+        src_data_num: 初始数据数量
+        src_label_num: 初始异常标签数量
+        src_label_proportion: 初始异常标签所占比例
+        first_time: 第一阶段使用时间
+        fill_timestamps: 排序并填充的时间戳
+        fill_values: 排序并填充的值
+        fill_data_num: 填充后的数据数量
+        fill_step: 填充后时间戳步长
+        fill_num: 填充的数据的数量
+        second_time: 第二阶段的用时
+        third_time: 第三阶段用时
+        train_data_num: 训练数据数量
+        train_label_num: 训练数据标签数量
+        train_label_proportion: 训练数据中的异常标签比例
+        test_data_num: 测试数据数量
+        test_label_num: 测试数据中异常标签数量
+        test_label_proportion: 测试数据中异常标签比例
+        mean: 平均值
+        std: 标准差
+        forth_time: 第四阶段用时
+        epoch_list: 迭代遍数
+        lr_list: 学习率
+        epoch_time: 迭代时间
+        fifth_time: 第五阶段用时
+        catch_num: 根据阈值捕捉到的数量
+        labels_num: 异常标注数量
+        accuracy: 异常标注精确率
+        special_anomaly_num: 被捕捉到的异常数量
+        interval_num: 连续的异常段数量
+        interval_str: 连续异常段字符串
+        special_anomaly_t: 被捕捉到的异常的时间戳
+        special_anomaly_v: 被捕捉到的异常的值
+        special_anomaly_s: 被捕捉到的异常的分数
+        test_timestamps: 测试数据时间戳
+        test_values: 测试数据值
+        test_scores: 测试数据分数
+        model_time: 构建模型用时
+        trainer_time: 构建训练器用时
+        predictor_time: 构建预测期用时
+        fit_time: 训练时长
+        probability_time: 获得重构概率用时
+    """
     print_text(use_plt, "读取缓存开始")
     start_time = time.time()
     db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
@@ -128,5 +236,25 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
 
 
 def is_has_cache(file_name, test_portion, src_threshold_value):
+    """
+    是否有对应缓存+缓存时间
+    Args:
+        file_name: 文件名称
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+
+    Returns:
+        是否存在缓存
+        缓存文件信息
+    """
     name = file_name_converter(file_name, test_portion, src_threshold_value)
-    return os.path.exists(name + '.db')
+    cache_name = name + '.db'
+    exist = os.path.exists(cache_name)
+    if exist:
+        file = os.stat(cache_name)
+        return exist, "该配置有缓存,建议使用缓存数据\n" \
+                      "文件名：{},文件大小：{} 字节\n" \
+                      "最后一次访问时间:{},最后一次修改时间：{}" \
+            .format(cache_name, file.st_size, format_time(file.st_atime), format_time(file.st_mtime))
+    else:
+        return exist, "该配置无缓存,默认缓存数据"

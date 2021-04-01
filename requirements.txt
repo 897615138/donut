@@ -1,13 +1,14 @@
 git+https://github.com.cnpmjs.org/thu-ml/zhusuan.git
 git+https://github.com.cnpmjs.org/haowen-xu/tfsnippet.git@v0.1.2
+git+https://github.com.cnpmjs.org/897615138/donut.git
+
 numpy
 six
 matplotlib
 streamlit
 donut
-tensorflow
+tensorflow >=1.15.0
 pytest
 mock
 setuptools
 pandas
-altair
