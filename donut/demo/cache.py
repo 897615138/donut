@@ -10,7 +10,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
-                    test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
+                    test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time,
                     catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
                     model_time, trainer_time, predictor_time, fit_time, probability_time):
@@ -41,8 +41,8 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
         test_data_num: 测试数据数量
         test_label_num: 测试数据中异常标签数量
         test_label_proportion: 测试数据中异常标签比例
-        mean: 平均值
-        std: 标准差
+        train_mean: 平均值
+        train_std: 标准差
         forth_time: 第四阶段用时
         epoch_list: 迭代遍数
         lr_list: 学习率
@@ -89,8 +89,8 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db["test_data_num"] = test_data_num
     db["test_label_num"] = test_label_num
     db["test_label_proportion"] = test_label_proportion
-    db["mean"] = mean
-    db["std"] = std
+    db["train_mean"] = train_mean
+    db["train_std"] = train_std
     db["forth_time"] = forth_time
     db["epoch_list"] = epoch_list
     db["lr_list"] = lr_list
@@ -151,8 +151,8 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
         test_data_num: 测试数据数量
         test_label_num: 测试数据中异常标签数量
         test_label_proportion: 测试数据中异常标签比例
-        mean: 平均值
-        std: 标准差
+        train_mean: 平均值
+        train_std: 标准差
         forth_time: 第四阶段用时
         epoch_list: 迭代遍数
         lr_list: 学习率
@@ -199,8 +199,8 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     test_data_num = db["test_data_num"]
     test_label_num = db["test_label_num"]
     test_label_proportion = db["test_label_proportion"]
-    mean = db["mean"]
-    std = db["std"]
+    train_mean = db["train_mean"]
+    train_std = db["train_std"]
     forth_time = db["forth_time"]
     epoch_list = db["epoch_list"]
     lr_list = db["lr_list"]
@@ -230,7 +230,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
-           mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
+           train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
            accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
            test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time
 

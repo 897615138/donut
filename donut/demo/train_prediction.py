@@ -8,18 +8,19 @@ from donut import Donut, DonutTrainer, DonutPredictor, get_time
 from donut.demo.out import print_text
 
 
-def train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, mean, std):
+def train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, train_mean, train_std, valid_num):
     """
     训练与预测
     Args:
+        valid_num: 测试数据数量
         use_plt: 使用plt输出
-        train_values: 训练数据
+        train_values: 训练数据值
         train_labels: 训练数据异常标签
         train_missing: 训练数据缺失点
         test_values: 测试数据
         test_missing: 测试数据缺失点
-        mean: 平均值
-        std: 标准差
+        train_mean: 平均值
+        train_std: 标准差
 
     Returns:
         refactor_probability:  重构概率
@@ -76,14 +77,14 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
             # 4.训练模型
             start_time = time.time()
             epoch_list, lr_list, epoch_time = \
-                trainer.fit(values=train_values, labels=train_labels, missing=train_missing, mean=mean, std=std)
+                trainer.fit(train_values=train_values, train_labels=train_labels, train_missing=train_missing, train_mean=train_mean, train_std=train_std, valid_num=valid_num)
             end_time = time.time()
             fit_time = get_time(start_time, end_time)
-            print_text(use_plt, "训练模型【共用时{}】".format(fit_time))
+            print_text(use_plt, "训练器训练模型【共用时{}】".format(fit_time))
             # 5.获取重构概率
             start_time = time.time()
             refactor_probability = predictor.get_score(test_values, test_missing)
             end_time = time.time()
             probability_time = get_time(start_time, end_time)
-            print_text(use_plt, "获取重构概率【共用时{}】".format(probability_time))
+            print_text(use_plt, "预测器获取重构概率【共用时{}】".format(probability_time))
             return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time

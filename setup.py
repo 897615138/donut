@@ -30,7 +30,7 @@ requirements_list = list(filter(
     lambda v: v and not v.startswith('#'),
     (s.strip() for s in read_file(os.path.join(_source_dir, 'requirements.txt')).split('\n'))
 ))
-suffix = 'git+'
+suffix = "git+"
 dependency_links = [s for s in requirements_list if s.startswith(suffix)]
 install_requires = [s for s in requirements_list if not s.startswith(suffix)]
 

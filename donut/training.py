@@ -36,7 +36,7 @@ class DonutTrainer(VarScopeObject):
             用户提供的训练用种子字典。
             (default :obj:`None`, 表示没有输送)
         valid_feed_dict (dict[tf.Tensor, any]):
-            用户提供的提要字典用于验证。
+            用户提供的验证用的提要字典。
             (default :obj:`None` ，即使用`feed_dict`)
         missing_data_injection_rate (float):
             缺失数据注入的比率。
@@ -99,7 +99,6 @@ class DonutTrainer(VarScopeObject):
                  grad_clip_norm=10.0, check_numerics=True,
                  name=None, scope=None):
         super(DonutTrainer, self).__init__(name=name, scope=scope)
-
         # 记忆参数
         self._model = model
         self._n_z = n_z
@@ -128,19 +127,13 @@ class DonutTrainer(VarScopeObject):
 
         # 构建训练器
         with reopen_variable_scope(self.variable_scope):
-            # 模型的全局步长
-            self._global_step = tf.get_variable(
-                dtype=tf.int64, name='global_step', trainable=False,
-                initializer=tf.constant(0, dtype=tf.int64)
-            )
-            # 输入占位符
+            # 输入占位符 x，y输入列都为x维数，学习率为一维
             self._input_x = tf.placeholder(
                 dtype=tf.float32, shape=[None, model.x_dims], name='input_x')
             self._input_y = tf.placeholder(
                 dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
             self._learning_rate = tf.placeholder(
                 dtype=tf.float32, shape=(), name='learning_rate')
-
             # 弥补训练损失
             with tf.name_scope('loss'):
                 loss = model.get_training_loss(
@@ -150,8 +143,7 @@ class DonutTrainer(VarScopeObject):
                 self._loss = loss
 
             # 获得训练变量
-            train_params = get_variables_as_dict(
-                scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
+            train_params = get_variables_as_dict(scope=model_vs, collection=tf.GraphKeys.TRAINABLE_VARIABLES)
             self._train_params = train_params
 
             # 创建训练器
@@ -160,6 +152,7 @@ class DonutTrainer(VarScopeObject):
             else:
                 optimizer_params = dict(six.iteritems(optimizer_params))
             optimizer_params['learning_rate'] = self._learning_rate
+            # 默认 实现Adam算法的优化器。
             self._optimizer = optimizer(**optimizer_params)
 
             # 推导训练梯度 对var_list中的变量计算loss的梯度
@@ -171,17 +164,24 @@ class DonutTrainer(VarScopeObject):
             for grad, var in origin_grad_vars:
                 if grad is not None and var is not None:
                     if grad_clip_norm:
+                        # 剪辑张量值到最大l2范数。
                         grad = tf.clip_by_norm(grad, grad_clip_norm)
                     if check_numerics:
+                        # 检查一个张量中的NaN和Inf值。
                         grad = tf.check_numerics(
                             grad,
                             'gradient for {} has numeric issue'.format(var.name)
                         )
                     grad_vars.append((grad, var))
 
-            # 构建训练op
-            with tf.control_dependencies(
-                    tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+            # 构建训练操作
+            # 模型的全局步长 常量初始化
+            self._global_step = tf.get_variable(
+                dtype=tf.int64, name='global_step', trainable=False,
+                initializer=tf.constant(0, dtype=tf.int64)
+            )
+            # 保证其辖域中的操作必须要在该函数所传递的参数中的操作完成后再进行。需要在训练操作之前完成的操作。
+            with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
                 # 将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作
                 self._train_op = self._optimizer.apply_gradients(
                     grad_vars, global_step=self._global_step)
@@ -192,7 +192,6 @@ class DonutTrainer(VarScopeObject):
                     tf.summary.histogram(v.name.rsplit(':', 1)[0], v)
                     for v in six.itervalues(self._train_params)
                 ])
-
             # 变量的初始化
             self._trainer_initializer = tf.variables_initializer(
                 list(six.itervalues(self.get_variables_as_dict()))
@@ -201,66 +200,63 @@ class DonutTrainer(VarScopeObject):
     @property
     def model(self):
         """
-        Get the :class:`Donut` model instance.
+        获得 :class:`Donut` 模型实例
 
         Returns:
-            Donut: The :class:`Donut` model instance.
+            Donut: :class:`Donut`模型实例
         """
         return self._model
 
-    def fit(self, values, labels, missing, mean, std, excludes=None,
-            valid_portion=0.3, summary_dir=None):
+    def fit(self, train_values, train_labels, train_missing,
+            test_values, test_labels, test_missing, valid_num,
+            train_mean, train_std, excludes=None, summary_dir=None):
         """
         根据所给数据训练:class:`Donut`模型
 
         Args:
-            values (np.ndarray):
+            valid_num: 测试数据数量
+            test_missing: 测试数据缺失值
+            test_labels: 测试数据异常标注
+            test_values: 测试数据缺失值
+            train_values (np.ndarray):
                 一维32位浮点数组，标准化的KPI数据
-            labels (np.ndarray):
+            train_labels (np.ndarray):
                 一维32位整型数组，异常标签
-            missing (np.ndarray):
+            train_missing (np.ndarray):
                 一维32位数组，指出缺失点
-            mean (float):
+            train_mean (float):
                 标准化之前的平均值
-            std (float):
+            train_std (float):
                 标准化之前的标准差
             excludes (np.ndarray):
                 一维布尔数组，表明是否包含该点，如果包含，任何包含该点的窗口都包含在内
                 (default :obj:`None`,没有点包含)
-            valid_portion (float):
-                验证数据与所有指定的训练数据之比。
-                (default 0.3)
             summary_dir (str):
                 :class:`tf.summary.FileWriter`的可选的概要目录。
                  (default :obj:`None`,无目录)
         """
         # 获得默认session
         sess = get_default_session_or_error()
-        # 分割训练和验证集
-        values = np.asarray(values, dtype=np.float32)
-        labels = np.asarray(labels, dtype=np.int32)
-        missing = np.asarray(missing, dtype=np.int32)
+        # 转化训练集
+        train_values = np.asarray(train_values, dtype=np.float32)
+        train_labels = np.asarray(train_labels, dtype=np.int32)
+        train_missing = np.asarray(train_missing, dtype=np.int32)
         # 一维数组检验
-        if len(values.shape) != 1:
+        if len(train_values.shape) != 1:
             raise ValueError('values必须是一维数组')
         # 标注维数必须与数值维数相同
-        if labels.shape != values.shape:
-            raise ValueError('`labels` 的形状必须与`values`的形状相同 ({} vs {})'.format(labels.shape, values.shape))
+        if train_labels.shape != train_values.shape:
+            raise ValueError('`labels` 的形状必须与`values`的形状相同 ({} vs {})'.format(train_labels.shape, train_values.shape))
         # 缺失点维数必须与数值维数相同
-        if missing.shape != values.shape:
-            raise ValueError('`missing` 的形状必须与`values`的形状相同 ({} vs {})'.format(missing.shape, values.shape))
-        valid_num = int(len(values) * valid_portion)
-        train_values, v_x = values[:-valid_num], values[-valid_num:]
-        train_labels, valid_labels = labels[:-valid_num], labels[-valid_num:]
-        train_missing, valid_missing = missing[:-valid_num], missing[-valid_num:]
-        v_y = np.logical_or(valid_labels, valid_missing).astype(np.int32)
+        if train_missing.shape != train_values.shape:
+            raise ValueError('`missing` 的形状必须与`values`的形状相同 ({} vs {})'.format(train_missing.shape, train_values.shape))
+        v_y = np.logical_or(test_labels, test_missing).astype(np.int32)
         if excludes is None:
             train_excludes, valid_excludes = None, None
         else:
             train_excludes, valid_excludes = excludes[:-valid_num], excludes[-valid_num:]
-
         # 数据扩展对象和滑动窗口迭代器
-        aug = MissingDataInjection(mean, std, self._missing_data_injection_rate)
+        aug = MissingDataInjection(train_mean, train_std, self._missing_data_injection_rate)
         train_sliding_window = BatchSlidingWindow(
             array_size=len(train_values),
             window_size=self.model.x_dims,
@@ -270,7 +266,7 @@ class DonutTrainer(VarScopeObject):
             ignore_incomplete_batch=True,
         )
         valid_sliding_window = BatchSlidingWindow(
-            array_size=len(v_x),
+            array_size=len(test_values),
             window_size=self.model.x_dims,
             batch_size=self._valid_batch_size,
             excludes=valid_excludes,
@@ -311,7 +307,7 @@ class DonutTrainer(VarScopeObject):
                             loop.add_summary(sess.run(self._summary_op))
                         # 批量进行验证
                         with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
-                            v_it = valid_sliding_window.get_iterator([v_x, v_y])
+                            v_it = valid_sliding_window.get_iterator([test_values, v_y])
                             for b_v_x, b_v_y in v_it:
                                 feed_dict = dict(
                                     six.iteritems(self._valid_feed_dict))

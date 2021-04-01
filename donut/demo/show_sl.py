@@ -1,10 +1,5 @@
-import matplotlib
-
-# 显示plot结果图
-
-matplotlib.use('TkAgg')
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 
 def text(content):

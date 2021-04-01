@@ -17,7 +17,7 @@ def softplus_std(inputs, units, epsilon, name):
     计算softplus: `log(exp(features) + 1)`再加上偏移量epsilon。
     Args:
         inputs: 输入
-        units: x维数量
+        units: 维数
         epsilon: x和z的标准差最小值
         name: 模块名
 
@@ -34,8 +34,8 @@ def wrap_params_net(inputs, h_for_dist, mean_layer, std_layer):
         inputs: 输入
         h_for_dist: (Module or (tf.Tensor) -> tf.Tensor):
             隐藏网络 `p(x|z)`或者`q(z|x)`
-        mean_layer: 输出空间维度为x维数量的层
-        std_layer:输出空间维度为x维数量的层的softplus再加上偏移量的层
+        mean_layer: 输出空间维度为维数量的层
+        std_layer: 输出空间维度为维数量的层的softplus再加上偏移量的层
     Returns：
         平均值，标准差
     """
@@ -94,7 +94,7 @@ class Donut(VarScopeObject):
                 p_z=Normal(mean=tf.zeros([z_dims]), std=tf.ones([z_dims])),
                 # p(x|h(z))：一元正态分布
                 p_x_given_z=Normal,
-                # q(z|h(x))：`一元正态分布
+                # q(z|h(x))：一元正态分布
                 q_z_given_x=Normal,
                 # p(x|h(z))的隐藏网络：mean、std，由p(x|z)隐藏网络输入获得
                 h_for_p_x=Lambda(
@@ -156,9 +156,9 @@ class Donut(VarScopeObject):
 
         Args:
             x (tf.Tensor):
-                二维32位浮点 :class:`tf.Tensor`，小批量的KPI观察窗口。
+                二维32位浮点 :class:`tf.Tensor`，小切片KPI观察窗口。
             y (tf.Tensor):
-                二维32位整型 :class:`tf.Tensor`,“(标签|缺失点)”在一个小批量中的窗口。
+                二维32位整型 :class:`tf.Tensor`,在一个小切片中有“(标签|缺失点)”的窗口。
             n_z (int or None):
                 每个x需要取的z样本数量。
                 (default :obj:`None`, 没有显式抽样维数的样本)
@@ -168,17 +168,23 @@ class Donut(VarScopeObject):
                 0维tensor, 训练损失（可以通过梯度下降算法进行优化）。
         """
         with tf.name_scope('Donut.training_loss'):
+            # 将变分网q(z|h(x))和模型网p(x, z|h(x))与特定的观测x连接在一起，通常用于推导VAE的训练目标。也可以用来计算x的重构概率。
             chain = self.vae.chain(x, n_z=n_z)
+            # 计算x模型网张量的对数密度。
             x_log_prob = chain.model['x'].log_prob(group_ndims=0)
+            z_log_prob = chain.model['z'].log_prob()
             alpha = tf.cast(1 - y, dtype=tf.float32)
+            # 计算张量tensor沿着指定的数轴（tensor的某一维度）上的平均值，主要用作降维或者计算tensor（图像）的平均值。
             beta = tf.reduce_mean(alpha, axis=-1)
             log_joint = (
-                    tf.reduce_sum(alpha * x_log_prob, axis=-1) +
-                    beta * chain.model['z'].log_prob()
+                    tf.reduce_sum(alpha * x_log_prob, axis=-1) + beta * z_log_prob
             )
             vi = VariationalInference(
+                # 对数节点。
                 log_joint=log_joint,
+                # 得到隐变量的对数密度。
                 latent_log_probs=chain.vi.latent_log_probs,
+                # 坐标轴或坐标轴被认为是隐变量的采样维度。指定的轴将在变化的下界或训练目标中求和。
                 axis=chain.vi.axis
             )
             loss = tf.reduce_mean(vi.training.sgvb())

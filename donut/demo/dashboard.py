@@ -20,6 +20,10 @@ button_pd = st.button("分析数据")
 if button_pd:
     # 读取缓存数据
     if remark == "使用缓存数据" and has_cache:
-        show_cache_data(False, file_name, test_portion, src_threshold_value)
+        # 防止文件缺失等异常
+        try:
+            show_cache_data(False, file_name, test_portion, src_threshold_value)
+        except Exception:
+            st.text("缓存数据损坏，请重新计算")
     else:
         show_new_data(False, file_name, test_portion, src_threshold_value)

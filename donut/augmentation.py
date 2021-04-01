@@ -61,17 +61,16 @@ class DataAugmentation(object):
 
 class MissingDataInjection(DataAugmentation):
     """
-    得到训练csv_data数据的标准差
-
+    缺失数据注入
     Args:
-        mean (float): 训练csv_data数据的平均值
-        std (float): 训练csv_data数据的标准差
-        missing_rate (float): 训练csv_data数据的缺失值指示
+        train_mean (float): 训练数据的平均值
+        train_std (float): 训练数据的标准差
+        train_missing_rate (float): 训练数据的缺失值指示
     """
 
-    def __init__(self, mean, std, missing_rate):
-        super(MissingDataInjection, self).__init__(mean, std)
-        self._missing_rate = missing_rate
+    def __init__(self, train_mean, train_std, train_missing_rate):
+        super(MissingDataInjection, self).__init__(train_mean, train_std)
+        self._missing_rate = train_missing_rate
 
     @property
     def missing_rate(self):

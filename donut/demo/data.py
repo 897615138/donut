@@ -16,7 +16,7 @@ __all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', '
 
 def prepare_data(file_name, test_portion=0.3):
     """
-      数据准备1.0
+      数据准备
       1.解析csv文件
       2.转化为初始np.array
       3.补充缺失时间戳(与数据)获得缺失点
@@ -49,10 +49,10 @@ def prepare_data(file_name, test_portion=0.3):
     train_timestamps, test_timestamps = timestamp[:-test_amount], timestamp[-test_amount:]
     # 5.标准化训练和测试数据
     exclude_array = np.logical_or(train_labels, train_missing)
-    train_values, mean, std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
-    test_values, _, _ = standardize_kpi(test_values, mean=mean, std=std)
+    train_values, train_mean, train_std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
+    test_values, _, _ = standardize_kpi(test_values, mean=train_mean, std=train_std)
     return src_timestamps, base_values, train_timestamps, train_values, test_timestamps, test_values, train_missing, test_missing, \
-           train_labels, test_labels, mean, std
+           train_labels, test_labels, train_mean, train_std
 
 
 def gain_data(file_name="sample_data/1.csv"):
@@ -104,10 +104,9 @@ def get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps
         fill_labels: 异常标识数据集
         src_misses: 缺失点数据集
         fill_timestamps: 时间戳数据集
-        test_portion: 测试数据占比
-
+        test_portion (float):验证数据与所有指定的训练数据之比。(default 0.3)
     Returns:
-
+        获得测试与训练数据集
     """
     test_amount = int(len(fill_values) * test_portion)
     train_values, test_values = np.asarray(fill_values[:-test_amount]), np.asarray(fill_values[-test_amount:])
@@ -125,14 +124,14 @@ def standardize_data(train_labels, train_missing, train_values, test_values):
         train_missing: 训练数据的缺失点数据
         train_values: 训练数据的值数据集
         test_values: 测试数据的值数据集
-
     Returns:
-
+        标准化数据
     """
     exclude_array = np.logical_or(train_labels, train_missing)
-    train_values, mean, std = standardize_kpi(train_values, excludes=np.asarray(exclude_array, dtype='bool'))
-    test_values, _, _ = standardize_kpi(test_values, mean=mean, std=std)
-    return train_values, test_values, train_missing, train_labels, mean, std
+    train_values, train_mean, train_std = standardize_kpi(train_values,
+                                                          excludes=np.asarray(exclude_array, dtype='bool'))
+    test_values, _, _ = standardize_kpi(test_values, mean=train_mean, std=train_std)
+    return train_values, test_values, train_missing, train_labels, train_mean, train_std
 
 
 def handle_test_data(test_score, test_num):
@@ -214,57 +213,63 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
 
 
 def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
-    if use_plt:
-        pass
-    else:
-        src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
-        fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
-        train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
-        mean, std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
-        accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-        test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-            = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
+    """
+    展示缓存数据
+    Args:
+        use_plt: 显示方式
+        file_name: 数据文件名
+        test_portion: 测试数据比例
+        src_threshold_value: 初始阈值
+    """
 
-        show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
-        print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
-                   .format(src_data_num, src_label_num, src_label_proportion, first_time))
-        show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
-        print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
-                   .format(fill_data_num, fill_step, fill_num, second_time))
-        print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-                            "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
-                            "【填充缺失数据,共用时{}】"
-                   .format(train_data_num, train_label_num, train_label_proportion,
-                           test_data_num, test_label_num, test_label_proportion, third_time))
-        print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
-        print_text(use_plt, "构建Donut模型【共用时{}】\n"
-                            "构建训练器【共用时{}】\n"
-                            "构造预测器【共用时{}】\n"
-                            "训练模型【共用时{}】\n"
-                            "获得重构概率【共用时{}】".format(model_time, trainer_time, predictor_time, fit_time,
-                                                   probability_time))
-        show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
-        print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
-        show_test_score(use_plt, test_timestamps, test_values, test_scores)
-        if accuracy is not None:
-            print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
-        print_text(use_plt,
-                   "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
-        for i, t in enumerate(special_anomaly_t):
-            print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
-        time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
-                     TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),
-                     TimeUse(trainer_time, "6.构造训练器"), TimeUse(predictor_time, "7.构造预测器"),
-                     TimeUse(fit_time, "8.训练模型"), TimeUse(probability_time, "9.获得重构概率")]
-        time_list = np.array(time_list)
-        sorted_time_list = sorted(time_list)
-        s_time = []
-        n_time = []
-        print_text(use_plt, "用时排名正序")
-        for i, t in enumerate(sorted_time_list):
-            print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
-            s_time.append(t.use)
-            n_time.append(t.name)
+    src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
+    fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
+    train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
+    train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
+    accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
+    test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
+        = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
+
+    show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
+    print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
+               .format(src_data_num, src_label_num, src_label_proportion, first_time))
+    show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
+    print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据 \n【填充数据，共用时{}】"
+               .format(fill_data_num, fill_step, fill_num, second_time))
+    print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                        "测试数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
+                        "【填充缺失数据,共用时{}】"
+               .format(train_data_num, train_label_num, train_label_proportion,
+                       test_data_num, test_label_num, test_label_proportion, third_time))
+    print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(train_mean, train_std, forth_time))
+    print_text(use_plt, "构建Donut模型【共用时{}】\n"
+                        "构建训练器【共用时{}】\n"
+                        "构造预测器【共用时{}】\n"
+                        "训练器训练模型【共用时{}】\n"
+                        "预测器获取重构概率【共用时{}】".format(model_time, trainer_time, predictor_time, fit_time,
+                                                  probability_time))
+    show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
+    print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
+    show_test_score(use_plt, test_timestamps, test_values, test_scores)
+    if accuracy is not None:
+        print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
+    print_text(use_plt,
+               "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
+    for i, t in enumerate(special_anomaly_t):
+        print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
+    time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
+                 TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),
+                 TimeUse(trainer_time, "6.构造训练器"), TimeUse(predictor_time, "7.构造预测器"),
+                 TimeUse(fit_time, "8.训练模型"), TimeUse(probability_time, "9.获得重构概率")]
+    time_list = np.array(time_list)
+    sorted_time_list = sorted(time_list)
+    s_time = []
+    n_time = []
+    print_text(use_plt, "用时排名正序")
+    for i, t in enumerate(sorted_time_list):
+        print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
+        s_time.append(t.use)
+        n_time.append(t.name)
 
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
@@ -324,18 +329,20 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                        test_data_num, test_label_num, test_label_proportion, third_time))
     # 标准化数据
     start_time = time.time()
-    train_values, test_values, train_missing, train_labels, mean, std = \
+    train_values, test_values, train_missing, train_labels, train_mean, train_std = \
         standardize_data(train_labels, train_missing, train_values, test_values)
     end_time = time.time()
     forth_time = get_time(start_time, end_time)
     # 显示标准化后的数据
     show_prepare_data_one \
         (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
-    print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(mean, std, forth_time))
+    print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(train_mean, train_std, forth_time))
     # 进行训练，预测，获得重构概率
     start_time = time.time()
     refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
-        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, mean, std)
+        train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, train_mean,
+                         train_std,
+                         test_data_num)
     end_time = time.time()
     fifth_time = get_time(start_time, end_time)
     # 显示退火学习率过程
@@ -380,7 +387,8 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
-                    test_label_num, test_label_proportion, mean, std, forth_time, epoch_list, lr_list, epoch_time,
+                    test_label_num, test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list,
+                    epoch_time,
                     fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
                     model_time, trainer_time, predictor_time, fit_time, probability_time)

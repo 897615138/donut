@@ -4,22 +4,17 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
-# def plot_missing(p, train_missing, train_timestamp, train_values, test_missing, test_timestamp, test_values):
-#     """
-#       缺失点在图上特别标注
-#     """
-#     for i, is_missing in enumerate(train_missing):
-#         if 1 == is_missing:
-#             p.plot(train_timestamp[i], train_values[i], 'r')
-#     for i, is_missing in enumerate(test_missing):
-#         if 1 == is_missing:
-#             p.plot(test_timestamp[i], test_values[i], 'r')
-
-
 def prepare_data_one(src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
                      test_values):
     """
-      原始数据与测试训练数据多图显示
+    原始数据与测试训练数据多图显示
+    Args:
+        src_timestamps: 原始时间戳
+        src_values: 原始值
+        train_timestamps: 训练数据时间戳
+        train_values: 训练数据值
+        test_timestamps: 测试数据时间戳
+        test_values: 测试数据值
     """
     plt.figure(figsize=(40, 10), dpi=128)
     plt.figure(1)
@@ -32,10 +27,13 @@ def prepare_data_one(src_timestamps, src_values, train_timestamps, train_values,
 
 def show_test_score(test_timestamp, test_values, test_scores):
     """
-      测试数据与分数单图显示
+    测试数据与分数单图显示
+    Args:
+        test_timestamp: 测试时间戳
+        test_values: 测试值
+        test_scores: 测试分数
     """
     plt.figure(figsize=(40, 10), dpi=128)
-    # plt.figure(2)
     plt.plot(test_timestamp, test_values, label='test data')
     plt.plot(test_timestamp, test_scores, label='test score')
     plt.title("test data and score")
@@ -45,14 +43,17 @@ def show_test_score(test_timestamp, test_values, test_scores):
     plt.show()
 
 
-# show_test_score(np.array([1, 2, 3, 4]), np.array([1, 2, 3, 4]), np.array([1, 2, 3, 4]))
 def line_chart(x, y, name):
+    """
+    折线图
+    Args:
+        x: x轴
+        y: y轴
+        name: 名称
+    """
     plt.figure(figsize=(40, 10), dpi=128)
     plt.figure(1)
     plt.plot(x, y, label=name)
-    # plt.plot(train_timestamp, train_values, label='train_data')
-    # plt.plot(test_timestamp, test_values, label='test_data')
-    # plot_missing(matplotlib.pyplot, train_missing, train_timestamp, train_values, test_missing, test_timestamp,test_values)
     plt.title("name")
     plt.xlabel('timestamp')
     plt.ylabel('value')

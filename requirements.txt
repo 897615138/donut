@@ -2,13 +2,12 @@ git+https://github.com.cnpmjs.org/thu-ml/zhusuan.git
 git+https://github.com.cnpmjs.org/haowen-xu/tfsnippet.git@v0.1.2
 git+https://github.com.cnpmjs.org/897615138/donut.git
 
-numpy
-six
-matplotlib
-streamlit
-donut
+numpy ~= 1.19.2
+six ~= 1.15.0
+matplotlib ~=  3.3.4
+streamlit ~= 0.78.0
 tensorflow >=1.15.0
-pytest
-mock
-setuptools
-pandas
+pytest ~= 6.2.2
+mock ~= 4.0.3
+setuptools ~= 52.0.0
+pandas ~= 1.2.3
