@@ -27,11 +27,11 @@ class TimeUse:
 
     def __cmp__(self, other):
         if self.use < other.use:
-            return 1
+            return -1
         elif self.use == other.use:
             return 0
         else:
-            return -1
+            return 1
 
 
 def format_time(atime):

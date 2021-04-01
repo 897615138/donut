@@ -3,11 +3,10 @@ import csv
 import time
 
 import numpy as np
-import pandas as pd
 
 from donut import complete_timestamp, standardize_kpi
 from donut.demo.cache import gain_data_cache, save_data_cache
-from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score, bar_chart
+from donut.demo.out import print_text, show_line_chart, show_prepare_data_one, show_test_score
 from donut.demo.train_prediction import train_prediction
 from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp, TimeUse
 
@@ -261,15 +260,16 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
         sorted_time_list = sorted(time_list)
         s_time = []
         n_time = []
-        for t in sorted_time_list:
-            s_time.append(t.use * 100000)
+        print_text(use_plt, "用时排名")
+        last_time = time.time()
+        for i, t in enumerate(sorted_time_list):
+            print_text(use_plt, "第{},{}用时{}".format(i, t.name, t.use))
+            s_time.append(t.use)
             n_time.append(t.name)
-        print_text(use_plt, "为使比较结果明显，将所有时间*100000")
-        chart_data = pd.DataFrame(
-            [s_time],
-            columns=n_time)
-        bar_chart(use_plt, chart_data)
-
+            if i == 0:
+                last_time = t.use
+            else:
+                print_text("与上一位相差{}", last_time - t.use)
 
 def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     """
