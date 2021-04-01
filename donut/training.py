@@ -208,8 +208,8 @@ class DonutTrainer(VarScopeObject):
         return self._model
 
     def fit(self, train_values, train_labels, train_missing,
-            test_values, test_labels, test_missing, valid_num,
-            train_mean, train_std, excludes=None, summary_dir=None):
+            test_values, test_labels, test_missing,
+            train_mean, train_std, valid_num, excludes=None, summary_dir=None):
         """
         根据所给数据训练:class:`Donut`模型
 

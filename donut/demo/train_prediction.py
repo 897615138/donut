@@ -80,7 +80,7 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
             start_time = time.time()
             epoch_list, lr_list, epoch_time = \
                 trainer.fit(train_values, train_labels, train_missing, test_values, test_labels, test_missing,
-                            valid_num, train_mean, train_std, valid_num)
+                            train_mean, train_std, valid_num, )
             end_time = time.time()
             fit_time = get_time(start_time, end_time)
             print_text(use_plt, "训练器训练模型【共用时{}】".format(fit_time))
