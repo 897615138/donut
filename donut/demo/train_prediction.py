@@ -71,7 +71,7 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
         predictor = DonutPredictor(model)
         end_time = time.time()
         predictor_time = get_time(start_time, end_time)
-        print_text(use_plt, "构造训练器【共用时{}】".format(trainer_time))
+        print_text(use_plt, "构造预测器【共用时{}】".format(predictor_time))
         with tf.Session().as_default():
             # 4.训练模型
             start_time = time.time()
