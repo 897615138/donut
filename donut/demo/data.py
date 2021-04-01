@@ -369,7 +369,9 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     special_anomaly_v = test_values[special_anomaly_index]
     special_anomaly_num = len(special_anomaly_t)
     interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
-    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n {}".format(special_anomaly_num, interval_num, interval_str))
+    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n ".format(special_anomaly_num, interval_num))
+    if (special_anomaly_num is not 0):
+        print_text(use_plt, interval_str)
     for i, t in enumerate(special_anomaly_t):
         print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
     # 比较用时时间
