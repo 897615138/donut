@@ -391,7 +391,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
                     test_label_num, test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list,
-                    epoch_time,
-                    fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
+                    epoch_time, fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num,
+                    interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
-                    model_time, trainer_time, predictor_time, fit_time, probability_time)
+                    model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value)
