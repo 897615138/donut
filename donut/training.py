@@ -16,7 +16,10 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 __all__ = ['DonutTrainer']
 
 
-class DonutTrainer(VarScopeObject): """Donut训练器 Args:
+class DonutTrainer(VarScopeObject):
+    """
+    Donut训练器
+    Args:
         model (Donut)::class:`Donut` 模型实例
         model_vs (str or tf.compat.v1.VariableScope):如果指定，将只从这个范围收集可训练变量。(default :obj:`None`，如果为 :obj:`None`，将收集所有在当前的图表的可训练的变量。)
         n_z (int or None):每个x要取的z样本数。(default :obj:`None`, 即一个没有明确抽样维度的样本)
