@@ -1,5 +1,5 @@
-import show_plt as plt
-import show_sl as sl
+import donut.show_plt as plt
+import donut.show_sl as sl
 
 
 def show_test_score(use_plt, test_timestamps, test_values, test_scores):
