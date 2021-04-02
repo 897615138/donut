@@ -157,7 +157,7 @@ def mini_batch_slices_iterator(length, batch_size,
     遍历所有小切片。
 
     Args:
-        length (int): 一个epoch中csv_data的总长度。
+        length (int): 一个epoch中数据的总长度。
         batch_size (int): 每个小切片的尺寸。
         ignore_incomplete_batch (bool): 如果为:obj:`True`, 如果最后一批中包含的项目数量小于' batch_size '，则丢弃该批。
             (default :obj:`False`)

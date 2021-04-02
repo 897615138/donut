@@ -22,13 +22,11 @@ class DataAugmentation(object):
 
     def augment(self, values, labels, missing):
         """
-        生成增强过得csv_data.
-
+        数据增强
         Args:
             values (np.ndarray): 一维32位浮点数组，形状为`(data_length,)`,规则化过得KPI数据
             labels (np.ndarray): 一维32位整数数组，形状为`(data_length,)`,`values`的异常标签
             missing (np.ndarray): 一维32位整型数组，形状为`(data_length,)`,指出缺失点
-
         Returns:
             np.ndarray: 增强过的KPI值
             np.ndarray: 增强过的异常标签
@@ -44,18 +42,18 @@ class DataAugmentation(object):
 
     def _augment(self, values, labels, missing):
         """
-        派生类应该覆盖它来实际实现csv_data增强算法。
+        派生类应该覆盖它来实际实现数据增强算法。
         """
         raise NotImplementedError()
 
     @property
     def mean(self):
-        """获得训练csv_data数据的平均值."""
+        """获得训练数据数据的平均值."""
         return self._mean
 
     @property
     def std(self):
-        """Get the standard deviation of training csv_data."""
+        """获得训练数据的标准差"""
         return self._std
 
 

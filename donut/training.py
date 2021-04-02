@@ -49,7 +49,7 @@ class DonutTrainer(VarScopeObject):
             (default 256,如果为:obj:`None`，不会在任何特定的遍数停止，必须至少指定 `max_epoch`和`max_step`中的一个。)
         max_step (int or None):
             运行最大步长.
-            (default :obj:`None`，如果为 :obj:`None`，将不会在任何特定的步骤停止。必须至少指定 `max_epoch`和`max_step`中的一个。)
+            (default :obj:`None`，如果为 :obj:`None`，将不会在任 何特定的步骤停止。必须至少指定 `max_epoch`和`max_step`中的一个。)
         batch_size (int):
             训练用的小批数量。
             (default 256)
@@ -218,22 +218,13 @@ class DonutTrainer(VarScopeObject):
             test_missing: 测试数据缺失值
             test_labels: 测试数据异常标注
             test_values: 测试数据缺失值
-            train_values (np.ndarray):
-                一维32位浮点数组，标准化的KPI数据
-            train_labels (np.ndarray):
-                一维32位整型数组，异常标签
-            train_missing (np.ndarray):
-                一维32位数组，指出缺失点
-            train_mean (float):
-                标准化之前的平均值
-            train_std (float):
-                标准化之前的标准差
-            excludes (np.ndarray):
-                一维布尔数组，表明是否包含该点，如果包含，任何包含该点的窗口都包含在内
-                (default :obj:`None`,没有点包含)
-            summary_dir (str):
-                :class:`tf.summary.FileWriter`的可选的概要目录。
-                 (default :obj:`None`,无目录)
+            train_values (np.ndarray):一维32位浮点数组，标准化的KPI数据
+            train_labels (np.ndarray):一维32位整型数组，异常标签
+            train_missing (np.ndarray):一维32位数组，指出缺失点
+            train_mean (float):标准化之前的平均值
+            train_std (float):标准化之前的标准差
+            excludes (np.ndarray):一维布尔数组，表明是否包含该点，如果包含，任何包含该点的窗口都包含在内(default :obj:`None`,没有点包含)
+            summary_dir (str)::class:`tf.summary.FileWriter`的可选的概要目录。(default :obj:`None`,无目录)
         """
         # 获得默认session
         sess = get_default_session_or_error()
@@ -272,7 +263,7 @@ class DonutTrainer(VarScopeObject):
             excludes=valid_excludes,
         )
 
-        # 初始化训练器和模型的变量
+        # 初始化训练器变量并检验
         sess.run(self._trainer_initializer)
         ensure_variables_initialized(self._train_params)
 

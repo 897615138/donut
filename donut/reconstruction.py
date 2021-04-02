@@ -8,7 +8,7 @@ def masked_reconstruct(reconstruct, x, mask, validate_shape=True, name=None):
     """
     用重构输出替换' x '的隐元素。
 
-    此方法可用于在' x '上执行缺失的csv_data赋值，重构输出为' x '。
+    此方法可用于在' x '上执行缺失的数据赋值，重构输出为' x '。
 
     Args:
         reconstruct ((tf.Tensor) -> tf.Tensor): 重构x的方法

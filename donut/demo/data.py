@@ -343,9 +343,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     start_time = time.time()
     refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
         train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
-                         train_mean,
-                         train_std,
-                         test_data_num)
+                         train_mean,train_std,test_data_num)
     end_time = time.time()
     fifth_time = get_time(start_time, end_time)
     # 显示退火学习率过程
@@ -370,7 +368,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     special_anomaly_num = len(special_anomaly_t)
     interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n ".format(special_anomaly_num, interval_num))
-    if (special_anomaly_num is not 0):
+    if special_anomaly_num is not 0:
         print_text(use_plt, interval_str)
     for i, t in enumerate(special_anomaly_t):
         print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
