@@ -1,18 +1,20 @@
 import os
 import time
-
-
-import six
-import numpy as np
-from .utils import BatchSlidingWindow, get_time
 from tfsnippet.scaffold import TrainLoop
-from tfsnippet.utils import (VarScopeObject, reopen_variable_scope, get_default_session_or_error,
-                             ensure_variables_initialized, get_variables_as_dict)
+import numpy as np
+import six
 import tensorflow as tf
 from .augmentation import MissingDataInjection
 from .model import Donut
+from tfsnippet.utils import (VarScopeObject, reopen_variable_scope, get_default_session_or_error,
+                             ensure_variables_initialized, get_variables_as_dict)
+
+
+from .utils import BatchSlidingWindow, get_time
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 __all__ = ['DonutTrainer']
+
 
 class DonutTrainer(VarScopeObject):
     """
