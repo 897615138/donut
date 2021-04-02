@@ -41,9 +41,13 @@ class DonutTrainer(VarScopeObject):
         check_numerics (bool):是否在数值问题中添加TensorFlow断言(default :obj:`True`)
         name (str):可选训练器的名称(argument of :class:`tfsnippet.utils.VarScopeObject`).
         scope (str):可选的训练范围(argument of :class:`tfsnippet.utils.VarScopeObject`)."""
+
+
 def __init__(self, model, model_vs=None, n_z=None, feed_dict=None, valid_feed_dict=None,
-             missing_data_injection_rate=0.01, use_regularization_loss=True,max_epoch=256, max_step=None, batch_size=256,valid_batch_size=1024, valid_step_freq=100,
-             initial_lr=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75,optimizer=tf.train.AdamOptimizer, optimizer_params=None,grad_clip_norm=10.0, check_numerics=True,name=None, scope=None):
+             missing_data_injection_rate=0.01, use_regularization_loss=True, max_epoch=256, max_step=None,
+             batch_size=256, valid_batch_size=1024, valid_step_freq=100,
+             initial_lr=0.001, lr_anneal_epochs=10, lr_anneal_factor=0.75, optimizer=tf.train.AdamOptimizer,
+             optimizer_params=None, grad_clip_norm=10.0, check_numerics=True, name=None, scope=None):
     super(DonutTrainer, self).__init__(name=name, scope=scope)
     # 记忆参数
     self._model = model
@@ -145,8 +149,6 @@ def __init__(self, model, model_vs=None, n_z=None, feed_dict=None, valid_feed_di
 
 
 @property
-
-
 def model(self):
     """
     获得 :class:`Donut` 模型实例
