@@ -56,39 +56,38 @@ class DonutPredictor(VarScopeObject):
                 dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
 
             # 感兴趣的输出
-            self._score = self._score_without_y = None
+            self._score = self._refactor_probability_without_y = None
 
-    def _get_score(self):
+    def _get_refactor_probability(self):
         """
-        获取分数
-        Returns:分数
+        获取重构概率
+        Returns:重构概率
         """
         if self._score is None:
             with reopen_variable_scope(self.variable_scope), tf.name_scope('score'):
-                self._score = self.model.get_score(
-                    x=self._input_x,
-                    y=self._input_y,
+                self._score = self.model.get_refactor_probability(
+                    window=self._input_x,
+                    missing=self._input_y,
                     n_z=self._n_z,
                     mcmc_iteration=self._mcmc_iteration,
                     last_point_only=self._last_point_only
                 )
         return self._score
 
-    def _get_score_without_y(self):
+    def _get_refactor_probability_without_y(self):
         """
-        没有y时获取分数
-        Returns:
-            没有y时获取的分数
+        没有y时获取重构概率
+        Returns:没有y时获取的重构概率
         """
-        if self._score_without_y is None:
+        if self._refactor_probability_without_y is None:
             with reopen_variable_scope(self.variable_scope), \
                     tf.name_scope('score_without_y'):
-                self._score_without_y = self.model.get_score(
-                    x=self._input_x,
+                self._refactor_probability_without_y = self.model.get_refactor_probability(
+                    window=self._input_x,
                     n_z=self._n_z,
                     last_point_only=self._last_point_only
                 )
-        return self._score_without_y
+        return self._refactor_probability_without_y
 
     @property
     def model(self):
@@ -112,14 +111,12 @@ class DonutPredictor(VarScopeObject):
                 (default :obj:`None`，如果为 :obj:`None`, 不会进行缺失点注入 )
 
         Returns:
-            np.ndarray: 重构概率，`last_point_only`
-                如果是 :obj:`True`，就是一维数组，`last_point_only`
-                如果是 :obj:`False`，就是二维数组
+            np.ndarray: 重构概率，`last_point_only`如果是 :obj:`True`，就是一维数组，
+                `last_point_only`如果是 :obj:`False`，就是二维数组
         """
-        with tf.name_scope('DonutPredictor.get_score'):
+        with tf.name_scope('DonutPredictor.get_refactor_probability'):
             sess = get_default_session_or_error()
             collector = []
-
             # 校验参数
             values = np.asarray(values, dtype=np.float32)
             if len(values.shape) != 1:
@@ -130,8 +127,7 @@ class DonutPredictor(VarScopeObject):
             sliding_window = BatchSlidingWindow(
                 array_size=len(values),
                 window_size=self.model.x_dims,
-                batch_size=self._batch_size
-            )
+                batch_size=self._batch_size)
             # 有缺失点
             if missing is not None:
                 missing = np.asarray(missing, dtype=np.int32)
@@ -142,13 +138,13 @@ class DonutPredictor(VarScopeObject):
                     feed_dict = dict(six.iteritems(self._feed_dict))
                     feed_dict[self._input_x] = b_x
                     feed_dict[self._input_y] = b_y
-                    b_r = sess.run(self._get_score(), feed_dict=feed_dict)
+                    b_r = sess.run(self._get_refactor_probability(), feed_dict=feed_dict)
                     collector.append(b_r)
             else:
                 for b_x, in sliding_window.get_iterator([values]):
                     feed_dict = dict(six.iteritems(self._feed_dict))
                     feed_dict[self._input_x] = b_x
-                    b_r = sess.run(self._get_score_without_y(),
+                    b_r = sess.run(self._get_refactor_probability_without_y(),
                                    feed_dict=feed_dict)
                     collector.append(b_r)
 

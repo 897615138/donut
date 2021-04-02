@@ -52,10 +52,10 @@ class Donut(VarScopeObject):
     构造Donut
 
     `get_training_loss`方法 得出训练损失 :class:`tf.Tensor`
-    `get_score`方法 获取重构概率 :class:`tf.Tensor`.
+    `get_refactor_probability`方法 获取重构概率 :class:`tf.Tensor`.
 
     Note:
-        :class:`Donut` 实例在`get_training_loss`方法或`get_score`方法被调用的时候才会构建。
+        :class:`Donut` 实例在`get_training_loss`方法或`get_refactor_probability`方法被调用的时候才会构建。
         在保存或恢复模型参数之前构建:class:`donut.DonutTrainer`或者 :class:`donut.DonutPredictor`
 
     Args:
@@ -190,21 +190,18 @@ class Donut(VarScopeObject):
             loss = tf.reduce_mean(vi.training.sgvb())
             return loss
 
-    def get_score(self, x, y=None, n_z=None, mcmc_iteration=None,
-                  last_point_only=True):
+    def get_refactor_probability(self, window, missing=None, n_z=None, mcmc_iteration=None,
+                                 last_point_only=True):
         """
         获得x，y的重构概率
         “重建概率”越大，异常点的可能性就越小。如果想要直接表明异常的严重程度，可以取这个分数的负值。
 
         Args:
-            x (tf.Tensor): 二维32位浮点数:class:`tf.Tensor`, 小切片的KPI观测窗口。
-            y (tf.Tensor): 二维32位整型 :class:`tf.Tensor`, 在一个小切片中有缺失点的窗口的指示器。
-            n_z (int or None): 每个“x”要取的“z”样本数。
-                (default :obj:`None`, 一个没有明确抽样维度的样本)
-            mcmc_iteration (int or tf.Tensor): 缺失点注入的迭代次数
-                (default :obj:`None`, 不迭代)
-            last_point_only (bool): 是否获得窗口最后一个点的重构概率
-                (default :obj:`True`)
+            window (tf.Tensor): 二维32位浮点数:class:`tf.Tensor`, KPI观测的小切片窗口。
+            missing (tf.Tensor): 二维32位整型 :class:`tf.Tensor`, 每个小切片中是否有有缺失点的窗口。
+            n_z (int or None): 每个“x”要取的“z”样本数。(default :obj:`None`, 一个没有明确抽样维度的样本)
+            mcmc_iteration (int or tf.Tensor): 缺失点注入的迭代次数(default :obj:`None`, 不迭代)
+            last_point_only (bool): 是否获得窗口最后一个点的重构概率(default :obj:`True`)
 
         Returns:
             tf.Tensor: 重构概率,
@@ -212,26 +209,26 @@ class Donut(VarScopeObject):
                 反之，则为``(len(x) - self.x_dims + 1, self.x_dims)``
                 这是因为第一个``self.x_dims - 1`` 点不是任何窗口的最后一个点。
         """
-        with tf.name_scope('Donut.get_score'):
+        with tf.name_scope('Donut.get_refactor_probability'):
             # MCMC缺失点注入
             # 如果没有缺失且需要迭代重构
-            if y is not None and mcmc_iteration:
+            if missing is not None and mcmc_iteration:
                 x_r = iterative_masked_reconstruct(
                     reconstruct=self.vae.reconstruct,
-                    x=x,
-                    mask=y,
+                    x=window,
+                    mask=missing,
                     iter_count=mcmc_iteration,
                     back_prop=False,
                 )
             # 使用原数据
             else:
-                x_r = x
+                x_r = window
 
             # 获得重构概率
             # 派生一个:math:`q(z|h(x))`实例，变分网。如果未观察到z，则对每个x取z的样本数。
             q_net = self.vae.variational(x=x_r, n_z=n_z)  # notice: x=x_r
             # 派生一个:math:`p(x|h(z))`实例，模型网。
-            p_net = self.vae.model(z=q_net['z'], x=x, n_z=n_z)  # notice: x=x
+            p_net = self.vae.model(z=q_net['z'], x=window, n_z=n_z)  # notice: x=x
             # 计算:class:`StochasticTensor`的对数密度。覆盖已配置的'group_ndimm'为0。
             r_prob = p_net['x'].log_prob(group_ndims=0)
             # 如果未观察到z，则对每个x取z的样本数。样本数不为None
@@ -240,7 +237,7 @@ class Donut(VarScopeObject):
                 n_z = validate_n_samples(n_z, 'n_z')
                 assert_shape_op = tf.assert_equal(
                     tf.shape(r_prob),
-                    tf.stack([n_z, tf.shape(x)[0], self.x_dims]),
+                    tf.stack([n_z, tf.shape(window)[0], self.x_dims]),
                     message='Unexpected shape of reconstruction prob'
                 )
                 # 控制依赖的上下文管理器，使用with关键字可以让在这个上下文环境中的操作都在[assert_shape_op]执行。'
