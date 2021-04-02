@@ -35,7 +35,7 @@ dependency_links = [s for s in requirements_list if s.startswith(suffix)]
 install_requires = [s for s in requirements_list if not s.startswith(suffix)]
 
 setup(
-    name='donut-jill',
+    name='donut',
     version=version,
     url='https://github.com.cnpmjs.org/897615138/donut',
     license='MIT',
