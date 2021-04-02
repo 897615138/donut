@@ -42,7 +42,7 @@ class DataAugmentation(object):
 
     def _augment(self, values, labels, missing):
         """
-        派生类应该覆盖它来实际实现数据增强算法。
+        派生类覆盖本方法实际实现数据增强算法。
         """
         raise NotImplementedError()
 

@@ -24,68 +24,27 @@ class DonutTrainer(VarScopeObject):
     Donut训练器
 
     Args:
-        model (Donut):
-            :class:`Donut` 模型实例
-        model_vs (str or tf.compat.v1.VariableScope):
-            如果指定，将只从这个范围收集可训练变量。
-            (default :obj:`None`，如果为 :obj:`None`，将收集所有在当前的图表的可训练的变量。)
-        n_z (int or None):
-            每个x要取的z样本数。
-            (default :obj:`None`, 即一个没有明确抽样维度的样本)
-        feed_dict (dict[tf.Tensor, any]):
-            用户提供的训练用种子字典。
-            (default :obj:`None`, 表示没有输送)
-        valid_feed_dict (dict[tf.Tensor, any]):
-            用户提供的验证用的提要字典。
-            (default :obj:`None` ，即使用`feed_dict`)
-        missing_data_injection_rate (float):
-            缺失数据注入的比率。
-            (default 0.01)
-        use_regularization_loss (bool):
-            是否在训练损失中添加`tf.GraphKeys.REGULARIZATION_LOSSES`。
-            (default :obj:`True`)
-        max_epoch (int or None):
-            最大的运行遍数。
-            (default 256,如果为:obj:`None`，不会在任何特定的遍数停止，必须至少指定 `max_epoch`和`max_step`中的一个。)
-        max_step (int or None):
-            运行最大步长.
-            (default :obj:`None`，如果为 :obj:`None`，将不会在任 何特定的步骤停止。必须至少指定 `max_epoch`和`max_step`中的一个。)
-        batch_size (int):
-            训练用的小批数量。
-            (default 256)
-        valid_batch_size (int):
-            验证用的小切片数量。
-            (default 1024)
-        valid_step_freq (int):
-            在每个‘valid_step_freq’数量的训练步骤之后进行验证。
-            (default 100)
-        initial_lr (float):
-            初始学习速率.
-            (default 0.001)
-        lr_anneal_epochs (int):
-            在每一个‘lr_anneal_epoch’的遍数之后退火学习率。
-            (default 10)
-        lr_anneal_factor (float):
-            用这个折现因子来计算学习率，即 learning_rate = learning_rate * lr_anneal_factor。
-            (default 0.75)
-        optimizer (Type[tf.train.Optimizer]):
-            TensorFlow优化器的类.
-            (default :class:`tf.train.AdamOptimizer`)
-        optimizer_params (dict[str, any] or None):
-            用于构造优化器的命名参数。
-            (default :obj:`None`)
-        grad_clip_norm (float or None):
-            根据这个标准渐变裁剪。
-            (default 10.0 ，如果为:obj:`None`按标准禁用渐变裁剪)
-        check_numerics (bool):
-            是否在数值问题中添加TensorFlow断言
-            (default :obj:`True`)
-        name (str):
-            可选训练器的名称
-            (argument of :class:`tfsnippet.utils.VarScopeObject`).
-        scope (str):
-            可选的训练范围
-            (argument of :class:`tfsnippet.utils.VarScopeObject`).
+        model (Donut)::class:`Donut` 模型实例
+        model_vs (str or tf.compat.v1.VariableScope):如果指定，将只从这个范围收集可训练变量。(default :obj:`None`，如果为 :obj:`None`，将收集所有在当前的图表的可训练的变量。)
+        n_z (int or None):每个x要取的z样本数。(default :obj:`None`, 即一个没有明确抽样维度的样本)
+        feed_dict (dict[tf.Tensor, any]):用户提供的训练用种子字典。(default :obj:`None`, 表示没有输送)
+        valid_feed_dict (dict[tf.Tensor, any]):用户提供的验证用的提要字典。(default :obj:`None` ，即使用`feed_dict`)
+        missing_data_injection_rate (float):缺失数据注入的比率。(default 0.01)
+        use_regularization_loss (bool):是否在训练损失中添加`tf.GraphKeys.REGULARIZATION_LOSSES`。(default :obj:`True`)
+        max_epoch (int or None): 最大的运行遍数。(default 256,如果为:obj:`None`，不会在任何特定的遍数停止，必须至少指定 `max_epoch`和`max_step`中的一个。)
+        max_step (int or None):运行最大步长.(default :obj:`None`，如果为 :obj:`None`，将不会在任 何特定的步骤停止。必须至少指定 `max_epoch`和`max_step`中的一个。)
+        batch_size (int):训练用的小批数量。(default 256)
+        valid_batch_size (int): 验证用的小切片数量。(default 1024)
+        valid_step_freq (int):在每个“valid_step_freq”数量的训练步骤之后进行验证。(default 100)
+        initial_lr (float):初始学习速率。(default 0.001)
+        lr_anneal_epochs (int):在每一个“lr_anneal_epoch”的遍数之后退火学习率。(default 10)
+        lr_anneal_factor (float):用这个折现因子来计算学习率，即 learning_rate = learning_rate * lr_anneal_factor。(default 0.75)
+        optimizer (Type[tf.train.Optimizer]):TensorFlow优化器的类.(default :class:`tf.train.AdamOptimizer`)
+        optimizer_params (dict[str, any] or None):用于构造优化器的命名参数。(default :obj:`None`)
+        grad_clip_norm (float or None):根据这个标准渐变裁剪。(default 10.0 ，如果为:obj:`None`按标准禁用渐变裁剪)
+        check_numerics (bool):是否在数值问题中添加TensorFlow断言(default :obj:`True`)
+        name (str):可选训练器的名称(argument of :class:`tfsnippet.utils.VarScopeObject`).
+        scope (str):可选的训练范围(argument of :class:`tfsnippet.utils.VarScopeObject`).
     """
 
     def __init__(self, model, model_vs=None, n_z=None,
@@ -280,32 +239,30 @@ class DonutTrainer(VarScopeObject):
             loop.print_training_summary()
             start_time = time.time()
             for epoch in loop.iter_epochs():
-                x, y1, y2 = aug.augment(train_values, train_labels, train_missing)
-                y = np.logical_or(y1, y2).astype(np.int32)
-                train_iterator = train_sliding_window.get_iterator([x, y])
+                aug_values, aug_labels, aug_missing = aug.augment(train_values, train_labels, train_missing)
+                label_or_missing = np.logical_or(aug_labels, aug_missing).astype(np.int32)
+                train_iterator = train_sliding_window.get_iterator([aug_values, label_or_missing])
                 for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
-                    # 运行一次训练步骤
-                    feed_dict = dict(six.iteritems(self._feed_dict))
-                    feed_dict[self._learning_rate] = lr
-                    feed_dict[self._input_x] = batch_x
-                    feed_dict[self._input_y] = batch_y
-                    loss, _ = sess.run(
-                        [self._loss, self._train_op], feed_dict=feed_dict)
-                    loop.collect_metrics({'loss': loss})
+                    # 一次训练
+                    feed_dict_train = dict(six.iteritems(self._feed_dict))
+                    feed_dict_train[self._learning_rate] = lr
+                    feed_dict_train[self._input_x] = batch_x
+                    feed_dict_train[self._input_y] = batch_y
+                    loss, _ = sess.run([self._loss, self._train_op], feed_dict=feed_dict_train);loop.collect_metrics({'loss': loss})
                     if step % self._valid_step_freq == 0:
                         # 收集变量目录
                         if summary_dir is not None:
                             loop.add_summary(sess.run(self._summary_op))
                         # 批量进行验证
                         with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
-                            v_it = valid_sliding_window.get_iterator([test_values, v_y])
-                            for b_v_x, b_v_y in v_it:
-                                feed_dict = dict(
+                            it = valid_sliding_window.get_iterator([test_values, v_y])
+                            for b_x, b_y in it:
+                                feed_dict_train = dict(
                                     six.iteritems(self._valid_feed_dict))
-                                feed_dict[self._input_x] = b_v_x
-                                feed_dict[self._input_y] = b_v_y
-                                loss = sess.run(self._loss, feed_dict=feed_dict)
-                                mc.collect(loss, weight=len(b_v_x))
+                                feed_dict_train[self._input_x] = b_x
+                                feed_dict_train[self._input_y] = b_y
+                                loss = sess.run(self._loss, feed_dict=feed_dict_train)
+                                mc.collect(loss, weight=len(b_x))
                         # 打印最近步骤的日志
                         loop.print_logs()
                         # sl.print_log(loop)

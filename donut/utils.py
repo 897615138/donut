@@ -245,7 +245,7 @@ class BatchSlidingWindow(object):
         这个方法是不可重入的，也就是说，调用 :meth:`get_iterator`将使之前获得的任何迭代器失效。
 
         Args:
-            arrays (Iterable[np.ndarray]): 要被迭代的一维数组
+            arrays (Iterable[np.ndarray]): 要被迭代的一维数组。
 
         Yields:
             tuple[np.ndarray]: 每个小切片数组的窗口
@@ -259,7 +259,6 @@ class BatchSlidingWindow(object):
             if a.shape != expected_shape:
                 raise ValueError('`arrays[{}]`的形状应该是{},但是现在为{}'.
                                  format(i, expected_shape, a.shape))
-
         # 如果需要随机
         if self._shuffle:
             np.random.shuffle(self._indices)
