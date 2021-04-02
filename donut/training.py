@@ -11,6 +11,7 @@ from tfsnippet.utils import (VarScopeObject,
                              ensure_variables_initialized,
                              get_variables_as_dict)
 
+from donut.out import print_text
 from .augmentation import MissingDataInjection
 from .model import Donut
 from .utils import BatchSlidingWindow, get_time
@@ -166,13 +167,14 @@ class DonutTrainer(VarScopeObject):
         """
         return self._model
 
-    def fit(self, train_values, train_labels, train_missing,
+    def fit(self, use_plt, train_values, train_labels, train_missing,
             test_values, test_labels, test_missing,
             train_mean, train_std, valid_num, excludes=None, summary_dir=None):
         """
         根据所给数据训练:class:`Donut`模型
 
         Args:
+            use_plt: 展示方式
             valid_num: 测试数据数量
             test_missing: 测试数据缺失值
             test_labels: 测试数据异常标注
@@ -225,11 +227,11 @@ class DonutTrainer(VarScopeObject):
         # 初始化训练器变量并检验
         sess.run(self._trainer_initializer)
         ensure_variables_initialized(self._train_params)
-
         # 循环训练
         lr = self._initial_lr
         epoch_list = []
         lr_list = []
+        train_message = ""
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,
@@ -264,8 +266,9 @@ class DonutTrainer(VarScopeObject):
                                 loss = sess.run(self._loss, feed_dict=feed_dict_train)
                                 mc.collect(loss, weight=len(b_x))
                         # 打印最近步骤的日志
-                        loop.print_logs()
-                        # sl.print_log(loop)
+                        message = loop.print_logs(False)
+                        train_message = train_message + "\n" + message
+                        print_text(use_plt, message)
                 # 退火学习率
                 if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
                     lr *= self._lr_anneal_factor
