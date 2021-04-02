@@ -8,7 +8,6 @@ from donut import complete_timestamp, standardize_kpi
 from donut.cache import gain_data_cache, save_data_cache
 from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one
 from donut.train_prediction import train_prediction
-
 from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp, TimeUse
 
 __all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', 'standardize_data', 'handle_test_data',
@@ -230,7 +229,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
     accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
     test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-        , threshold_value = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
+        , threshold_value, train_message = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
 
     show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%} \n【分析csv数据,共用时{}】"
@@ -246,10 +245,11 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(train_mean, train_std, forth_time))
     print_text(use_plt, "构建Donut模型【共用时{}】\n"
                         "构建训练器【共用时{}】\n"
-                        "构造预测器【共用时{}】\n"
-                        "训练器训练模型【共用时{}】\n"
-                        "预测器获取重构概率【共用时{}】".format(model_time, trainer_time, predictor_time, fit_time,
-                                                  probability_time))
+                        "构造预测器【共用时{}】\n".format(model_time, trainer_time, predictor_time))
+    for text in train_message:
+        print_text(use_plt, text)
+    print_text(use_plt, "训练器训练模型【共用时{}】\n"
+                        "预测器获取重构概率【共用时{}】".format(fit_time, probability_time))
     show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
     print_text(use_plt, "退火学习率随epoch变化\n【所有epoch共用时：{}\n【训练模型与预测获得测试分数,共用时{}】】".format(epoch_time, fifth_time))
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
@@ -342,7 +342,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
     print_text(use_plt, "平均值：{}，标准差：{}\n【标准化训练和测试数据,共用时{}】".format(train_mean, train_std, forth_time))
     # 进行训练，预测，获得重构概率
     start_time = time.time()
-    refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time = \
+    refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message = \
         train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
                          train_mean, train_std, test_data_num)
     end_time = time.time()
@@ -393,6 +393,6 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
                     test_label_num, test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list,
                     epoch_time, fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num,
-                    interval_str,
-                    special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
-                    model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value)
+                    interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values,
+                    test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
+                    train_message)

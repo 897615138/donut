@@ -78,8 +78,8 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
         with tf.Session().as_default():
             # 4.训练器训练模型
             start_time = time.time()
-            epoch_list, lr_list, epoch_time = \
-                trainer.fit(use_plt,train_values, train_labels, train_missing, test_values, test_labels, test_missing,
+            epoch_list, lr_list, epoch_time, train_message = \
+                trainer.fit(use_plt, train_values, train_labels, train_missing, test_values, test_labels, test_missing,
                             train_mean, train_std, valid_num, )
             end_time = time.time()
             fit_time = get_time(start_time, end_time)
@@ -90,4 +90,4 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
             end_time = time.time()
             probability_time = get_time(start_time, end_time)
             print_text(use_plt, "预测器获取重构概率【共用时{}】".format(probability_time))
-            return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time
+            return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message

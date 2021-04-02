@@ -231,7 +231,7 @@ class DonutTrainer(VarScopeObject):
         lr = self._initial_lr
         epoch_list = []
         lr_list = []
-        train_message = ""
+        train_message = []
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,
@@ -266,8 +266,10 @@ class DonutTrainer(VarScopeObject):
                                 loss = sess.run(self._loss, feed_dict=feed_dict_train)
                                 mc.collect(loss, weight=len(b_x))
                         # 打印最近步骤的日志
-                        message = loop.print_logs(False)
-                        train_message = train_message + "\n" + message
+                        suffix, message = loop.print_logs(False)
+                        train_message.append(suffix)
+                        train_message.append(message)
+                        print_text(use_plt, suffix)
                         print_text(use_plt, message)
                 # 退火学习率
                 if self._lr_anneal_epochs and epoch % self._lr_anneal_epochs == 0:
@@ -276,4 +278,4 @@ class DonutTrainer(VarScopeObject):
                     epoch_list.append(epoch)
                     lr_list.append(lr)
             end_time = time.time()
-        return epoch_list, lr_list, get_time(start_time, end_time)
+        return epoch_list, lr_list, get_time(start_time, end_time),train_message

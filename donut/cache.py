@@ -13,10 +13,12 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     test_label_proportion, train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time,
                     fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
-                    model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value):
+                    model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
+                    train_message):
     """
     保存缓存对象
     Args:
+        train_message: 训练信息
         threshold_value: 阈值
         use_plt: 展示方式
         file_name: 文件名
@@ -116,6 +118,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db["fit_time"] = fit_time
     db["probability_time"] = probability_time
     db["threshold_value"] = threshold_value
+    db["train_message"] = train_message
     end_time = time.time()
     print_text(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
@@ -228,6 +231,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     threshold_value = db["threshold_value"]
     fit_time = db["fit_time"]
     probability_time = db["probability_time"]
+    train_message = db["train_message"]
     end_time = time.time()
     print_text(use_plt, "读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
@@ -236,7 +240,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
            train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
            accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value
+           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value, train_message
 
 
 def is_has_cache(file_name, test_portion, src_threshold_value):
