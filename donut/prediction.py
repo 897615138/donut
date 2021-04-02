@@ -100,7 +100,7 @@ class DonutPredictor(VarScopeObject):
         """
         return self._model
 
-    def get_score(self, values, missing=None):
+    def get_refactor_probability(self, values, missing=None):
         """
         获取指定KPI监测数据的“重构概率”。
 
