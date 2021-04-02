@@ -1,23 +1,18 @@
 import os
 import time
 
-import numpy as np
-import six
-import tensorflow as tf
-from tfsnippet.scaffold import TrainLoop
-from tfsnippet.utils import (VarScopeObject,
-                             reopen_variable_scope,
-                             get_default_session_or_error,
-                             ensure_variables_initialized,
-                             get_variables_as_dict)
 
+import six
+import numpy as np
+from .utils import BatchSlidingWindow, get_time
+from tfsnippet.scaffold import TrainLoop
+from tfsnippet.utils import (VarScopeObject, reopen_variable_scope, get_default_session_or_error,
+                             ensure_variables_initialized, get_variables_as_dict)
+import tensorflow as tf
 from .augmentation import MissingDataInjection
 from .model import Donut
-from .utils import BatchSlidingWindow, get_time
-
-__all__ = ['DonutTrainer']
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
+__all__ = ['DonutTrainer']
 
 class DonutTrainer(VarScopeObject):
     """
@@ -169,7 +164,9 @@ class DonutTrainer(VarScopeObject):
     def fit(self, train_values, train_labels, train_missing,
             test_values, test_labels, test_missing,
             train_mean, train_std, valid_num, excludes=None, summary_dir=None):
-        """根据所给数据训练:class:`Donut`模型Args:
+        """
+        根据所给数据训练:class:`Donut`模型
+        Args:
             valid_num: 测试数据数量
             test_missing: 测试数据缺失值
             test_labels: 测试数据异常标注
