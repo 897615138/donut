@@ -84,14 +84,15 @@ def get_constant_timestamp(use_plt, timestamps, step):
 
     """
     if np.size(timestamps) == 0:
-        return 0,None
+        return 0, None
     else:
         timestamps = np.sort(timestamps)
         has_dot = False
         has_head = False
-        interval_str = "其中时间戳分布为"
+        interval_str = "其中时间戳分布为\n"
         last = 0
         interval_num = 0
+
         for i, t in enumerate(timestamps):
             if not has_head:
                 interval_str = interval_str + str(t) + " "
