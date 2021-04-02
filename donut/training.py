@@ -169,10 +169,7 @@ class DonutTrainer(VarScopeObject):
     def fit(self, train_values, train_labels, train_missing,
             test_values, test_labels, test_missing,
             train_mean, train_std, valid_num, excludes=None, summary_dir=None):
-        """
-        根据所给数据训练:class:`Donut`模型
-
-        Args:
+        """根据所给数据训练:class:`Donut`模型Args:
             valid_num: 测试数据数量
             test_missing: 测试数据缺失值
             test_labels: 测试数据异常标注
@@ -242,14 +239,15 @@ class DonutTrainer(VarScopeObject):
                 aug_values, aug_labels, aug_missing = aug.augment(train_values, train_labels, train_missing)
                 label_or_missing = np.logical_or(aug_labels, aug_missing).astype(np.int32)
                 train_iterator = train_sliding_window.get_iterator([aug_values, label_or_missing])
-                for step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
+                for train_step, (batch_x, batch_y) in loop.iter_steps(train_iterator):
                     # 一次训练
                     feed_dict_train = dict(six.iteritems(self._feed_dict))
                     feed_dict_train[self._learning_rate] = lr
                     feed_dict_train[self._input_x] = batch_x
                     feed_dict_train[self._input_y] = batch_y
-                    loss, _ = sess.run([self._loss, self._train_op], feed_dict=feed_dict_train);loop.collect_metrics({'loss': loss})
-                    if step % self._valid_step_freq == 0:
+                    loss, _ = sess.run([self._loss, self._train_op], feed_dict=feed_dict_train)
+                    loop.collect_metrics({'loss': loss})
+                    if train_step % self._valid_step_freq == 0:
                         # 收集变量目录
                         if summary_dir is not None:
                             loop.add_summary(sess.run(self._summary_op))
