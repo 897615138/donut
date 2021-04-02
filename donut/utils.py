@@ -5,8 +5,6 @@ import numpy as np
 __all__ = ['get_time', 'get_constant_timestamp', 'file_name_converter', 'mini_batch_slices_iterator',
            'BatchSlidingWindow', 'handle_src_threshold_value', 'compute_default_threshold_value']
 
-from donut.demo.out import print_text
-
 
 class TimeUse:
     def __init__(self, use, name):
@@ -89,14 +87,11 @@ def get_constant_timestamp(use_plt, timestamps, step):
         return 0,None
     else:
         timestamps = np.sort(timestamps)
-        print_text(use_plt, timestamps)
-        print_text(use_plt, "其中时间戳分布为")
         has_dot = False
         has_head = False
-        interval_str = ''
+        interval_str = "其中时间戳分布为"
         last = 0
         interval_num = 0
-
         for i, t in enumerate(timestamps):
             if not has_head:
                 interval_str = interval_str + str(t) + " "
