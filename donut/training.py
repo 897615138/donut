@@ -258,8 +258,7 @@ class DonutTrainer(VarScopeObject):
                         with loop.timeit('valid_time'), loop.metric_collector('valid_loss') as mc:
                             it = valid_sliding_window.get_iterator([test_values, v_y])
                             for b_x, b_y in it:
-                                feed_dict_train = dict(
-                                    six.iteritems(self._valid_feed_dict))
+                                feed_dict_train = dict(six.iteritems(self._valid_feed_dict))
                                 feed_dict_train[self._input_x] = b_x
                                 feed_dict_train[self._input_y] = b_y
                                 loss = sess.run(self._loss, feed_dict=feed_dict_train)
