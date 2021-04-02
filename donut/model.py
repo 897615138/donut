@@ -2,7 +2,7 @@ from functools import partial
 
 import tensorflow as tf
 from tfsnippet.distributions import Normal
-from tfsnippet.modules import VAE, Lambda, Module
+from tfsnippet.modules import VAE, Lambda
 from tfsnippet.stochastic import validate_n_samples
 from tfsnippet.utils import (VarScopeObject, reopen_variable_scope, is_integer)
 from tfsnippet.variational import VariationalInference
