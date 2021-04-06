@@ -172,8 +172,12 @@ def get_threshold_value_label(labels_score, test_score, labels_num):
         accuracy = labels_num / catch_num
         if 0.9 < accuracy <= 1:
             return score, catch_num, catch_index, accuracy
-        else:
-            return labels_score[i - 1], catch_num, catch_index, accuracy
+    score = np.max(labels_score)
+    catch_index = np.where(test_score > float(score))[0].tolist()
+    catch_num = np.size(catch_index)
+    accuracy = labels_num / catch_num
+    catch_num = np.size(catch_index)
+    return score, catch_num, catch_index, accuracy
 
 
 def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
@@ -287,7 +291,6 @@ def gain_sl_cache_data(file):
         初始数据集
     """
     df = pd.read_csv(file, header=0)
-    # list = df.values.tolist()
     base_timestamp = df.iloc[:, 0]
     base_values = df.iloc[:, 1]
     base_labels = df.iloc[:, 2]
@@ -387,18 +390,18 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
     # 如果有标签准确率 显示
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
-    # 比较异常标注与捕捉的异常的信息
-    special_anomaly_index = list(set(catch_index) - set(labels_index))
-    special_anomaly_t = test_timestamps[special_anomaly_index]
-    special_anomaly_s = test_scores[special_anomaly_index]
-    special_anomaly_v = test_values[special_anomaly_index]
-    special_anomaly_num = len(special_anomaly_t)
-    interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
-    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n ".format(special_anomaly_num, interval_num))
-    if special_anomaly_num is not 0:
-        print_text(use_plt, interval_str)
-    for i, t in enumerate(special_anomaly_t):
-        print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
+        # 比较异常标注与捕捉的异常的信息
+        special_anomaly_index = list(set(catch_index) - set(labels_index))
+        special_anomaly_t = test_timestamps[special_anomaly_index]
+        special_anomaly_s = test_scores[special_anomaly_index]
+        special_anomaly_v = test_values[special_anomaly_index]
+        special_anomaly_num = len(special_anomaly_t)
+        interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
+        print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n ".format(special_anomaly_num, interval_num))
+        if special_anomaly_num is not 0:
+            print_text(use_plt, interval_str)
+        for i, t in enumerate(special_anomaly_t):
+            print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
     # 比较用时时间
     time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
                  TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),
