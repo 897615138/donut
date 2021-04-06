@@ -92,21 +92,27 @@ def get_constant_timestamp(timestamps, step):
         interval_str = "其中时间戳分布为\n"
         last = 0
         interval_num = 0
+        start = 0
+        count = 0
         for i, t in enumerate(timestamps):
             if not has_head:
                 interval_str = interval_str + "\t  " + str(t)
                 has_head = True
                 last = t
+                start = t
             else:
                 if int(t) == (int(last) + int(step)):
                     if not has_dot:
                         interval_str = interval_str + "..."
                         has_dot = True
                         interval_num = interval_num + 1
-                    else:
-                        last = t
+                    last = t
                 else:
-                    interval_str = interval_str + str(last) + " "
+                    if has_dot and last != start:
+                        interval_str = interval_str + str(last) + "\t"
+                    else:
+                        interval_str = interval_str + "\t" + str() + "\t"
+                    count = count + 1
                     last = t
                     has_head = False
                     has_dot = False
