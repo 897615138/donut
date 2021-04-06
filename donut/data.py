@@ -3,6 +3,8 @@ import csv
 import time
 
 import numpy as np
+import pandas as pd
+import streamlit as st
 
 from donut import complete_timestamp, standardize_kpi
 from donut.cache import gain_data_cache, save_data_cache
@@ -275,17 +277,41 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
         n_time.append(t.name)
 
 
-def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
+@st.cache
+def gain_sl_cache_data(file):
+    """
+    从streamlit缓存获取
+    Args:
+        file: 缓存文件
+    Returns:
+
+    """
+    df = pd.read_csv(file)
+    list = df.values.tolist()
+    base_timestamp = list[0]
+    base_values = list[1]
+    base_labels = list[2]
+    timestamp = np.array(base_timestamp, dtype='int64')
+    labels = np.array(base_labels, dtype='int32')
+    values = np.array(base_values, dtype='float64')
+    return timestamp, labels, values
+
+
+def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
     """
     非缓存运行
     Args:
+        is_upload: 是否为上传文件
         use_plt: 展示方式使用plt？
-        file_name: 文件名
+        file: 文件名
         test_portion: 测试数据比例
         src_threshold_value: 初始阈值
     """
     start_time = time.time()
-    src_timestamps, src_labels, src_values = gain_data("sample_data/" + file_name)
+    if is_upload:
+        src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
+    else:
+        src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
     end_time = time.time()
     # 原数据数量
     src_data_num = src_timestamps.size
@@ -387,7 +413,7 @@ def show_new_data(use_plt, file_name, test_portion, src_threshold_value):
         print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
         s_time.append(t.use)
         n_time.append(t.name)
-    save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
+    save_data_cache(use_plt, file, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
