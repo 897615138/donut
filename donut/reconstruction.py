@@ -71,7 +71,6 @@ def iterative_masked_reconstruct(reconstruct, x, mask, iter_count,
                                  back_prop=True, name=None):
     """
     用“mask”迭代地重构“x”“iter_count”次。
-
     这个方法将调用:func:`masked_reconstruct``iter_count`次，并将前一次迭代的输出作为下一次迭代的输入`x`。将返回最后一次迭代的输出。
 
     Args:
