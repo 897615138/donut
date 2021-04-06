@@ -109,9 +109,9 @@ def get_constant_timestamp(timestamps, step):
                     last = t
                 else:
                     if has_dot and last != start:
-                        interval_str = interval_str + str(last) + "\t"
+                        interval_str = interval_str + str(last) + ","
                     else:
-                        interval_str = interval_str + "\t" + str() + "\t"
+                        interval_str = interval_str + "," + str() + ","
                     count = count + 1
                     last = t
                     has_head = False

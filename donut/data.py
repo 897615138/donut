@@ -184,9 +184,9 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
         print_text(use_plt, catch)
         return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
     # 没有满足0.9标准的
-    score = np.max(labels_score)
+    score = np.min(labels_score)
     print_warn(use_plt, "请注意异常标注的准确性")
-    catch_index = np.where(test_score >= float(score))[-1].tolist()
+    catch_index = np.where(test_score >= float(score)).tolist()
     catch_num = np.size(catch_index)
     accuracy = labels_num / catch_num
     return score, catch_num, catch_index, accuracy
@@ -408,7 +408,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
     special_anomaly_s = test_scores[special_anomaly_index]
     special_anomaly_v = test_values[special_anomaly_index]
     special_anomaly_num = len(special_anomaly_t)
-    interval_num, interval_str = get_constant_timestamp( special_anomaly_t, fill_step)
+    interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, interval_num))
     if special_anomaly_num is not 0:
         print_text(use_plt, interval_str)
