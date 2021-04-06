@@ -72,11 +72,10 @@ def file_name_converter(file_name, test_portion, threshold_value):
     return "cache/" + file_name + "_" + str(test_portion) + "_" + str(threshold_value)
 
 
-def get_constant_timestamp(use_plt, timestamps, step):
+def get_constant_timestamp(timestamps, step):
     """
     获得连续的时间戳区间字符串
     Args:
-        use_plt: 输出格式是否为plt
         timestamps: 时间戳
         step: 时间戳步长
     Returns:
@@ -93,10 +92,9 @@ def get_constant_timestamp(use_plt, timestamps, step):
         interval_str = "其中时间戳分布为\n"
         last = 0
         interval_num = 0
-
         for i, t in enumerate(timestamps):
             if not has_head:
-                interval_str = interval_str + "\t" + str(t)
+                interval_str = interval_str + "\t  " + str(t)
                 has_head = True
                 last = t
             else:
