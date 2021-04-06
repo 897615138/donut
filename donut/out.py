@@ -32,6 +32,19 @@ def show_line_chart(use_plt, x, y, name):
         sl.line_chart(x, y, name)
 
 
+
+def print_info(use_plt, content):
+    """
+       展示文字
+       Args:
+           use_plt: 展示方式
+           content: 文字内容
+       """
+    if use_plt:
+        print(content)
+    else:
+        sl.info(content)
+
 def print_text(use_plt, content):
     """
     展示文字

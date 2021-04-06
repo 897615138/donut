@@ -84,3 +84,7 @@ def bar_chart(chart_data):
 
 def warning(content):
     st.warning(content)
+
+
+def info(content):
+    st.info(content)

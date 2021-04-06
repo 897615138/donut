@@ -2,7 +2,7 @@ import os
 import shelve
 import time
 
-from donut.out import print_text
+from donut.out import print_text, print_info
 from donut.utils import get_time, file_name_converter, format_time
 
 
@@ -14,10 +14,14 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
                     fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
                     model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
-                    train_message):
+                    train_message, train_timestamps, train_values, t_use, t_name):
     """
     保存缓存对象
     Args:
+        t_name: 用时排序名称
+        t_use: 用时排序用时
+        train_values: 训练数据值
+        train_timestamps: 训练时间戳
         train_message: 训练信息
         threshold_value: 阈值
         use_plt: 展示方式
@@ -119,8 +123,12 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db["probability_time"] = probability_time
     db["threshold_value"] = threshold_value
     db["train_message"] = train_message
+    db["train_timestamps"] = train_timestamps
+    db["train_values"] = train_values
+    db["t_use"] = t_use
+    db["t_name"] = t_name
     end_time = time.time()
-    print_text(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
+    print_info(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
 
 
@@ -232,15 +240,19 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     fit_time = db["fit_time"]
     probability_time = db["probability_time"]
     train_message = db["train_message"]
+    train_timestamps = db["train_timestamps"]
+    train_values = db["train_values"]
+    t_use = db["t_use"]
+    t_name = db["t_name"]
     end_time = time.time()
-    print_text(use_plt, "读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
+    print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
            train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
            accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value, train_message
+           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value, train_message, train_timestamps, train_values, t_use, t_name
 
 
 def is_has_cache(file_name, test_portion, src_threshold_value):

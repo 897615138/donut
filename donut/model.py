@@ -176,9 +176,7 @@ class Donut(VarScopeObject):
             alpha = tf.cast(1 - y, dtype=tf.float32)
             # 计算张量tensor沿着指定的数轴（tensor的某一维度）上的平均值，主要用作降维或者计算tensor（图像）的平均值。
             beta = tf.reduce_mean(alpha, axis=-1)
-            log_joint = (
-                    tf.reduce_sum(alpha * x_log_prob, axis=-1) + beta * z_log_prob
-            )
+            log_joint = (tf.reduce_sum(alpha * x_log_prob, axis=-1) + beta * z_log_prob)
             vi = VariationalInference(
                 # 对数节点。
                 log_joint=log_joint,

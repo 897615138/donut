@@ -5,7 +5,7 @@ from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
 from donut import Donut, DonutTrainer, DonutPredictor, get_time
-from donut.out import print_text
+from donut.out import print_info, print_text, show_line_chart
 
 
 def train_prediction(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
@@ -62,19 +62,19 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
         )
         end_time = time.time()
         model_time = get_time(start_time, end_time)
-        print_text(use_plt, "构建Donut模型【共用时{}】".format(model_time))
+        print_info(use_plt, "5.构建Donut模型【共用时{}】".format(model_time))
         # 2.构造训练器
         start_time = time.time()
         trainer = DonutTrainer(model=model, model_vs=model_vs)
         end_time = time.time()
         trainer_time = get_time(start_time, end_time)
-        print_text(use_plt, "构造训练器【共用时{}】".format(trainer_time))
+        print_info(use_plt, "6.构造训练器【共用时{}】".format(trainer_time))
         # 3.构造预测器
         start_time = time.time()
         predictor = DonutPredictor(model)
         end_time = time.time()
         predictor_time = get_time(start_time, end_time)
-        print_text(use_plt, "构造预测器【共用时{}】".format(predictor_time))
+        print_info(use_plt, "7.构造预测器【共用时{}】".format(predictor_time))
         with tf.Session().as_default():
             # 4.训练器训练模型
             start_time = time.time()
@@ -83,11 +83,14 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
                             train_mean, train_std, valid_num, )
             end_time = time.time()
             fit_time = get_time(start_time, end_time)
-            print_text(use_plt, "训练器训练模型【共用时{}】".format(fit_time))
+            print_info(use_plt, "8.训练器训练模型【共用时{}】".format(fit_time))
+            print_text(use_plt, "所有epoch【共用时：{}】".format(epoch_time))
+            print_text(use_plt, "退火学习率随epoch变化\n")
+            show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
             # 5.预测器获取重构概率
             start_time = time.time()
             refactor_probability = predictor.get_refactor_probability(test_values, test_missing)
             end_time = time.time()
             probability_time = get_time(start_time, end_time)
-            print_text(use_plt, "预测器获取重构概率【共用时{}】".format(probability_time))
+            print_info(use_plt, "9.预测器获取重构概率【共用时{}】".format(probability_time))
             return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message
