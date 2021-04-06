@@ -4,7 +4,7 @@ git+https://github.com.cnpmjs.org/897615138/tfsnippet-jill
 numpy ~= 1.19.2
 six ~= 1.15.0
 matplotlib ~=  3.3.4
-streamlit ~= 0.78.0
+streamlit ~= 0.79.0
 tensorflow >=1.15.0
 pytest ~= 6.2.2
 mock ~= 4.0.3
