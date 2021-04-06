@@ -158,6 +158,7 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     """
     带异常标签的默认阈值
     Args:
+        use_plt: 展示方式
         labels_num: 标签数量
         test_score: 所有分值
         labels_score: 异常标签对应分数
@@ -179,7 +180,7 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     print_text(use_plt, lis)
     # 字典按照生序排序 取最大的准确度
     if len(lis) > 0:
-        sorted(lis, key=lambda i: (i['accuracy'], i['score']))
+        sorted(lis, key=lambda dict_catch: (dict_catch['accuracy'], dict_catch['score']))
         catch = lis[- 1]
         print_text(use_plt, catch)
         return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
@@ -247,9 +248,10 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
     accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
     test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-        , threshold_value, train_message, train_timestamps, train_values = gain_data_cache(use_plt, file_name,
-                                                                                           test_portion,
-                                                                                           src_threshold_value)
+        , threshold_value, train_message, train_timestamps, train_values, t_use, t_name = gain_data_cache(use_plt,
+                                                                                                          file_name,
+                                                                                                          test_portion,
+                                                                                                          src_threshold_value)
 
     print_info(use_plt, "1.分析csv数据【共用时{}】".format(first_time))
     show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
@@ -433,4 +435,4 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
                     epoch_time, fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num,
                     interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values,
                     test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
-                    train_message, train_timestamps, train_values,t_use,t_name)
+                    train_message, train_timestamps, train_values, t_use, t_name)
