@@ -80,3 +80,7 @@ def bar_chart(chart_data):
         chart_data: 数据
     """
     st.bar_chart(chart_data)
+
+
+def warning(content):
+    st.warning(content)

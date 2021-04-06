@@ -8,7 +8,7 @@ import streamlit as st
 
 from donut import complete_timestamp, standardize_kpi
 from donut.cache import gain_data_cache, save_data_cache
-from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one
+from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one, print_warn
 from donut.train_prediction import train_prediction
 from donut.utils import get_time, compute_default_threshold_value, get_constant_timestamp, TimeUse
 
@@ -154,7 +154,7 @@ def handle_test_data(test_score, test_num):
     return test_score, zero_num
 
 
-def get_threshold_value_label(labels_score, test_score, labels_num):
+def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     """
     带异常标签的默认阈值
     Args:
@@ -165,18 +165,30 @@ def get_threshold_value_label(labels_score, test_score, labels_num):
     Returns:
         默认阈值
     """
-    labels_score = np.sort(labels_score)
+    # 降序
+    labels_score = labels_score[np.argsort(-labels_score)]
+    lis = []
     for i, score in enumerate(labels_score):
         catch_index = np.where(test_score > float(score))[0].tolist()
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
         if 0.9 < accuracy <= 1:
-            return score, catch_num, catch_index, accuracy
+            # 存在就存储
+            catch = {"score": score, "num": catch_num, "index": catch_index, "accuracy": accuracy}
+            lis.append(catch)
+
+    # 字典按照生序排序 取最大的准确度
+    if len(lis) > 0:
+        sorted(lis, key=lambda i: (i['accuracy'], i['score']))
+        catch = lis[- 1]
+        return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
+
+    # 没有满足0.9标准的
     score = np.max(labels_score)
-    catch_index = np.where(test_score > float(score))[0].tolist()
+    print_warn(use_plt, "请注意异常标注的准确性")
+    catch_index = np.where(test_score > float(score))[-1].tolist()
     catch_num = np.size(catch_index)
     accuracy = labels_num / catch_num
-    catch_num = np.size(catch_index)
     return score, catch_num, catch_index, accuracy
 
 
@@ -203,17 +215,17 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         catch_num = np.size(catch_index)
         accuracy = labels_num / catch_num
         if accuracy <= 0.9:
-            print_text(use_plt, "建议提高阈值或使用【默认阈值】")
+            print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
         elif accuracy > 1:
-            print_text(use_plt, "建议降低阈值或使用【默认阈值】")
+            print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
     elif len(labels_index) == 0:
         threshold_value = compute_default_threshold_value(test_scores)
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
     else:
         labels_score = test_scores[labels_index]
-        threshold_value, catch_num, catch_index, accuracy = get_threshold_value_label(labels_score, test_scores,
-                                                                                      labels_num)
+        threshold_value, catch_num, catch_index, accuracy = \
+            get_threshold_value_label(use_plt, labels_score, test_scores, labels_num)
         # 准确度
         accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
@@ -391,17 +403,17 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
     if accuracy is not None:
         print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
         # 比较异常标注与捕捉的异常的信息
-        special_anomaly_index = list(set(catch_index) - set(labels_index))
-        special_anomaly_t = test_timestamps[special_anomaly_index]
-        special_anomaly_s = test_scores[special_anomaly_index]
-        special_anomaly_v = test_values[special_anomaly_index]
-        special_anomaly_num = len(special_anomaly_t)
-        interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
-        print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段(处)异常 \n ".format(special_anomaly_num, interval_num))
-        if special_anomaly_num is not 0:
-            print_text(use_plt, interval_str)
-        for i, t in enumerate(special_anomaly_t):
-            print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
+    special_anomaly_index = list(set(catch_index) - set(labels_index))
+    special_anomaly_t = test_timestamps[special_anomaly_index]
+    special_anomaly_s = test_scores[special_anomaly_index]
+    special_anomaly_v = test_values[special_anomaly_index]
+    special_anomaly_num = len(special_anomaly_t)
+    interval_num, interval_str = get_constant_timestamp(use_plt, special_anomaly_t, fill_step)
+    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, interval_num))
+    if special_anomaly_num is not 0:
+        print_text(use_plt, interval_str)
+    for i, t in enumerate(special_anomaly_t):
+        print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
     # 比较用时时间
     time_list = [TimeUse(first_time, "1.分析csv数据"), TimeUse(second_time, "2.填充数据"), TimeUse(third_time, "3.填充缺失数据"),
                  TimeUse(forth_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),

@@ -45,6 +45,13 @@ def print_text(use_plt, content):
         sl.text(content)
 
 
+def print_warn(use_plt, content):
+    if not use_plt:
+        sl.warning(content)
+    else:
+        print(content)
+
+
 def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
                           test_values):
     """
