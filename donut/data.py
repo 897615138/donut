@@ -286,11 +286,11 @@ def gain_sl_cache_data(file):
     Returns:
         初始数据集
     """
-    df = pd.read_csv(file)
-    list = df.values.tolist()
-    base_timestamp = list[1]
-    base_values = list[2]
-    base_labels = list[3]
+    df = pd.read_csv(file, header=0)
+    # list = df.values.tolist()
+    base_timestamp = df.iloc[:, 0]
+    base_values = df.iloc[:, 1]
+    base_labels = df.iloc[:, 2]
     timestamp = np.array(base_timestamp, dtype='int64')
     labels = np.array(base_labels, dtype='int32')
     values = np.array(base_values, dtype='float64')
