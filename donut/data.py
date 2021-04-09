@@ -232,7 +232,7 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
 
-def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
+def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     """
     展示缓存数据
     Args:
@@ -242,9 +242,6 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
         test_portion: 测试数据比例
         src_threshold_value: 初始阈值
     """
-    if is_local:
-        a = file_name.split("/")
-        file_name = a[len(a) - 1]
     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
     fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
     train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
