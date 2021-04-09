@@ -344,7 +344,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     first_time = get_time(start_time, end_time)
     # 显示原始数据信息
     print_info(use_plt, "1.分析csv数据【共用时{}】".format(first_time))
-    show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
+    show_line_chart(use_plt, src_timestamps, src_values, 'original csv data')
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%}".format(src_data_num, src_label_num, src_label_proportion))
     start_time = time.time()
     # 处理时间戳 获得缺失点
