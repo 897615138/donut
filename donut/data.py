@@ -313,7 +313,7 @@ def gain_sl_cache_data(file):
     return timestamp, labels, values
 
 
-def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
+def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload,is_local):
     """
     非缓存运行
     Args:
@@ -326,6 +326,8 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload):
     start_time = time.time()
     if is_upload:
         src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
+    elif is_local:
+        src_timestamps, src_labels, src_values = gain_data(file)
     else:
         src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
     end_time = time.time()
