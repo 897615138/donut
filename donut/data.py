@@ -232,11 +232,10 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
 
-def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
+def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
     """
     展示缓存数据
     Args:
-        is_local: 本地图片
         use_plt: 显示方式
         file_name: 数据文件名
         test_portion: 测试数据比例
@@ -248,10 +247,8 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
     accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
     test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-        , threshold_value, train_message, train_timestamps, train_values, t_use, t_name = gain_data_cache(use_plt,
-                                                                                                          file_name,
-                                                                                                          test_portion,
-                                                                                                          src_threshold_value)
+        , threshold_value, train_message, train_timestamps, train_values, t_use, t_name \
+        = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value)
 
     print_info(use_plt, "1.分析csv数据【共用时{}】".format(first_time))
     show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
@@ -317,6 +314,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     """
     非缓存运行
     Args:
+        is_local: 本地图片展示
         is_upload: 是否为上传文件
         use_plt: 展示方式使用plt？
         file: 文件名
