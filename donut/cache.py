@@ -260,7 +260,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
            train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, \
            labels_num, accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, \
-           special_anomaly_s,  test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, \
+           special_anomaly_s, test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, \
            fit_time, probability_time, threshold_value, train_message, train_timestamps, train_values, t_use, t_name, \
            src_train_values, src_test_values
 
@@ -279,10 +279,7 @@ def is_has_cache(file_name, test_portion, src_threshold_value, is_local):
         缓存文件信息
     """
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
-    if is_local:
-        cache_name = "../" + name + '.db'
-    else:
-        cache_name = name + '.db'
+    cache_name = name + '.db'
     exist = os.path.exists(cache_name)
     if exist:
         file = os.stat(cache_name)
