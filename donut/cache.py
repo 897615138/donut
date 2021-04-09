@@ -255,10 +255,11 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
            test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value, train_message, train_timestamps, train_values, t_use, t_name
 
 
-def is_has_cache(file_name, test_portion, src_threshold_value):
+def is_has_cache(file_name, test_portion, src_threshold_value, is_local):
     """
     是否有对应缓存+缓存时间
     Args:
+        is_local: 本地图片显示
         file_name: 文件名称
         test_portion: 测试数据比例
         src_threshold_value: 初始阈值
@@ -268,7 +269,10 @@ def is_has_cache(file_name, test_portion, src_threshold_value):
         缓存文件信息
     """
     name = file_name_converter(file_name, test_portion, src_threshold_value)
-    cache_name = name + '.db'
+    if is_local:
+        cache_name = "../" + name + '.db'
+    else:
+        cache_name = name + '.db'
     exist = os.path.exists(cache_name)
     if exist:
         file = os.stat(cache_name)

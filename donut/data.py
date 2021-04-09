@@ -232,7 +232,7 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
 
-def show_cache_data(use_plt, file_name, test_portion, src_threshold_value):
+def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
     """
     展示缓存数据
     Args:
