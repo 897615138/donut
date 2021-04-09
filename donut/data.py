@@ -281,7 +281,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     print_info(use_plt, "8.训练器训练模型【共用时{}】".format(fit_time))
     print_text(use_plt, "所有epoch【共用时：{}】".format(epoch_time))
     print_text(use_plt, "退火学习率随epoch变化\n")
-    show_line_chart(use_plt, epoch_list, lr_list, 'annealing_learning_rate')
+    show_line_chart(use_plt, epoch_list, lr_list, 'annealing learning rate')
     print_info(use_plt, "9.预测器获取重构概率【共用时{}】".format(probability_time))
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
     print_text(use_plt, "训练模型与预测获得测试分数【共用时{}】".format(epoch_time, fifth_time))
