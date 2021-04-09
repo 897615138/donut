@@ -132,10 +132,11 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db.close()
 
 
-def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
+def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value,is_local):
     """
     获得缓存数据
     Args:
+        is_local: 本地照片显示
         use_plt: 显示格式
         file_name: 数据文件名称
         test_portion: 测试数据比例
@@ -192,7 +193,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value):
     """
     print_text(use_plt, "读取缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
+    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value,is_local))
     src_timestamps = db["src_timestamps"]
     src_labels = db["src_labels"]
     src_values = db["src_values"]
