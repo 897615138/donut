@@ -266,13 +266,13 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
                        test_data_num, test_label_num, test_label_proportion))
     # 显示测试与训练数据集
     show_prepare_data_one \
-        (use_plt, "original & training & test data", "original data", "training data", "test_data", src_timestamps,
+        (use_plt, "original and training and test data", "original data", "training data", "test_data", src_timestamps,
          src_values, train_timestamps, src_train_values, test_timestamps, src_test_values)
     print_info(use_plt, "4.标准化训练和测试数据【共用时{}".format(forth_time))
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, "标准化后数据", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
          train_values, test_timestamps, test_values)
     print_info(use_plt, "5.构建Donut模型【共用时{}】\n6.构建训练器【共用时{}】\n7.构造预测器【共用时{}】\n"
                .format(model_time, trainer_time, predictor_time))
@@ -376,8 +376,9 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
                .format(train_data_num, train_label_num, train_label_proportion,
                        test_data_num, test_label_num, test_label_proportion))
     # 显示测试与训练数据集
+    # 显示测试与训练数据集
     show_prepare_data_one \
-        (use_plt, "original & training & test data", "original data", "training data", "test_data", src_timestamps,
+        (use_plt, "original and training and test data", "original data", "training data", "test_data", src_timestamps,
          src_values, train_timestamps, src_train_values, test_timestamps, src_test_values)
     # 标准化数据
     start_time = time.time()
@@ -389,7 +390,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, "标准化后数据", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
          train_values, test_timestamps, test_values)
     # 进行训练，预测，获得重构概率
     start_time = time.time()
