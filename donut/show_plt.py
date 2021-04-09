@@ -55,7 +55,6 @@ def line_chart(x, y, name):
         name: 名称
     """
     plt.figure(figsize=(40, 10), dpi=128)
-    # plt.figure(1)
     plt.plot(x, y, label=name)
     plt.title(name)
     plt.xlabel('timestamp')

@@ -356,7 +356,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     fill_step = fill_timestamps[1] - fill_timestamps[0]
     second_time = get_time(start_time, end_time)
     print_info(use_plt, "2.填充数据，【共用时{}】".format(second_time))
-    show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
+    show_line_chart(use_plt, fill_timestamps, fill_values, 'data')
     print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据".format(fill_data_num, fill_step, fill_num))
     # 获得测试与训练数据集
     start_time = time.time()
