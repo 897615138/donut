@@ -428,7 +428,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
         print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
         t_use.append(t.use)
         t_name.append(t.name)
-    save_data_cache(use_plt, file, test_portion, src_threshold_value,
+    save_data_cache(use_plt,is_local, file, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,

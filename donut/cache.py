@@ -6,7 +6,7 @@ from donut.out import print_text, print_info
 from donut.utils import get_time, file_name_converter, format_time
 
 
-def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
+def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num,
@@ -18,6 +18,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     """
     保存缓存对象
     Args:
+        is_local: 展示本地图片
         t_name: 用时排序名称
         t_use: 用时排序用时
         train_values: 训练数据值
@@ -75,7 +76,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     """
     print_text(use_plt, "缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value))
+    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value, is_local))
     db["src_timestamps"] = src_timestamps
     db["src_labels"] = src_labels
     db["src_values"] = src_values
@@ -132,7 +133,7 @@ def save_data_cache(use_plt, file_name, test_portion, src_threshold_value,
     db.close()
 
 
-def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value,is_local):
+def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_local):
     """
     获得缓存数据
     Args:
@@ -193,7 +194,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value,is_loc
     """
     print_text(use_plt, "读取缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value,is_local))
+    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value, is_local))
     src_timestamps = db["src_timestamps"]
     src_labels = db["src_labels"]
     src_values = db["src_values"]
@@ -269,7 +270,7 @@ def is_has_cache(file_name, test_portion, src_threshold_value, is_local):
         是否存在缓存
         缓存文件信息
     """
-    name = file_name_converter(file_name, test_portion, src_threshold_value)
+    name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
     if is_local:
         cache_name = "../" + name + '.db'
     else:
