@@ -65,11 +65,15 @@ def print_warn(use_plt, content):
         print(content)
 
 
-def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+def show_prepare_data_one(use_plt,name,src_name,train_name,test_name,src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
                           test_values):
     """
     展示准备数据过程
     Args:
+        train_name: 训练图例
+        test_name: 测试图例
+        src_name: 原数据图例
+        name: 图名
         use_plt: 展示方式
         src_timestamps: 原始时间戳
         src_values: 原始值
@@ -79,7 +83,7 @@ def show_prepare_data_one(use_plt, src_timestamps, src_values, train_timestamps,
         test_values: 测试值
     """
     if use_plt:
-        plt.prepare_data_one(src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
+        plt.prepare_data_one(name,src_name,train_name,test_name,src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
                              test_values)
     else:
-        sl.prepare_data_one(train_timestamps, train_values, test_timestamps, test_values)
+        sl.prepare_data_one(train_name,test_name,train_timestamps, train_values, test_timestamps, test_values)

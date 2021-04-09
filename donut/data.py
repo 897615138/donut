@@ -248,15 +248,15 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
     accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
     test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time \
-        , threshold_value, train_message, train_timestamps, train_values, t_use, t_name \
-        = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value,is_local)
+        , threshold_value, train_message, train_timestamps, train_values, t_use, t_name, src_train_values, src_test_values \
+        = gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_local)
 
     print_info(use_plt, "1.分析csv数据【共用时{}】".format(first_time))
-    show_line_chart(use_plt, src_timestamps, src_values, 'original csv_data')
+    show_line_chart(use_plt, src_timestamps, src_values, 'original csv data')
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%}".format(src_data_num, src_label_num, src_label_proportion))
 
     print_info(use_plt, "2.填充数据，【共用时{}】".format(second_time))
-    show_line_chart(use_plt, fill_timestamps, fill_values, 'fill_data')
+    show_line_chart(use_plt, fill_timestamps, fill_values, 'fill data')
     print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据".format(fill_data_num, fill_step, fill_num))
 
     print_info(use_plt, "3.获得训练与测试数据集【共用时{}".format(third_time))
@@ -264,11 +264,16 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
                         "测试数据量：{}，有{}个标注,标签比例约为{:.2%}"
                .format(train_data_num, train_label_num, train_label_proportion,
                        test_data_num, test_label_num, test_label_proportion))
+    # 显示测试与训练数据集
+    show_prepare_data_one \
+        (use_plt, "original & training & test data", "original data", "training data", "test_data", src_timestamps,
+         src_values, train_timestamps, src_train_values, test_timestamps, src_test_values)
     print_info(use_plt, "4.标准化训练和测试数据【共用时{}".format(forth_time))
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
+        (use_plt, "标准化后数据", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+         train_values, test_timestamps, test_values)
     print_info(use_plt, "5.构建Donut模型【共用时{}】\n6.构建训练器【共用时{}】\n7.构造预测器【共用时{}】\n"
                .format(model_time, trainer_time, predictor_time))
     for text in train_message:
@@ -355,17 +360,14 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据".format(fill_data_num, fill_step, fill_num))
     # 获得测试与训练数据集
     start_time = time.time()
-    train_values, test_values, train_labels, test_labels, train_missing, test_missing, train_timestamps, test_timestamps = \
+    src_train_values, src_test_values, train_labels, test_labels, train_missing, test_missing, train_timestamps, test_timestamps = \
         get_test_training_data(fill_values, fill_labels, src_misses, fill_timestamps, test_portion)
     end_time = time.time()
     third_time = get_time(start_time, end_time)
-    # 显示测试与训练数据集
-    show_prepare_data_one \
-        (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
-    train_data_num = train_values.size
+    train_data_num = src_train_values.size
     train_label_num = np.sum(train_labels == 1)
     train_label_proportion = train_label_num / train_data_num
-    test_data_num = test_values.size
+    test_data_num = src_test_values.size
     test_label_num = np.sum(test_labels == 1)
     test_label_proportion = test_label_num / test_data_num
     print_info(use_plt, "3.获得训练与测试数据集【共用时{}".format(third_time))
@@ -373,17 +375,22 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
                         "测试数据量：{}，有{}个标注,标签比例约为{:.2%}"
                .format(train_data_num, train_label_num, train_label_proportion,
                        test_data_num, test_label_num, test_label_proportion))
+    # 显示测试与训练数据集
+    show_prepare_data_one \
+        (use_plt, "original & training & test data", "original data", "training data", "test_data", src_timestamps,
+         src_values, train_timestamps, src_train_values, test_timestamps, src_test_values)
     # 标准化数据
     start_time = time.time()
     train_values, test_values, train_missing, train_labels, train_mean, train_std = \
-        standardize_data(train_labels, train_missing, train_values, test_values)
+        standardize_data(train_labels, train_missing, src_train_values, src_test_values)
     end_time = time.time()
     forth_time = get_time(start_time, end_time)
     print_info(use_plt, "4.标准化训练和测试数据【共用时{}".format(forth_time))
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, src_timestamps, src_values, train_timestamps, train_values, test_timestamps, test_values)
+        (use_plt, "标准化后数据", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+         train_values, test_timestamps, test_values)
     # 进行训练，预测，获得重构概率
     start_time = time.time()
     refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message = \
@@ -428,7 +435,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
         print_text(use_plt, "第{}：{}用时{}".format(i + 1, t.name, t.use))
         t_use.append(t.use)
         t_name.append(t.name)
-    save_data_cache(use_plt,is_local, file, test_portion, src_threshold_value,
+    save_data_cache(use_plt, is_local, file, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,
                     third_time, train_data_num, train_label_num, train_label_proportion, test_data_num,
@@ -436,4 +443,4 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
                     epoch_time, fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num,
                     interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values,
                     test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
-                    train_message, train_timestamps, train_values, t_use, t_name)
+                    train_message, train_timestamps, train_values, t_use, t_name, src_train_values, src_test_values)

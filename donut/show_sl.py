@@ -11,17 +11,19 @@ def text(content):
     st.text(content)
 
 
-def prepare_data_one(train_timestamp, train_values, test_timestamp, test_values):
+def prepare_data_one(train_name, test_name, train_timestamp, train_values, test_timestamp, test_values):
     """
     原始数据与测试训练数据多图显示
     Args:
+        train_name: 训练图例
+        test_name: 测试图例
         train_timestamp: 训练数据时间轴
         train_values:  训练数据值
         test_timestamp: 测试数据时间轴
         test_values:  测试数据值
     """
-    line_chart(train_timestamp, train_values, 'train_data')
-    line_chart(test_timestamp, test_values, 'test_data')
+    line_chart(train_timestamp, train_values, train_name)
+    line_chart(test_timestamp, test_values, test_name)
 
 
 def show_test_score(test_timestamp, test_values, test_scores):

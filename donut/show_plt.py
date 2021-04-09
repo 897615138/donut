@@ -4,11 +4,15 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
-def prepare_data_one(src_timestamps, src_values, train_timestamps, train_values, test_timestamps,
-                     test_values):
+def prepare_data_one(name, src_name, train_name, test_name, src_timestamps, src_values, train_timestamps, train_values,
+                     test_timestamps, test_values):
     """
     原始数据与测试训练数据多图显示
     Args:
+        train_name: 训练图例
+        test_name: 测试图例
+        src_name: 原数据图例
+        name: 图名
         src_timestamps: 原始时间戳
         src_values: 原始值
         train_timestamps: 训练数据时间戳
@@ -18,11 +22,10 @@ def prepare_data_one(src_timestamps, src_values, train_timestamps, train_values,
     """
     plt.figure(figsize=(40, 10), dpi=128)
     plt.figure(1)
-    plt.title("prepare the csv_data")
-    plt.plot(src_timestamps, src_values, color='r', label='original csv_data')
-    plt.plot(train_timestamps, train_values, label='train_data', color="y")
-    plt.plot(test_timestamps, test_values, label='test_data', color='b')
-    plt.title("original csv_data & training and testing data")
+    plt.title(name)
+    plt.plot(src_timestamps, src_values, label=src_name, color='r')
+    plt.plot(train_timestamps, train_values, label=train_name, color="y")
+    plt.plot(test_timestamps, test_values, label=test_name, color='b')
 
 
 def show_test_score(test_timestamp, test_values, test_scores):
@@ -54,7 +57,7 @@ def line_chart(x, y, name):
     plt.figure(figsize=(40, 10), dpi=128)
     # plt.figure(1)
     plt.plot(x, y, label=name)
-    plt.title("name")
+    plt.title(name)
     plt.xlabel('timestamp')
     plt.ylabel('value')
     plt.legend()

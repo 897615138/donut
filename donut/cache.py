@@ -14,10 +14,12 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
                     fifth_time, catch_num, labels_num, accuracy, special_anomaly_num, interval_num, interval_str,
                     special_anomaly_t, special_anomaly_v, special_anomaly_s, test_timestamps, test_values, test_scores,
                     model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value,
-                    train_message, train_timestamps, train_values, t_use, t_name):
+                    train_message, train_timestamps, train_values, t_use, t_name, src_train_values, src_test_values):
     """
     保存缓存对象
     Args:
+        src_test_values: 标准化前的测试数据
+        src_train_values: 标准前的训练数据
         is_local: 展示本地图片
         t_name: 用时排序名称
         t_use: 用时排序用时
@@ -128,6 +130,8 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
     db["train_values"] = train_values
     db["t_use"] = t_use
     db["t_name"] = t_name
+    db["src_train_values"] = src_train_values
+    db["src_test_values"] = src_test_values
     end_time = time.time()
     print_info(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
@@ -246,15 +250,19 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
     train_values = db["train_values"]
     t_use = db["t_use"]
     t_name = db["t_name"]
+    src_train_values = db["src_train_values"]
+    src_test_values = db["src_test_values"]
     end_time = time.time()
     print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
     db.close()
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \
            train_data_num, train_label_num, train_label_proportion, test_data_num, test_label_num, test_label_proportion, \
-           train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, labels_num, \
-           accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, special_anomaly_s, \
-           test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, fit_time, probability_time, threshold_value, train_message, train_timestamps, train_values, t_use, t_name
+           train_mean, train_std, forth_time, epoch_list, lr_list, epoch_time, fifth_time, src_threshold_value, catch_num, \
+           labels_num, accuracy, special_anomaly_num, interval_num, interval_str, special_anomaly_t, special_anomaly_v, \
+           special_anomaly_s,  test_timestamps, test_values, test_scores, model_time, trainer_time, predictor_time, \
+           fit_time, probability_time, threshold_value, train_message, train_timestamps, train_values, t_use, t_name, \
+           src_train_values, src_test_values
 
 
 def is_has_cache(file_name, test_portion, src_threshold_value, is_local):
