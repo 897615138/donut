@@ -78,7 +78,8 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
     """
     print_text(use_plt, "缓存开始")
     start_time = time.time()
-    db = shelve.open(file_name_converter(file_name, test_portion, src_threshold_value, is_local))
+    name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
+    db = shelve.open(name )
     db["src_timestamps"] = src_timestamps
     db["src_labels"] = src_labels
     db["src_values"] = src_values
