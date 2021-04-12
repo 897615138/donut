@@ -332,6 +332,8 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
         src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
     elif is_local:
         src_timestamps, src_labels, src_values = gain_data(file)
+        a = file.split("/")
+        file = a[len(a) - 1]
     else:
         src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
     end_time = time.time()
