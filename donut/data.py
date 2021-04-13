@@ -172,6 +172,8 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     for i, score in enumerate(labels_score):
         catch_index = np.where(test_score > float(score))[0].tolist()
         catch_num = np.size(catch_index)
+        if catch_num == 0:
+            continue
         accuracy = labels_num / catch_num
         if 0.9 < accuracy <= 1:
             # 存在就存储
@@ -189,7 +191,8 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     print_warn(use_plt, "请注意异常标注的准确性")
     catch_index = np.where(test_score >= float(score)).tolist()
     catch_num = np.size(catch_index)
-    accuracy = labels_num / catch_num
+    if catch_num is not 0:
+        accuracy = labels_num / catch_num
     return score, catch_num, catch_index, accuracy
 
 
@@ -214,11 +217,12 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
     if threshold_value is not None:
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
-        accuracy = labels_num / catch_num
-        if accuracy <= 0.9:
-            print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
-        elif accuracy > 1:
-            print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
+        if catch_num is not 0:
+            accuracy = labels_num / catch_num
+            if accuracy <= 0.9:
+                print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
+            elif accuracy > 1:
+                print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
     elif len(labels_index) == 0:
         threshold_value = compute_default_threshold_value(test_scores)
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
@@ -228,7 +232,8 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
         threshold_value, catch_num, catch_index, accuracy = \
             get_threshold_value_label(use_plt, labels_score, test_scores, labels_num)
         # 准确度
-        accuracy = labels_num / catch_num
+        if catch_num is not 0:
+            accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
 
@@ -272,7 +277,8 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values,
+         train_timestamps,
          train_values, test_timestamps, test_values)
     print_info(use_plt, "5.构建Donut模型【共用时{}】\n6.构建训练器【共用时{}】\n7.构造预测器【共用时{}】\n"
                .format(model_time, trainer_time, predictor_time))
@@ -392,7 +398,8 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
-        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values, train_timestamps,
+        (use_plt, "standard data", "original data", "training data", "test_data", src_timestamps, src_values,
+         train_timestamps,
          train_values, test_timestamps, test_values)
     # 进行训练，预测，获得重构概率
     start_time = time.time()
