@@ -1,3 +1,4 @@
+import csv
 import time
 
 import numpy as np
@@ -90,7 +91,7 @@ def get_constant_timestamp(timestamps, step):
         return 0, None
     else:
         timestamps = np.sort(timestamps)
-        print(timestamps)
+        # print(timestamps)
         has_dot = False
         has_head = False
         interval_str = "其中时间戳分布为\n"
@@ -113,7 +114,7 @@ def get_constant_timestamp(timestamps, step):
                     last = t
                 else:
                     if has_dot and last != start:
-                        interval_str = interval_str + str(last) + ","
+                        interval_str = interval_str + str(last) + " "
                     else:
                         interval_str = interval_str + "," + str() + ","
                     count = count + 1
@@ -274,3 +275,21 @@ class BatchSlidingWindow(object):
             # 索引加上偏移量
             idx = self._indices[s] + self._offsets
             yield tuple(a[idx] for a in arrays)
+
+def split_csv(file_name,begin,num):
+    header=["timestamp","value","label","KPI ID"]
+    rows=[]
+    with open(file_name, 'r') as f:
+        reader = csv.reader(f)
+        next(reader)
+        count=1
+        for i in reader:
+            if count in range(begin,begin+num):
+                rows.append([int(i[0]),float(i[1]),int(i[2]),str(i[3])])
+            count=count+1
+    with open(file_name+'new.csv', 'w', newline='')as f:
+        ff = csv.writer(f)
+        ff.writerow(header)
+        ff.writerows(rows)
+
+split_csv('../sample_data/real.csv',1,65536)
