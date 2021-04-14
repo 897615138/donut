@@ -179,12 +179,12 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
             # 存在就存储
             catch = {"score": score, "num": catch_num, "index": catch_index, "accuracy": accuracy}
             lis.append(catch)
-    print_text(use_plt, lis)
+    # print_text(use_plt, lis)
     # 字典按照生序排序 取最大的准确度
     if len(lis) > 0:
         sorted(lis, key=lambda dict_catch: (dict_catch['accuracy'], dict_catch['score']))
         catch = lis[- 1]
-        print_text(use_plt, catch)
+        # print_text(use_plt, catch)
         return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
     # 没有满足0.9标准的
     score = np.min(labels_score)
