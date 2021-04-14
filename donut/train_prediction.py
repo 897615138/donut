@@ -85,7 +85,7 @@ def train_prediction(use_plt, train_values, train_labels, train_missing, test_va
             fit_time = get_time(start_time, end_time)
             print_info(use_plt, "8.训练器训练模型【共用时{}】".format(fit_time))
             print_text(use_plt, "所有epoch【共用时：{}】".format(epoch_time))
-            print_text(use_plt, "退火学习率随epoch变化\n")
+            print_text(use_plt, "退火学习率 学习率随epoch变化")
             show_line_chart(use_plt, epoch_list, lr_list, 'annealing learning rate')
             # 5.预测器获取重构概率
             start_time = time.time()

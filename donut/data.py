@@ -191,6 +191,7 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     print_warn(use_plt, "请注意异常标注的准确性")
     catch_index = np.where(test_score >= float(score)).tolist()
     catch_num = np.size(catch_index)
+    accuracy = None
     if catch_num is not 0:
         accuracy = labels_num / catch_num
     return score, catch_num, catch_index, accuracy
@@ -214,15 +215,20 @@ def catch_label(use_plt, test_labels, test_scores, zero_num, threshold_value):
     labels_index = [ele for ele in labels_index if ele > test_labels[0] + zero_num]
     labels_num = np.size(labels_index)
     accuracy = None
+    # 有人为设置阈值
     if threshold_value is not None:
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
         catch_num = np.size(catch_index)
-        if catch_num is not 0:
+        if catch_num is 0:
+            print_warn(use_plt, "当前阈值无异常，请确认")
+        else:
             accuracy = labels_num / catch_num
             if accuracy <= 0.9:
                 print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
             elif accuracy > 1:
                 print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
+    # 默认阈值
+    # 无异常标签
     elif len(labels_index) == 0:
         threshold_value = compute_default_threshold_value(test_scores)
         catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
@@ -264,7 +270,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     show_line_chart(use_plt, fill_timestamps, fill_values, 'filled data')
     print_text(use_plt, "填充至{}条数据，时间戳步长:{},补充{}个时间戳数据".format(fill_data_num, fill_step, fill_num))
 
-    print_info(use_plt, "3.获得训练与测试数据集【共用时{}".format(third_time))
+    print_info(use_plt, "3.获得训练与测试数据集【共用时{}】".format(third_time))
     print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
                         "测试数据量：{}，有{}个标注,标签比例约为{:.2%}"
                .format(train_data_num, train_label_num, train_label_proportion,
@@ -273,7 +279,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
     show_prepare_data_one \
         (use_plt, "original and training and test data", "original data", "training data", "test_data", src_timestamps,
          src_values, train_timestamps, src_train_values, test_timestamps, src_test_values)
-    print_info(use_plt, "4.标准化训练和测试数据【共用时{}".format(forth_time))
+    print_info(use_plt, "4.标准化训练和测试数据【共用时{}】".format(forth_time))
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
@@ -286,7 +292,7 @@ def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_lo
         print_text(use_plt, text)
     print_info(use_plt, "8.训练器训练模型【共用时{}】".format(fit_time))
     print_text(use_plt, "所有epoch【共用时：{}】".format(epoch_time))
-    print_text(use_plt, "退火学习率随epoch变化\n")
+    print_text(use_plt, "退火学习率 学习率随epoch变化")
     show_line_chart(use_plt, epoch_list, lr_list, 'annealing learning rate')
     print_info(use_plt, "9.预测器获取重构概率【共用时{}】".format(probability_time))
     show_test_score(use_plt, test_timestamps, test_values, test_scores)
@@ -334,15 +340,20 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
         src_threshold_value: 初始阈值
     """
     start_time = time.time()
-    if is_upload:
-        src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
-    elif is_local:
-        src_timestamps, src_labels, src_values = gain_data(file)
-        a = file.split("/")
-        file = a[len(a) - 1]
-    else:
-        src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
-    end_time = time.time()
+    try:
+        if is_upload:
+            src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
+        elif is_local:
+            src_timestamps, src_labels, src_values = gain_data(file)
+            a = file.split("/")
+            file = a[len(a) - 1]
+        else:
+            src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
+        end_time = time.time()
+    except Exception:
+        print_warn(use_plt, "找不到数据文件，请检查文件名与路径")
+        return
+
     # 原数据数量
     src_data_num = src_timestamps.size
     # 原数据标签数
@@ -378,7 +389,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
     test_data_num = src_test_values.size
     test_label_num = np.sum(test_labels == 1)
     test_label_proportion = test_label_num / test_data_num
-    print_info(use_plt, "3.获得训练与测试数据集【共用时{}".format(third_time))
+    print_info(use_plt, "3.获得训练与测试数据集【共用时{}】".format(third_time))
     print_text(use_plt, "训练数据量：{}，有{}个标注,标签比例约为{:.2%}\n"
                         "测试数据量：{}，有{}个标注,标签比例约为{:.2%}"
                .format(train_data_num, train_label_num, train_label_proportion,
@@ -394,7 +405,7 @@ def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, i
         standardize_data(train_labels, train_missing, src_train_values, src_test_values)
     end_time = time.time()
     forth_time = get_time(start_time, end_time)
-    print_info(use_plt, "4.标准化训练和测试数据【共用时{}".format(forth_time))
+    print_info(use_plt, "4.标准化训练和测试数据【共用时{}】".format(forth_time))
     print_text(use_plt, "平均值：{}，标准差：{}".format(train_mean, train_std))
     # 显示标准化后的数据
     show_prepare_data_one \
