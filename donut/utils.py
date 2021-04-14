@@ -292,4 +292,4 @@ def split_csv(file_name,begin,num):
         ff.writerow(header)
         ff.writerows(rows)
 
-split_csv('../sample_data/real.csv',1,65536)
+# split_csv('../sample_data/real.csv',1,65536)
