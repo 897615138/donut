@@ -50,7 +50,8 @@ def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value)
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
 
-def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, test_scores, real_test_labels):
+def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, test_scores, real_test_labels,
+                   real_test_missing):
     """
     根据阈值捕获异常点
     Args:
@@ -71,7 +72,7 @@ def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, te
     # 有人为设置的阈值
     if threshold_value is not None:
         f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
-            get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, 1)
+            get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index,real_test_missing, 1)
         if f_score is None:
             print_info(use_plt, "当前阈值无异常，请确认")
         else:

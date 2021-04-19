@@ -738,7 +738,7 @@ def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.
                .format(real_test_data_num, real_test_label_num, real_test_missing_num, real_test_label_proportion))
     # 根据分数捕获异常 获得阈值
     threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall \
-        = catch_label_v2(use_plt, src_threshold_value, train_scores, real_train_labels, test_scores, real_test_labels)
+        = catch_label_v2(use_plt, src_threshold_value, train_scores, real_train_labels, test_scores, real_test_labels,real_test_missing)
     fp_interval_num, fp_interval_str = get_constant_timestamp(fp_index, fill_step)
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(fp_interval_num, fp_interval_str))
     # time_list = [TimeUse(get_train_file_time, "1.分析csv数据"), TimeUse(fill_train_time, "2.填充数据"),

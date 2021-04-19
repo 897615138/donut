@@ -3,7 +3,7 @@ import numpy as np
 from donut.util.out.out import print_warn
 
 
-def get_fp(catch_index, real_test_labels_index):
+def get_fp(catch_index, real_test_labels_index, real_test_missing):
     """
     FP 未标记但超过阈值 实际为正常点单倍误判为异常点 去除延迟点
     Args:
@@ -22,11 +22,19 @@ def get_fp(catch_index, real_test_labels_index):
                 or fp + 8 in real_test_labels_index or fp + 9 in real_test_labels_index or fp - 9 in real_test_labels_index \
                 or fp + 10 in real_test_labels_index or fp - 10 in real_test_labels_index:
             fp_index.remove(fp)
+        elif fp - 1 in real_test_missing or fp - 2 in real_test_missing or fp - 3 in real_test_missing \
+                or fp - 4 in real_test_missing or fp - 5 in real_test_missing or fp - 6 in real_test_missing \
+                or fp + 1 in real_test_missing or fp + 2 in real_test_missing or fp + 3 in real_test_missing \
+                or fp + 4 in real_test_missing or fp + 5 in real_test_missing or fp + 6 in real_test_missing \
+                or fp - 7 in real_test_missing or fp + 7 in real_test_missing or fp - 8 in real_test_missing \
+                or fp + 8 in real_test_missing or fp + 9 in real_test_missing or fp - 9 in real_test_missing \
+                or fp + 10 in real_test_missing or fp - 10 in real_test_missing:
+            fp_index.remove(fp)
     fp_num = np.size(fp_index)
     return fp_index, fp_num
 
 
-def get_tp(catch_index, real_test_labels_index):
+def get_tp(catch_index, real_test_labels_index, real_test_missing):
     """
     TP 成功检测出的异常
     Args:
@@ -45,6 +53,14 @@ def get_tp(catch_index, real_test_labels_index):
                 or tp - 7 in real_test_labels_index or tp + 7 in real_test_labels_index or tp - 8 in real_test_labels_index \
                 or tp + 8 in real_test_labels_index or tp + 9 in real_test_labels_index or tp - 9 in real_test_labels_index \
                 or tp + 10 in real_test_labels_index or tp - 10 in real_test_labels_index:
+            tp_index.append(tp)
+        elif tp - 1 in real_test_missing or tp - 2 in real_test_missing or tp - 3 in real_test_missing \
+                or tp - 4 in real_test_missing or tp - 5 in real_test_missing or tp - 6 in real_test_missing \
+                or tp + 1 in real_test_missing or tp + 2 in real_test_missing or tp + 3 in real_test_missing \
+                or tp + 4 in real_test_missing or tp + 5 in real_test_missing or tp + 6 in real_test_missing \
+                or tp - 7 in real_test_missing or tp + 7 in real_test_missing or tp - 8 in real_test_missing \
+                or tp + 8 in real_test_missing or tp + 9 in real_test_missing or tp - 9 in real_test_missing \
+                or tp + 10 in real_test_missing or tp - 10 in real_test_missing:
             tp_index.append(tp)
     tp_index = set(tp_index)
     tp_index = list(tp_index)
@@ -67,7 +83,7 @@ def get_precision(tp_num, fp_num):
     return tp_num / (tp_num + fp_num)
 
 
-def get_fn(catch_index, real_test_labels_index):
+def get_fn(catch_index, real_test_labels_index, real_test_missing):
     """
     漏报的异常
     Args:
@@ -86,6 +102,14 @@ def get_fn(catch_index, real_test_labels_index):
                 or fn - 7 in real_test_labels_index or fn + 7 in real_test_labels_index or fn - 8 in real_test_labels_index \
                 or fn + 8 in real_test_labels_index or fn + 9 in real_test_labels_index or fn - 9 in real_test_labels_index \
                 or fn + 10 in real_test_labels_index or fn - 10 in real_test_labels_index:
+            fn_index.remove(fn)
+        elif fn - 1 in real_test_missing or fn - 2 in real_test_missing or fn - 3 in real_test_missing \
+                or fn - 4 in real_test_missing or fn - 5 in real_test_missing or fn - 6 in real_test_missing \
+                or fn + 1 in real_test_missing or fn + 2 in real_test_missing or fn + 3 in real_test_missing \
+                or fn + 4 in real_test_missing or fn + 5 in real_test_missing or fn + 6 in real_test_missing \
+                or fn - 7 in real_test_missing or fn + 7 in real_test_missing or fn - 8 in real_test_missing \
+                or fn + 8 in real_test_missing or fn + 9 in real_test_missing or fn - 9 in real_test_missing \
+                or fn + 10 in real_test_missing or fn - 10 in real_test_missing:
             fn_index.remove(fn)
     fn_num = np.size(fn_index)
     return fn_index, fn_num
@@ -123,7 +147,7 @@ def compute_f_score(precision, recall, a=1):
     return (a * a + 1) * precision * recall / (a * a * (precision + recall))
 
 
-def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, a=1):
+def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, real_test_missing, a=1):
     """
 
     Args:
@@ -148,11 +172,11 @@ def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, a
         return None, None, None, None, None, None, None, None, None, None, None
         # print_warn(use_plt, "该阈值分数没有捕捉到任何异常")
     # FP 未标记但超过阈值 实际为正常点单倍误判为异常点
-    fp_index, fp_num = get_fp(catch_index, real_test_labels_index)
+    fp_index, fp_num = get_fp(catch_index, real_test_labels_index, real_test_missing)
     # TP 成功检测出的异常
-    tp_index, tp_num = get_tp(catch_index, real_test_labels_index)
+    tp_index, tp_num = get_tp(catch_index, real_test_labels_index, real_test_missing)
     # FN  漏报
-    fn_index, fn_num = get_fn(catch_index, real_test_labels_index)
+    fn_index, fn_num = get_fn(catch_index, real_test_labels_index, real_test_missing)
     # Precision精度
     precision = get_precision(tp_num, fp_num)
     if precision is None:
