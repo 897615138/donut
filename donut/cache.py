@@ -1,9 +1,8 @@
 import os
 import shelve
-import time
 
 from donut.out import print_text, print_info
-from donut.utils import file_name_converter, format_time, TimeCounter
+from donut.utils import TimeCounter, file_name_converter, format_time
 
 
 def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,
@@ -199,6 +198,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
         threshold_value: 阈值
     """
     print_text(use_plt, "读取缓存开始")
+    tc= TimeCounter()
     tc.start()
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
     db = shelve.open(name)
