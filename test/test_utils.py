@@ -1,5 +1,5 @@
 import donut.utils as u
-
+import numpy as np
 
 def test_constant_time():
     time = [146962380, 146962410, 146962740, 146967720, 146967750, 1469677800,
@@ -15,3 +15,22 @@ def test_constant_time():
 
     interval_num, interval_str = u.get_constant_timestamp(time, 30)
     print(interval_num, interval_str)
+def test_merge():
+    train_timestamp_sorted=np.asarray([1,2])
+    test_timestamp_sorted=np.asarray([3,4,5])
+    merge_set = set(train_timestamp_sorted).intersection(set(test_timestamp_sorted))
+    print( len(merge_set))
+
+def test_union():
+    train_timestamp_sorted = np.asarray([1, 2,3])
+    test_timestamp_sorted = np.asarray([3, 4, 5])
+    union_list=list(set(train_timestamp_sorted).union(set(test_timestamp_sorted)))
+    print(union_list)
+
+def test_sqrt():
+    print(np.sqrt(3))
+
+def test_sub():
+    zero_num=1
+    train_timestamp_sorted = np.asarray([1, 2, 3])
+    print(train_timestamp_sorted[zero_num:np.size(train_timestamp_sorted)])

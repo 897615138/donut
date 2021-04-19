@@ -25,4 +25,4 @@ def dashboard_plt(file_name, test_portion, src_threshold_value, use_cache):
     else:
         show_new_data(True, file_name, test_portion, src_threshold_value, False, True)
 
-dashboard_plt("../sample_data/8192_7.24.csv", 0.3, None, False)
+# dashboard_plt("../sample_data/8192_7.24.csv", 0.3, None, False)

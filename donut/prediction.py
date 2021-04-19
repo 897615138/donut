@@ -5,7 +5,7 @@ from tfsnippet.utils import (VarScopeObject, get_default_session_or_error,
                              reopen_variable_scope)
 
 from .model import Donut
-from .utils import BatchSlidingWindow
+from .utils import BatchSlidingWindow, TimeCounter
 
 __all__ = ['DonutPredictor']
 
@@ -114,6 +114,8 @@ class DonutPredictor(VarScopeObject):
             np.ndarray: 重构概率，`last_point_only`如果是 :obj:`True`，就是一维数组，
                 `last_point_only`如果是 :obj:`False`，就是二维数组
         """
+        tc = TimeCounter()
+        tc.start()
         with tf.name_scope('DonutPredictor.get_refactor_probability'):
             sess = get_default_session_or_error()
             collector = []
@@ -147,4 +149,6 @@ class DonutPredictor(VarScopeObject):
                                    feed_dict=feed_dict)
                     collector.append(b_r)
             # 合并小切片的数据
-            return np.concatenate(collector, axis=0)
+            tc.end()
+            test_probability_time = tc.get_s() + "秒"
+            return np.concatenate(collector, axis=0), test_probability_time

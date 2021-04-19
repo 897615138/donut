@@ -14,7 +14,7 @@ from tfsnippet.utils import (VarScopeObject,
 from donut.out import print_text
 from .augmentation import MissingDataInjection
 from .model import Donut
-from .utils import BatchSlidingWindow, get_time
+from .utils import BatchSlidingWindow, TimeCounter
 
 __all__ = ['DonutTrainer']
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -232,6 +232,7 @@ class DonutTrainer(VarScopeObject):
         epoch_list = []
         lr_list = []
         train_message = []
+        tc = TimeCounter()
         with TrainLoop(
                 param_vars=self._train_params,
                 early_stopping=True,
@@ -239,7 +240,7 @@ class DonutTrainer(VarScopeObject):
                 max_epoch=self._max_epoch,
                 max_step=self._max_step) as loop:  # type: TrainLoop
             loop.print_training_summary()
-            start_time = time.time()
+            tc.start()
             for epoch in loop.iter_epochs():
                 aug_values, aug_labels, aug_missing = aug.augment(train_values, train_labels, train_missing)
                 label_or_missing = np.logical_or(aug_labels, aug_missing).astype(np.int32)
@@ -277,5 +278,5 @@ class DonutTrainer(VarScopeObject):
                     loop.println('Learning rate decreased to {}'.format(lr), with_tag=True)
                     epoch_list.append(epoch)
                     lr_list.append(lr)
-            end_time = time.time()
-        return epoch_list, lr_list, get_time(start_time, end_time),train_message
+            tc.end()
+        return epoch_list, lr_list, tc.get_s()+"秒",train_message
