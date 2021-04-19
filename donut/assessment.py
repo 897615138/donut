@@ -1,6 +1,6 @@
 import numpy as np
 
-from donut.out import print_warn
+from donut.util.out.out import print_warn
 
 
 def get_fp(catch_index, real_test_labels_index):
@@ -25,7 +25,7 @@ def get_tp(catch_index, real_test_labels_index):
         real_test_labels_index: 实际是异常点
 
     Returns:
-
+        成功检测出的异常
     """
     tp_index = set(catch_index).intersection(set(real_test_labels_index))
     tp_num = np.size(tp_index)
@@ -33,6 +33,15 @@ def get_tp(catch_index, real_test_labels_index):
 
 
 def get_precision(tp_num, fp_num):
+    """
+    精度
+    Args:
+        tp_num: TP
+        fp_num: FP
+
+    Returns:
+        精度
+    """
     if tp_num + fp_num == 0:
         return None
     return tp_num / (tp_num + fp_num)
@@ -54,12 +63,32 @@ def get_fn(catch_index, real_test_labels_index):
 
 
 def get_recall(tp_num, fn_num):
+    """
+    召回率
+    Args:
+        tp_num: TP
+        fn_num: FN
+
+    Returns:
+        召回率
+    """
     if tp_num + fn_num == 0:
         return None
     return tp_num / (tp_num + fn_num)
 
 
 def compute_f_score(precision, recall, a=1):
+    """
+    f-score
+    Args:
+        precision:精度
+        recall: 召回率
+        a: 系数
+
+    Returns:
+        f-score
+
+    """
     if (a == 0) or a is None or precision + recall == 0:
         return None
     return (a * a + 1) * precision * recall / (a * a * (precision + recall))
@@ -76,7 +105,7 @@ def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, a
         real_test_labels_index: 测试数据中真实异常标识的索引
 
     Returns:
-        f分数
+        最佳f分数相关
     """
     if (a == 0) or a is None:
         print_warn(use_plt, "系数为空或0")

@@ -12,8 +12,8 @@ from tfsnippet.utils import (VarScopeObject,
 
 from donut.augmentation import MissingDataInjection
 from donut.model import Donut
-from donut.out import print_text
-from donut.time_util import TimeCounter
+from donut.util.out.out import print_text
+from donut.util.time_util import TimeCounter
 
 __all__ = ['DonutTrainer']
 

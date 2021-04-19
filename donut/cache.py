@@ -2,8 +2,8 @@ import os
 import shelve
 
 from donut.converter import file_name_converter
-from donut.out import print_text, print_info
-from donut.time_util import TimeCounter, format_time
+from donut.util.out.out import print_text, print_info
+from donut.util.time_util import TimeCounter, format_time
 
 
 def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,

@@ -1,7 +1,7 @@
 import numpy as np
 
 from donut.assessment import get_F_score
-from donut.out import print_warn, print_info
+from donut.util.out.out import print_warn, print_info
 
 
 def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value):

@@ -5,9 +5,10 @@ from tfsnippet.utils import (VarScopeObject, get_default_session_or_error,
                              reopen_variable_scope)
 
 from donut.model import Donut
-from donut.time_util import TimeCounter
 
 __all__ = ['DonutPredictor']
+
+from donut.util.time_util import TimeCounter
 
 from donut.window import BatchSlidingWindow
 

@@ -3,9 +3,9 @@ from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
 from donut.model import Donut
-from donut.out import print_info, print_text, show_line_chart
+from donut.util.out.out import print_info, print_text, show_line_chart
 from donut.prediction import DonutPredictor
-from donut.time_util import TimeCounter
+from donut.util.time_util import TimeCounter
 from donut.training import DonutTrainer
 
 
