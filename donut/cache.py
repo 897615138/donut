@@ -3,7 +3,7 @@ import shelve
 import time
 
 from donut.out import print_text, print_info
-from donut.utils import get_time, file_name_converter, format_time
+from donut.utils import file_name_converter, format_time, TimeCounter
 
 
 def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,
@@ -76,8 +76,9 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
         fit_time: 训练时长
         probability_time: 获得重构概率用时
     """
+    tc = TimeCounter()
     print_text(use_plt, "缓存开始")
-    start_time = time.time()
+    tc.start()
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
     db = shelve.open(name )
     db["src_timestamps"] = src_timestamps
@@ -133,8 +134,8 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
     db["t_name"] = t_name
     db["src_train_values"] = src_train_values
     db["src_test_values"] = src_test_values
-    end_time = time.time()
-    print_info(use_plt, "缓存结束【共用时：{}】".format(get_time(start_time, end_time)))
+    tc.end()
+    print_info(use_plt, "缓存结束【共用时：{}】".format(tc.get_s()+"秒"))
     db.close()
 
 
@@ -198,7 +199,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
         threshold_value: 阈值
     """
     print_text(use_plt, "读取缓存开始")
-    start_time = time.time()
+    tc.start()
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
     db = shelve.open(name)
     src_timestamps = db["src_timestamps"]
@@ -254,8 +255,8 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
     t_name = db["t_name"]
     src_train_values = db["src_train_values"]
     src_test_values = db["src_test_values"]
-    end_time = time.time()
-    print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(get_time(start_time, end_time)))
+    tc.end()
+    print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(tc.get_s()+"秒"))
     db.close()
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \

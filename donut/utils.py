@@ -3,8 +3,11 @@ import time
 
 import numpy as np
 
-__all__ = ['get_time', 'get_constant_timestamp', 'file_name_converter', 'mini_batch_slices_iterator',
-           'BatchSlidingWindow', 'handle_src_threshold_value', 'compute_default_threshold_value']
+__all__ = ['get_constant_timestamp', 'file_name_converter', 'mini_batch_slices_iterator',
+           'BatchSlidingWindow', 'handle_src_threshold_value', 'compute_default_threshold_value_v1']
+
+from donut.data import get_threshold_value_label
+from donut.out import print_warn
 
 
 class TimeUse:
@@ -46,21 +49,7 @@ def format_time(atime):
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(atime))
 
 
-def get_time(start_time, end_time):
-    """
-    秒表
-    Args:
-        start_time: 开始时间
-        end_time: 结束时间
-
-    Returns:
-        使用时间 秒
-
-    """
-    return str(end_time - start_time) + "秒"
-
-
-def file_name_converter(file_name, test_portion, threshold_value,is_local):
+def file_name_converter(file_name, test_portion, threshold_value, is_local):
     """
     获得缓存路径
     Args:
@@ -94,34 +83,34 @@ def get_constant_timestamp(timestamps, step):
         # print(timestamps)
         has_dot = False
         has_head = False
-        interval_str = "其中时间戳分布为\n"
+        time_str = "其中时间戳分布为\n"
         last = 0
         interval_num = 0
         start = 0
         count = 0
         for i, t in enumerate(timestamps):
             if not has_head:
-                interval_str = interval_str + "\t  " + str(t)
+                time_str = time_str + "\t  " + str(t)
                 has_head = True
                 last = t
                 start = t
             else:
                 if int(t) == (int(last) + int(step)):
                     if not has_dot:
-                        interval_str = interval_str + "..."
+                        time_str = time_str + "..."
                         has_dot = True
                         interval_num = interval_num + 1
                     last = t
                 else:
                     if has_dot and last != start:
-                        interval_str = interval_str + str(last) + ","
+                        time_str = time_str + str(last) + ","
                     else:
-                        interval_str = interval_str + ","
+                        time_str = time_str + ","
                     count = count + 1
                     last = t
                     has_head = False
                     has_dot = False
-        return interval_num, interval_str
+        return interval_num, time_str
 
 
 def handle_src_threshold_value(src_threshold_value):
@@ -138,8 +127,159 @@ def handle_src_threshold_value(src_threshold_value):
         src_threshold_value = None
     return src_threshold_value
 
+def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value):
+    """
+    根据阈值捕获异常点
+    Args:
+        use_plt: 使用plt
+        test_labels: 测试异常标签
+        test_scores: 测试数据分数
+        zero_num: 补齐的0点数量
+        threshold_value: 已有的阈值
 
-def compute_default_threshold_value(values):
+    Returns:
+        捕捉到的异常信息，阈值信息
+
+    """
+    labels_index = list(np.where(test_labels == 1)[0])
+    labels_index = [ele for ele in labels_index if ele > test_labels[0] + zero_num]
+    labels_num = np.size(labels_index)
+    accuracy = None
+    # 有人为设置阈值
+    if threshold_value is not None:
+        catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
+        catch_num = np.size(catch_index)
+        if catch_num is 0:
+            print_warn(use_plt, "当前阈值无异常，请确认")
+        else:
+            accuracy = labels_num / catch_num
+            if accuracy <= 0.9:
+                print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
+            elif accuracy > 1:
+                print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
+    # 默认阈值
+    # 无异常标签
+    elif len(labels_index) == 0:
+        threshold_value = compute_default_threshold_value_v1(test_scores)
+        catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
+        catch_num = np.size(catch_index)
+    else:
+        labels_score = test_scores[labels_index]
+        threshold_value, catch_num, catch_index, accuracy = \
+            get_threshold_value_label(use_plt, labels_score, test_scores, labels_num)
+        # 准确度
+        if catch_num is not 0:
+            accuracy = labels_num / catch_num
+    return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
+
+
+def catch_label_v2(use_plt, src_threshold_value,
+                   train_scores, train_zero_num, real_train_labels,
+                   test_scores, test_zero_num, real_test_labels):
+    """
+    根据阈值捕获异常点
+    Args:
+        train_scores: 训练分数
+        real_train_labels: 训练异常标签
+        use_plt: 使用plt
+        fill_test_labels: 测试异常标签
+        test_scores: 测试数据分数
+        train_zero_num: 训练数据补齐的0点数量
+        test_zero_num: 测试数据补齐的0点数量
+        src_threshold_value: 已有的阈值
+    Returns:
+        捕捉到的异常信息，阈值信息
+    """
+    test_labels_index = list(np.where(real_test_labels == 1)[0])
+    # test_labels_index = [ele for ele in test_labels_index if ele > fill_test_labels[0] + test_zero_num]
+    # test_actual_num = np.size(test_scores) - test_zero_num
+    real_test_label_num = np.size(real_test_labels)
+    test_labels_score = test_scores[test_labels_index]
+    accuracy = None
+    # 有人为设置的阈值
+    if src_threshold_value is not None:
+        catch_index_set = np.where(test_scores > float(src_threshold_value))[0].tolist()
+        catch_num_set = np.size(catch_index_set)
+        if catch_num_set is 0:
+            print_info(use_plt, "当前阈值无异常，请确认")
+        else:
+            accuracy = real_test_label_num / catch_num_set
+            if accuracy <= 0.9:
+                print_warn(use_plt, "建议提高阈值或使用【默认阈值】")
+            elif accuracy > 1:
+                print_warn(use_plt, "建议降低阈值或使用【默认阈值】")
+    # 默认阈值
+    else:
+        train_labels_index = list(np.where(real_train_labels == 1)[0])
+        train_labels_num_vo = np.size(train_labels_index)
+        # 训练数据有异常标签
+        if train_labels_num_vo > 0:
+            # 去前面的0
+            train_labels_index = [ele for ele in train_labels_index if ele > real_train_labels[0] + train_zero_num]
+            train_labels_num_vo = np.size(train_labels_index)
+            train_labels_score = train_scores[train_labels_index]
+            score, catch_num, catch_index, accuracy \
+                = compute_default_label_threshold_value(train_labels_score, test_scores, real_test_label_num)
+            if accuracy < 0.9:
+                print_warn(use_plt, "请注意训练数据异常标注的准确性,或者手动调整阈值")
+
+
+def compute_default_label_threshold_value(
+        labels_score, test_score, test_labels_num_vo, test_actual_num, test_labels_index):
+    """
+    计算默认阈值 【训练数据有异常标注】
+    Args:
+        test_labels_index: 异常索引
+        test_actual_num: 测试数据实际有效分数数据数量
+        labels_score: 训练异常标注分数
+        test_score: 测试分数
+        test_labels_num_vo: 测试异常标注数量
+
+    Returns:
+        阈值分数，捕捉到的异常数量，捕捉到的异常索引，准确率
+    """
+    # 降序
+    merge_score = np.asarray(labels_score)
+    # merge_score = np.asarray(set(train_labels_score).intersection(set(test_labels_score)))
+    merge_score = merge_score[np.argsort(-merge_score)]
+    lis = []
+    for i, score in enumerate(merge_score):
+        catch_index = np.where(test_score > float(score))[0].tolist()
+        catch_num = np.size(catch_index)
+        # FP 未标记但超过阈值 实际为正常点单倍误判为异常点
+        fp_index = list(set(catch_index) - set(test_labels_index))
+        special_anomaly_t = test_timestamps[special_anomaly_index]
+        special_anomaly_s = test_scores[special_anomaly_index]
+        special_anomaly_v = test_values[special_anomaly_index]
+        special_anomaly_num = len(special_anomaly_t)
+        interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
+        print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, interval_num))
+        # 精度
+        # precision =
+        accuracy = test_labels_num_vo / catch_num
+        if 0.9 < accuracy <= 1:
+            # 存在就存储
+            catch = {"score": score, "num": catch_num, "index": catch_index, "accuracy": accuracy}
+            lis.append(catch)
+    # 字典按照生序排序 取最大的准确度
+    if len(lis) > 0:
+        sorted(lis, key=lambda dict_catch: (dict_catch['accuracy'], dict_catch['score']))
+        catch = lis[- 1]
+        return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
+    # 没有满足0.9标准的
+    score = np.min(merge_score)
+    catch_index = np.where(test_score >= float(score)).tolist()
+    catch_num = np.size(catch_index)
+    accuracy = None
+    if catch_num is not 0:
+        accuracy = test_labels_num_vo / catch_num
+    return score, catch_num, catch_index, accuracy
+
+
+
+
+
+def compute_default_threshold_value_v1(values):
     """
     默认阈值 至多10个数据
     Args:
@@ -180,6 +320,24 @@ def mini_batch_slices_iterator(length, batch_size,
         start += batch_size
     if not ignore_incomplete_batch and start < length:
         yield slice(start, length, 1)
+
+
+class TimeCounter(object):
+    def __init__(self):
+        self._start = time.time()
+        self._end = time.time()
+
+    def start(self):
+        self._start = time.time()
+
+    def end(self):
+        self._end = time.time()
+
+    def get(self):
+        return self._end - self._start
+
+    def get_s(self):
+        return str(self.get())
 
 
 class BatchSlidingWindow(object):
@@ -276,18 +434,19 @@ class BatchSlidingWindow(object):
             idx = self._indices[s] + self._offsets
             yield tuple(a[idx] for a in arrays)
 
-def split_csv(file_name,begin,num):
-    header=["timestamp","value","label","KPI ID"]
-    rows=[]
+
+def split_csv(file_name, begin, num):
+    header = ["timestamp", "value", "label", "KPI ID"]
+    rows = []
     with open(file_name, 'r') as f:
         reader = csv.reader(f)
         next(reader)
-        count=1
+        count = 1
         for i in reader:
-            if count in range(begin,begin+num):
-                rows.append([int(i[0]),float(i[1]),int(i[2]),str(i[3])])
-            count=count+1
-    with open(file_name+'new.csv', 'w', newline='')as f:
+            if count in range(begin, begin + num):
+                rows.append([int(i[0]), float(i[1]), int(i[2]), str(i[3])])
+            count = count + 1
+    with open(file_name + 'new.csv', 'w', newline='')as f:
         ff = csv.writer(f)
         ff.writerow(header)
         ff.writerows(rows)
