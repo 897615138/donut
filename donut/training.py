@@ -1,5 +1,4 @@
 import os
-import time
 
 import numpy as np
 import six
@@ -11,12 +10,15 @@ from tfsnippet.utils import (VarScopeObject,
                              ensure_variables_initialized,
                              get_variables_as_dict)
 
+from donut.augmentation import MissingDataInjection
+from donut.model import Donut
 from donut.out import print_text
-from .augmentation import MissingDataInjection
-from .model import Donut
-from .utils import BatchSlidingWindow, TimeCounter
+from donut.time_util import TimeCounter
 
 __all__ = ['DonutTrainer']
+
+from donut.window import BatchSlidingWindow
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -279,4 +281,4 @@ class DonutTrainer(VarScopeObject):
                     epoch_list.append(epoch)
                     lr_list.append(lr)
             tc.end()
-        return epoch_list, lr_list, tc.get_s()+"秒",train_message
+        return epoch_list, lr_list, tc.get_s() + "秒", train_message

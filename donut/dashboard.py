@@ -2,7 +2,7 @@ import streamlit as st
 
 from donut.cache import is_has_cache
 from donut.data import show_cache_data, show_new_data
-from donut.utils import handle_src_threshold_value
+from donut.threshold import handle_src_threshold_value
 
 st.title('Donut')
 file_option = st.selectbox('数据来源', ('选择储存至项目中的文件', '上传文件'))

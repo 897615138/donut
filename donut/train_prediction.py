@@ -2,9 +2,11 @@ import tensorflow as tf
 from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
-from donut import Donut, DonutTrainer, DonutPredictor
+from donut.model import Donut
 from donut.out import print_info, print_text, show_line_chart
-from donut.utils import TimeCounter
+from donut.prediction import DonutPredictor
+from donut.time_util import TimeCounter
+from donut.training import DonutTrainer
 
 
 def train_prediction_v1(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,

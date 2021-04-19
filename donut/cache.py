@@ -1,8 +1,9 @@
 import os
 import shelve
 
+from donut.converter import file_name_converter
 from donut.out import print_text, print_info
-from donut.utils import TimeCounter, file_name_converter, format_time
+from donut.time_util import TimeCounter, format_time
 
 
 def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,
@@ -79,7 +80,7 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
     print_text(use_plt, "缓存开始")
     tc.start()
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
-    db = shelve.open(name )
+    db = shelve.open(name)
     db["src_timestamps"] = src_timestamps
     db["src_labels"] = src_labels
     db["src_values"] = src_values
@@ -134,7 +135,7 @@ def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_va
     db["src_train_values"] = src_train_values
     db["src_test_values"] = src_test_values
     tc.end()
-    print_info(use_plt, "缓存结束【共用时：{}】".format(tc.get_s()+"秒"))
+    print_info(use_plt, "缓存结束【共用时：{}】".format(tc.get_s() + "秒"))
     db.close()
 
 
@@ -198,7 +199,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
         threshold_value: 阈值
     """
     print_text(use_plt, "读取缓存开始")
-    tc= TimeCounter()
+    tc = TimeCounter()
     tc.start()
     name = file_name_converter(file_name, test_portion, src_threshold_value, is_local)
     db = shelve.open(name)
@@ -256,7 +257,7 @@ def gain_data_cache(use_plt, file_name, test_portion, src_threshold_value, is_lo
     src_train_values = db["src_train_values"]
     src_test_values = db["src_test_values"]
     tc.end()
-    print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(tc.get_s()+"秒"))
+    print_info(use_plt, "读取缓存数据结束【共用时：{}】".format(tc.get_s() + "秒"))
     db.close()
     return src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion, first_time, \
            fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time, third_time, \

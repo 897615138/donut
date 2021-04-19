@@ -6,10 +6,11 @@ import pandas as pd
 import streamlit as st
 
 from donut.cache import gain_data_cache, save_data_cache
+from donut.threshold import catch_label_v1, catch_label_v2
 from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one, print_warn, print_info
 from donut.preprocessing import standardize_kpi, complete_timestamp
+from donut.time_util import TimeCounter, get_constant_timestamp, TimeUse
 from donut.train_prediction import train_prediction_v1, train_prediction_v2
-from donut.utils import get_constant_timestamp, TimeUse, TimeCounter, catch_label_v1, catch_label_v2
 
 
 def prepare_data(file_name, test_portion=0.3):
@@ -197,49 +198,6 @@ def handle_refactor_probability_v2(refactor_probability, data_num, timestamps, v
     missing = missing[zero_num:np.size(missing)]
     refactor_probability = 0 - refactor_probability
     return refactor_probability, zero_num, timestamps, value, label, missing
-
-
-def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
-    """
-    带异常标签的默认阈值
-    Args:
-        use_plt: 展示方式
-        labels_num: 标签数量
-        test_score: 所有分值
-        labels_score: 异常标签对应分数
-
-    Returns:
-        默认阈值
-    """
-    # 降序
-    labels_score = labels_score[np.argsort(-labels_score)]
-    lis = []
-    for i, score in enumerate(labels_score):
-        catch_index = np.where(test_score > float(score))[0].tolist()
-        catch_num = np.size(catch_index)
-        if catch_num == 0:
-            continue
-        accuracy = labels_num / catch_num
-        if 0.9 < accuracy <= 1:
-            # 存在就存储
-            catch = {"score": score, "num": catch_num, "index": catch_index, "accuracy": accuracy}
-            lis.append(catch)
-    # print_text(use_plt, lis)
-    # 字典按照生序排序 取最大的准确度
-    if len(lis) > 0:
-        sorted(lis, key=lambda dict_catch: (dict_catch['accuracy'], dict_catch['score']))
-        catch = lis[- 1]
-        # print_text(use_plt, catch)
-        return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("accuracy")
-    # 没有满足0.9标准的
-    score = np.min(labels_score)
-    print_warn(use_plt, "请注意异常标注的准确性")
-    catch_index = np.where(test_score >= float(score)).tolist()
-    catch_num = np.size(catch_index)
-    accuracy = None
-    if catch_num is not 0:
-        accuracy = labels_num / catch_num
-    return score, catch_num, catch_index, accuracy
 
 
 def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
