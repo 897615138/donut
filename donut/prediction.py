@@ -4,8 +4,8 @@ import tensorflow as tf
 from tfsnippet.utils import (VarScopeObject, get_default_session_or_error,
                              reopen_variable_scope)
 
-from .model import Donut
-from .utils import BatchSlidingWindow, TimeCounter
+from donut.model import Donut
+from donut.utils import BatchSlidingWindow, TimeCounter
 
 __all__ = ['DonutPredictor']
 

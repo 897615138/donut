@@ -5,11 +5,12 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from donut.preprocessing import standardize_kpi, complete_timestamp
 from donut.cache import gain_data_cache, save_data_cache
 from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one, print_warn, print_info
+from donut.preprocessing import standardize_kpi, complete_timestamp
 from donut.train_prediction import train_prediction_v1, train_prediction_v2
-from donut.utils import  get_constant_timestamp, TimeUse, TimeCounter,  catch_label_v1, catch_label_v2
+from donut.utils import get_constant_timestamp, TimeUse, TimeCounter, catch_label_v1, catch_label_v2
+
 
 def prepare_data(file_name, test_portion=0.3):
     """
@@ -175,6 +176,10 @@ def handle_refactor_probability_v1(refactor_probability, data_num):
 def handle_refactor_probability_v2(refactor_probability, data_num, timestamps, value, label, missing):
     """
     处理测试数据分数结果
+    1.得出默认为正常数据的点数
+    2.截取实际测试数据 相关
+    3.重构概率负数，获得分数
+
     Args:
         refactor_probability: 重构概率
         data_num: 数据数量
@@ -190,7 +195,6 @@ def handle_refactor_probability_v2(refactor_probability, data_num, timestamps, v
     value = value[zero_num:np.size(value)]
     label = label[zero_num:np.size(label)]
     missing = missing[zero_num:np.size(missing)]
-    # refactor_probability = np.pad(refactor_probability, (zero_num, 0), 'constant', constant_values=(0, 0))
     refactor_probability = 0 - refactor_probability
     return refactor_probability, zero_num, timestamps, value, label, missing
 
@@ -236,8 +240,6 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     if catch_num is not 0:
         accuracy = labels_num / catch_num
     return score, catch_num, catch_index, accuracy
-
-
 
 
 def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
@@ -780,25 +782,19 @@ def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.
     test_scores, test_zero_num, real_test_timestamps, real_test_values, real_test_labels, real_test_missing \
         = handle_refactor_probability_v2(test_refactor_probability, test_data_num,
                                          fill_test_timestamps, std_test_values, fill_test_labels, test_missing)
+    real_test_data_num = np.size(real_test_timestamps)
+    real_test_label_num = np.sum(real_test_labels == 1)
+    real_test_missing_num = np.sum(real_test_missing == 1)
+    real_test_label_proportion = real_test_label_num / real_test_data_num
     print_text(use_plt, "实际测试数据集")
     show_test_score(use_plt, real_test_timestamps, real_test_values, "real test scores")
+    print_text(use_plt, "共{}条数据,有{}个标注，有{}个缺失数据，标签比例约为{:.2%}"
+               .format(real_test_data_num, real_test_label_num, real_test_missing_num, real_test_label_proportion))
     # 根据分数捕获异常 获得阈值
-    # labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy = \
-    catch_label_v2(use_plt, src_threshold_value,
-                   train_scores, train_zero_num, fill_train_labels,
-                   test_scores, test_zero_num, fill_test_labels)
-    # print_text(use_plt, "阈值：{},根据阈值获得的异常点数量：{},实际异常标注数量:{}".format(threshold_value, catch_num, labels_num))
-    # # 如果有标签准确率 显示
-    # if accuracy is not None:
-    #     print_text(use_plt, "标签准确度:{:.2%}".format(accuracy))
-    #     # 比较异常标注与捕捉的异常的信息
-    # special_anomaly_index = list(set(catch_index) - set(labels_index))
-    # special_anomaly_t = test_timestamps[special_anomaly_index]
-    # special_anomaly_s = test_scores[special_anomaly_index]
-    # special_anomaly_v = test_values[special_anomaly_index]
-    # special_anomaly_num = len(special_anomaly_t)
-    # train_missing_interval_num, train_missing_str = get_constant_timestamp(special_anomaly_t, fill_step)
-    # print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, train_missing_interval_num))
+    threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall \
+        = catch_label_v2(use_plt, src_threshold_value, train_scores, real_train_labels, test_scores, real_test_labels)
+    fp_interval_num, fp_interval_str = get_constant_timestamp(fp_index, fill_step)
+    print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(fp_interval_num, fp_interval_str))
     # if special_anomaly_num is not 0:
     #     print_text(use_plt, train_missing_str)
     # for i, t in enumerate(special_anomaly_t):
