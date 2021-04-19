@@ -1,8 +1,5 @@
 import numpy as np
 
-__all__ = ['complete_timestamp', 'standardize_kpi']
-
-
 def complete_timestamp(timestamp, arrays=None):
     """
     1.补齐时间戳，使时间间隔是齐次的。

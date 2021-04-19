@@ -11,11 +11,6 @@ from donut.out import print_text, show_line_chart, show_test_score, show_prepare
 from donut.train_prediction import train_prediction_v1, train_prediction_v2
 from donut.utils import  get_constant_timestamp, TimeUse, TimeCounter,  catch_label_v1, catch_label_v2
 
-__all__ = ['prepare_data', 'gain_data', 'fill_data', 'get_test_training_data', 'standardize_data_v1',
-           'handle_refactor_probability_v1',
-           'get_threshold_value_label', 'show_cache_data', 'show_new_data']
-
-
 def prepare_data(file_name, test_portion=0.3):
     """
       数据准备

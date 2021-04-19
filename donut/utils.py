@@ -3,11 +3,8 @@ import time
 
 import numpy as np
 
-__all__ = ['get_constant_timestamp', 'file_name_converter', 'mini_batch_slices_iterator',
-           'BatchSlidingWindow', 'handle_src_threshold_value', 'compute_default_threshold_value_v1']
-
 from donut.data import get_threshold_value_label
-from donut.out import print_warn
+from donut.out import print_warn, print_info
 
 
 class TimeUse:
@@ -127,6 +124,7 @@ def handle_src_threshold_value(src_threshold_value):
         src_threshold_value = None
     return src_threshold_value
 
+
 def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value):
     """
     根据阈值捕获异常点
@@ -182,7 +180,6 @@ def catch_label_v2(use_plt, src_threshold_value,
         train_scores: 训练分数
         real_train_labels: 训练异常标签
         use_plt: 使用plt
-        fill_test_labels: 测试异常标签
         test_scores: 测试数据分数
         train_zero_num: 训练数据补齐的0点数量
         test_zero_num: 测试数据补齐的0点数量
@@ -248,12 +245,12 @@ def compute_default_label_threshold_value(
         catch_num = np.size(catch_index)
         # FP 未标记但超过阈值 实际为正常点单倍误判为异常点
         fp_index = list(set(catch_index) - set(test_labels_index))
-        special_anomaly_t = test_timestamps[special_anomaly_index]
-        special_anomaly_s = test_scores[special_anomaly_index]
-        special_anomaly_v = test_values[special_anomaly_index]
-        special_anomaly_num = len(special_anomaly_t)
-        interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
-        print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, interval_num))
+        # special_anomaly_t = test_timestamps[special_anomaly_index]
+        # special_anomaly_s = test_scores[special_anomaly_index]
+        # special_anomaly_v = test_values[special_anomaly_index]
+        # special_anomaly_num = len(special_anomaly_t)
+        # interval_num, interval_str = get_constant_timestamp(special_anomaly_t, fill_step)
+        # print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(special_anomaly_num, interval_num))
         # 精度
         # precision =
         accuracy = test_labels_num_vo / catch_num
@@ -274,9 +271,6 @@ def compute_default_label_threshold_value(
     if catch_num is not 0:
         accuracy = test_labels_num_vo / catch_num
     return score, catch_num, catch_index, accuracy
-
-
-
 
 
 def compute_default_threshold_value_v1(values):
