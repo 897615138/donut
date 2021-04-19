@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from donut import standardize_kpi, complete_timestamp
+from donut.preprocessing import standardize_kpi, complete_timestamp
 from donut.cache import gain_data_cache, save_data_cache
 from donut.out import print_text, show_line_chart, show_test_score, show_prepare_data_one, print_warn, print_info
 from donut.train_prediction import train_prediction_v1, train_prediction_v2
