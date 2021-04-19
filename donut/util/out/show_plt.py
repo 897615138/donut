@@ -37,8 +37,8 @@ def show_test_score(test_timestamp, test_values, test_scores):
         test_scores: 测试分数
     """
     plt.figure(figsize=(40, 10), dpi=128)
-    plt.plot(test_timestamp, test_values, label='test data')
-    plt.plot(test_timestamp, test_scores, label='test score')
+    plt.plot(test_timestamp, test_values, label="test_data", color='r')
+    plt.plot(test_timestamp, test_scores, label="test_score", color="y")
     plt.title("test data and score")
     plt.xlabel('timestamp')
     plt.ylabel('value')

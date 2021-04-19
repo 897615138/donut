@@ -1,5 +1,8 @@
-import donut.utils as u
+
 import numpy as np
+
+from donut.util.time_util import get_constant_timestamp
+
 
 def test_constant_time():
     time = [146962380, 146962410, 146962740, 146967720, 146967750, 1469677800,
@@ -13,24 +16,41 @@ def test_constant_time():
             147002490, 147002610, 147002940, 147002970, 147003000, 1470031800,
             147003210, 147003300, 147003330, 147003420, 1470036900]
 
-    interval_num, interval_str = u.get_constant_timestamp(time, 30)
+    interval_num, interval_str = get_constant_timestamp(time, 30)
     print(interval_num, interval_str)
+
+
 def test_merge():
-    train_timestamp_sorted=np.asarray([1,2])
-    test_timestamp_sorted=np.asarray([3,4,5])
+    train_timestamp_sorted = np.asarray([1, 2])
+    test_timestamp_sorted = np.asarray([3, 4, 5])
     merge_set = set(train_timestamp_sorted).intersection(set(test_timestamp_sorted))
-    print( len(merge_set))
+    print(len(merge_set))
+
 
 def test_union():
-    train_timestamp_sorted = np.asarray([1, 2,3])
+    train_timestamp_sorted = np.asarray([1, 2, 3])
     test_timestamp_sorted = np.asarray([3, 4, 5])
-    union_list=list(set(train_timestamp_sorted).union(set(test_timestamp_sorted)))
+    union_list = list(set(train_timestamp_sorted).union(set(test_timestamp_sorted)))
     print(union_list)
+
 
 def test_sqrt():
     print(np.sqrt(3))
 
+
 def test_sub():
-    zero_num=1
+    zero_num = 1
     train_timestamp_sorted = np.asarray([1, 2, 3])
     print(train_timestamp_sorted[zero_num:np.size(train_timestamp_sorted)])
+
+
+def test_sort():
+    lis = []
+    catch = {"score": 1, "num": 2, "index": 3, "f": 4}
+    lis.append(catch)
+    catch = {"score": 4, "num": 3, "index": 3, "f": 1}
+    lis.append(catch)
+    catch = {"score": 2, "num": 3, "index": 3, "f": 3}
+    lis.append(catch)
+    lis = sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['score']))
+    print(lis)

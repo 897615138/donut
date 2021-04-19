@@ -6,8 +6,8 @@ import pandas as pd
 import streamlit as st
 
 from donut.cache import gain_data_cache, save_data_cache
-from donut.threshold import catch_label_v1, catch_label_v2
 from donut.preprocessing import standardize_kpi, complete_timestamp
+from donut.threshold import catch_label_v1, catch_label_v2
 from donut.train_prediction import train_prediction_v1, train_prediction_v2
 from donut.util.out.out import print_info, show_line_chart, print_text, show_prepare_data_one, print_warn, \
     show_test_score
@@ -597,19 +597,6 @@ def merge_data(use_plt, src_train_timestamps, src_train_labels, src_train_values
            fill_test_timestamps, fill_test_values, fill_test_labels, test_missing
 
 
-# tc1.start()
-# tc.start()
-# fill_train_timestamps, fill_train_values, train_labels, train_missing = \
-#     fill_data(src_train_timestamps, src_train_labels, src_train_values)
-# tc.end()
-# fill_train_time = tc.get_s() + "秒"
-# tc.start()
-# fill_test_timestamps, fill_test_values, test_labels, test_missing = \
-#     fill_data(src_test_timestamps, src_test_labels, src_test_values)
-# tc.end()
-# fill_test_time = tc.get_s() + "秒"
-#
-#
 def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.88.csv", is_local=True, is_upload=False,
                    src_threshold_value=None):
     """
@@ -697,13 +684,13 @@ def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.
     print_text(use_plt, "训练数据")
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%}"
                .format(train_data_num, fill_train_label_num, fill_train_label_proportion))
-    print_text(use_plt, "补充{}个时间戳数据,共有{}段连续异常 \n 具体为\n{}"
+    print_text(use_plt, "补充{}个时间戳数据,共有{}段连续缺失 \n {}"
                .format(fill_train_num, train_missing_interval_num, train_missing_str))
     show_line_chart(use_plt, fill_train_timestamps, fill_train_values, 'filled train data')
     print_text(use_plt, "测试数据")
     print_text(use_plt, "共{}条数据,有{}个标注，标签比例约为{:.2%}"
                .format(test_data_num, fill_test_label_num, fill_test_label_proportion))
-    print_text(use_plt, "补充{}个时间戳数据,共有{}段连续缺失 \n 具体为\n{}"
+    print_text(use_plt, "补充{}个时间戳数据,共有{}段连续缺失 \n {}"
                .format(fill_test_num, test_missing_interval_num, test_missing_str))
     show_line_chart(use_plt, fill_test_timestamps, fill_test_values, 'filled test data')
     # 标准化数据
@@ -746,7 +733,7 @@ def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.
     real_test_missing_num = np.sum(real_test_missing == 1)
     real_test_label_proportion = real_test_label_num / real_test_data_num
     print_text(use_plt, "实际测试数据集")
-    show_test_score(use_plt, real_test_timestamps, real_test_values, "real test scores")
+    show_test_score(use_plt, real_test_timestamps, real_test_values, test_scores)
     print_text(use_plt, "共{}条数据,有{}个标注，有{}个缺失数据，标签比例约为{:.2%}"
                .format(real_test_data_num, real_test_label_num, real_test_missing_num, real_test_label_proportion))
     # 根据分数捕获异常 获得阈值
@@ -754,11 +741,6 @@ def self_structure(use_plt=True, train_file="4096_14.21.csv", test_file="4096_1.
         = catch_label_v2(use_plt, src_threshold_value, train_scores, real_train_labels, test_scores, real_test_labels)
     fp_interval_num, fp_interval_str = get_constant_timestamp(fp_index, fill_step)
     print_text(use_plt, "未标记但超过阈值的点（数量：{}）：\n 共有{}段连续异常 \n ".format(fp_interval_num, fp_interval_str))
-    # if special_anomaly_num is not 0:
-    #     print_text(use_plt, train_missing_str)
-    # for i, t in enumerate(special_anomaly_t):
-    #     print_text(use_plt, "时间戳:{},值:{},分数：{}".format(t, special_anomaly_v[i], special_anomaly_s[i]))
-    # # 比较用时时间
     # time_list = [TimeUse(get_train_file_time, "1.分析csv数据"), TimeUse(fill_train_time, "2.填充数据"),
     #              TimeUse(third_time, "3.获得训练与测试数据集"),
     #              TimeUse(std_time, "4.标准化训练和测试数据"), TimeUse(model_time, "5.构建Donut模型"),

@@ -188,8 +188,8 @@ def train_prediction_v2(use_plt, src_threshold_value,
             if src_threshold_value is not None:
                 test_refactor_probability, test_probability_time \
                     = predictor.get_refactor_probability(std_test_values, test_missing)
-                test_refactor_probability = None
-                test_probability_time = None
+                train_refactor_probability = None
+                train_probability_time = None
             else:
                 test_refactor_probability, test_probability_time \
                     = predictor.get_refactor_probability(std_test_values, test_missing)

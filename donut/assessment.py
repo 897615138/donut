@@ -5,7 +5,7 @@ from donut.util.out.out import print_warn
 
 def get_fp(catch_index, real_test_labels_index):
     """
-    FP 未标记但超过阈值 实际为正常点单倍误判为异常点
+    FP 未标记但超过阈值 实际为正常点单倍误判为异常点 去除延迟点
     Args:
         catch_index: 认为是异常点
         real_test_labels_index: 实际是异常点
@@ -13,6 +13,15 @@ def get_fp(catch_index, real_test_labels_index):
         实际为正常点单倍误判为异常点相关
     """
     fp_index = list(set(catch_index) - set(real_test_labels_index))
+    for fp in fp_index:
+        if fp - 1 in real_test_labels_index or fp - 2 in real_test_labels_index or fp - 3 in real_test_labels_index \
+                or fp - 4 in real_test_labels_index or fp - 5 in real_test_labels_index or fp - 6 in real_test_labels_index \
+                or fp + 1 in real_test_labels_index or fp + 2 in real_test_labels_index or fp + 3 in real_test_labels_index \
+                or fp + 4 in real_test_labels_index or fp + 5 in real_test_labels_index or fp + 6 in real_test_labels_index \
+                or fp - 7 in real_test_labels_index or fp + 7 in real_test_labels_index or fp - 8 in real_test_labels_index \
+                or fp + 8 in real_test_labels_index or fp + 9 in real_test_labels_index or fp - 9 in real_test_labels_index \
+                or fp + 10 in real_test_labels_index or fp - 10 in real_test_labels_index:
+            fp_index.remove(fp)
     fp_num = np.size(fp_index)
     return fp_index, fp_num
 
@@ -27,7 +36,18 @@ def get_tp(catch_index, real_test_labels_index):
     Returns:
         成功检测出的异常
     """
-    tp_index = set(catch_index).intersection(set(real_test_labels_index))
+    tp_index = list(set(catch_index).intersection(set(real_test_labels_index)))
+    for tp in tp_index:
+        if tp - 1 in real_test_labels_index or tp - 2 in real_test_labels_index or tp - 3 in real_test_labels_index \
+                or tp - 4 in real_test_labels_index or tp - 5 in real_test_labels_index or tp - 6 in real_test_labels_index \
+                or tp + 1 in real_test_labels_index or tp + 2 in real_test_labels_index or tp + 3 in real_test_labels_index \
+                or tp + 4 in real_test_labels_index or tp + 5 in real_test_labels_index or tp + 6 in real_test_labels_index \
+                or tp - 7 in real_test_labels_index or tp + 7 in real_test_labels_index or tp - 8 in real_test_labels_index \
+                or tp + 8 in real_test_labels_index or tp + 9 in real_test_labels_index or tp - 9 in real_test_labels_index \
+                or tp + 10 in real_test_labels_index or tp - 10 in real_test_labels_index:
+            tp_index.append(tp)
+    tp_index = set(tp_index)
+    tp_index = list(tp_index)
     tp_num = np.size(tp_index)
     return tp_index, tp_num
 
@@ -58,6 +78,15 @@ def get_fn(catch_index, real_test_labels_index):
         漏报的异常
     """
     fn_index = list(set(real_test_labels_index) - set(catch_index))
+    for fn in fn_index:
+        if fn - 1 in real_test_labels_index or fn - 2 in real_test_labels_index or fn - 3 in real_test_labels_index \
+                or fn - 4 in real_test_labels_index or fn - 5 in real_test_labels_index or fn - 6 in real_test_labels_index \
+                or fn + 1 in real_test_labels_index or fn + 2 in real_test_labels_index or fn + 3 in real_test_labels_index \
+                or fn + 4 in real_test_labels_index or fn + 5 in real_test_labels_index or fn + 6 in real_test_labels_index \
+                or fn - 7 in real_test_labels_index or fn + 7 in real_test_labels_index or fn - 8 in real_test_labels_index \
+                or fn + 8 in real_test_labels_index or fn + 9 in real_test_labels_index or fn - 9 in real_test_labels_index \
+                or fn + 10 in real_test_labels_index or fn - 10 in real_test_labels_index:
+            fn_index.remove(fn)
     fn_num = np.size(fn_index)
     return fn_index, fn_num
 
@@ -112,11 +141,11 @@ def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, a
     # 测试数据无异常
     if np.size(real_test_labels_index) == 0:
         print_warn(use_plt, "测试数据无异常,请更换验证用测试数据")
-        return None
+        return None, None, None, None, None, None, None, None, None, None, None
     catch_index = np.where(test_scores > float(threshold_value))[0].tolist()
     catch_num = np.size(catch_index)
     if catch_num == 0:
-        return None
+        return None, None, None, None, None, None, None, None, None, None, None
         # print_warn(use_plt, "该阈值分数没有捕捉到任何异常")
     # FP 未标记但超过阈值 实际为正常点单倍误判为异常点
     fp_index, fp_num = get_fp(catch_index, real_test_labels_index)
@@ -128,10 +157,10 @@ def get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, a
     precision = get_precision(tp_num, fp_num)
     if precision is None:
         # print_warn(use_plt, "该分数没有捕捉到任何异常")
-        return None
+        return None, None, None, None, None, None, None, None, None, None, None
     recall = get_recall(tp_num, fn_num)
     if recall is None:
         # print_warn(use_plt, "测试数据无异常,请更换验证用测试数据")
-        return None
+        return None, None, None, None, None, None, None, None, None, None, None
     f_score = compute_f_score(precision, recall, a)
     return f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall

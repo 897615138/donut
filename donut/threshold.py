@@ -67,6 +67,7 @@ def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, te
     real_test_labels_index = list(np.where(real_test_labels == 1)[0])
     real_train_labels_index = list(np.where(real_train_labels == 1)[0])
     real_train_label_scores = train_scores[real_train_labels_index]
+    real_test_label_scores = test_scores[real_test_labels_index]
     # 有人为设置的阈值
     if threshold_value is not None:
         f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
@@ -99,7 +100,7 @@ def compute_default_label_threshold_value(use_plt, test_scores, real_test_labels
             lis.append(catch)
     # 字典按照生序排序 取最大的准确度
     if len(lis) > 0:
-        sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['score']))
+        lis = sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['score']))
         catch = lis[- 1]
         # 最优F-score
         return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("f"), \
@@ -210,6 +211,7 @@ def get_threshold_value_label(use_plt, labels_score, test_score, labels_num):
     if catch_num is not 0:
         accuracy = labels_num / catch_num
     return score, catch_num, catch_index, accuracy
+
 
 def handle_src_threshold_value(src_threshold_value):
     """
