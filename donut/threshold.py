@@ -72,7 +72,7 @@ def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, te
     # 有人为设置的阈值
     if threshold_value is not None:
         f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
-            get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index,real_test_missing, 1)
+            get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, real_test_missing, 1)
         if f_score is None:
             print_info(use_plt, "当前阈值无异常，请确认")
         else:
@@ -81,11 +81,13 @@ def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, te
     # 默认阈值
     else:
         threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
-            compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores)
+            compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores,
+                                                  real_test_missing)
     return threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall
 
 
-def compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores):
+def compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores,
+                                          real_test_missing):
     print_info(use_plt, "开始计算默认阈值")
     # 降序训练数据中的异常标签对应分值
     sorted_label_scores = np.asarray(real_train_label_scores)
@@ -93,7 +95,7 @@ def compute_default_label_threshold_value(use_plt, test_scores, real_test_labels
     lis = []
     for i, score in enumerate(sorted_label_scores):
         f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = get_F_score(
-            use_plt, test_scores, score, real_test_labels_index, 1)
+            use_plt, test_scores, score, real_test_labels_index, real_test_missing, 1)
         if f_score is not None:
             catch = {"score": score, "num": catch_num, "index": catch_index, "f": f_score,
                      "fpi": fp_index, "fpn": fp_num, "tpi": tp_index, "tpn": tp_num, "fni": fn_index, "fnn": fn_num,

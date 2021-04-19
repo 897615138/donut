@@ -54,3 +54,8 @@ def test_sort():
     lis.append(catch)
     lis = sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['score']))
     print(lis)
+
+
+def test_in():
+    arr=[1,2,3,4]
+    print(1 in arr )
