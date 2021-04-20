@@ -1,7 +1,6 @@
 import numpy as np
 
-from donut.assessment import get_F_score
-from donut.util.out.out import print_warn, print_info
+from donut.util.out.out import print_warn
 
 
 def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value):
@@ -48,70 +47,6 @@ def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value)
         if catch_num is not 0:
             accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
-
-
-def catch_label_v2(use_plt, threshold_value, train_scores, real_train_labels, test_scores, real_test_labels,
-                   real_test_missing):
-    """
-    根据阈值捕获异常点
-    Args:
-        use_plt: 使用plt
-        threshold_value: 已有的阈值
-        real_test_labels: 测试异常标签
-        train_scores: 训练分数
-        real_train_labels: 训练异常标签
-        test_scores: 测试数据分数
-
-    Returns:
-        捕捉到的异常信息，阈值信息
-    """
-    real_test_labels_index = list(np.where(real_test_labels == 1)[0])
-    real_train_labels_index = list(np.where(real_train_labels == 1)[0])
-    real_train_label_scores = train_scores[real_train_labels_index]
-    real_test_label_scores = test_scores[real_test_labels_index]
-    # 有人为设置的阈值
-    if threshold_value is not None:
-        f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
-            get_F_score(use_plt, test_scores, threshold_value, real_test_labels_index, real_test_missing, 1)
-        if f_score is None:
-            print_info(use_plt, "当前阈值无异常，请确认")
-        else:
-            if f_score < 0.7:
-                print_warn(use_plt, "建议调整阈值分数或使用【默认阈值】以获得更好的效果（F—score）")
-    # 默认阈值
-    else:
-        threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = \
-            compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores,
-                                                  real_test_missing)
-    return threshold_value, catch_num, catch_index, f_score, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall
-
-
-def compute_default_label_threshold_value(use_plt, test_scores, real_test_labels_index, real_train_label_scores,
-                                          real_test_missing):
-    print_info(use_plt, "开始计算默认阈值")
-    # 降序训练数据中的异常标签对应分值
-    sorted_label_scores = np.asarray(real_train_label_scores)
-    sorted_label_scores = sorted_label_scores[np.argsort(-sorted_label_scores)]
-    lis = []
-    for i, score in enumerate(sorted_label_scores):
-        f_score, catch_num, catch_index, fp_index, fp_num, tp_index, tp_num, fn_index, fn_num, precision, recall = get_F_score(
-            use_plt, test_scores, score, real_test_labels_index, real_test_missing, 1)
-        if f_score is not None:
-            catch = {"score": score, "num": catch_num, "index": catch_index, "f": f_score,
-                     "fpi": fp_index, "fpn": fp_num, "tpi": tp_index, "tpn": tp_num, "fni": fn_index, "fnn": fn_num,
-                     "p": precision, "r": recall}
-            lis.append(catch)
-    # 字典按照生序排序 取最大的准确度
-    if len(lis) > 0:
-        lis = sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['score']))
-        catch = lis[- 1]
-        # 最优F-score
-        return catch.get("score"), catch.get("num"), catch.get("index"), catch.get("f"), \
-               catch.get("fpi"), catch.get("fpn"), catch.get("tpi"), catch.get("tpn"), catch.get("fni"), catch.get(
-            "fnn"), catch.get("p"), catch.get("r")
-    else:
-        return None, None, None, None, None, None, None, None, None, None, None, None
-
 
 def compute_default_label_threshold_value_v1(
         labels_score, test_score, test_labels_num_vo, test_actual_num, test_labels_index):

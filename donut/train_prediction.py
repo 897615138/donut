@@ -3,10 +3,10 @@ from tensorflow import keras as K
 from tfsnippet.modules import Sequential
 
 from donut.model import Donut
-from donut.util.out.out import print_info, print_text, show_line_chart
 from donut.prediction import DonutPredictor
-from donut.util.time_util import TimeCounter
 from donut.training import DonutTrainer
+from donut.util.out.out import print_info, print_text, show_line_chart
+from donut.util.time_util import TimeCounter
 
 
 def train_prediction_v1(use_plt, train_values, train_labels, train_missing, test_values, test_missing, test_labels,
@@ -98,7 +98,7 @@ def train_prediction_v1(use_plt, train_values, train_labels, train_missing, test
             return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message
 
 
-def train_prediction_v2(use_plt, src_threshold_value,
+def train_prediction_v2(use_plt,
                         std_train_values, fill_train_labels, train_missing,
                         std_test_values, fill_test_labels, test_missing,
                         mean, std, test_data_num):
@@ -184,19 +184,9 @@ def train_prediction_v2(use_plt, src_threshold_value,
             print_text(use_plt, "退火学习率 学习率随epoch变化")
             show_line_chart(use_plt, epoch_list, lr_list, 'annealing learning rate')
             # 5.预测器获取重构概率
-            # 有默认阈值
-            if src_threshold_value is not None:
-                test_refactor_probability, test_probability_time \
-                    = predictor.get_refactor_probability(std_test_values, test_missing)
-                train_refactor_probability = None
-                train_probability_time = None
-            else:
-                test_refactor_probability, test_probability_time \
-                    = predictor.get_refactor_probability(std_test_values, test_missing)
-                train_refactor_probability, train_probability_time \
-                    = predictor.get_refactor_probability(std_train_values, train_missing)
+            test_refactor_probability, test_probability_time \
+                = predictor.get_refactor_probability(std_test_values, test_missing)
             print_info(use_plt, "8.预测器获取重构概率【共用时{}】".format(test_probability_time))
             return epoch_list, lr_list, epoch_time, \
                    model_time, trainer_time, predictor_time, fit_time, train_message, \
-                   train_refactor_probability, train_probability_time, \
                    test_refactor_probability, test_probability_time

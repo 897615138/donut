@@ -6,6 +6,30 @@ from donut.util.out.out import print_text, print_info
 from donut.util.time_util import TimeCounter, format_time
 
 
+def save_test_data(src_threshold_value, train_scores, real_train_labels, test_scores, real_test_labels,
+                   real_test_missing_index):
+    name = file_name_converter("test", "test", src_threshold_value, True)
+    db = shelve.open(name)
+    db["src_threshold_value"] = src_threshold_value
+    db["train_scores"] = train_scores
+    db["real_train_labels"] = real_train_labels
+    db["test_scores"] = test_scores
+    db["real_test_labels"] = real_test_labels
+    db["real_test_missing_index"] = real_test_missing_index
+    db.close()
+
+
+def get_test_data():
+    name = file_name_converter("test", "test", None, True)
+    db = shelve.open(name)
+    src_threshold_value = db["src_threshold_value"]
+    test_scores = db["test_scores"]
+    real_test_labels = db["real_test_labels"]
+    real_test_missing_index = db["real_test_missing_index"]
+    db.close()
+    return src_threshold_value, test_scores, real_test_labels, real_test_missing_index
+
+
 def save_data_cache(use_plt, is_local, file_name, test_portion, src_threshold_value,
                     src_timestamps, src_labels, src_values, src_data_num, src_label_num, src_label_proportion,
                     first_time, fill_timestamps, fill_values, fill_data_num, fill_step, fill_num, second_time,

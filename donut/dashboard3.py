@@ -1,4 +1,5 @@
 from donut.cache import is_has_cache
+from donut.dashboard_support import new_data
 from donut.data import show_cache_data, self_structure
 
 
@@ -41,9 +42,9 @@ def dashboard_plt(use_plt=True,
                        src_threshold_value=None)
 
 
-self_structure(use_plt=True,
-               train_file="4096_14.21.csv",
-               test_file="4096_1.88.csv",
-               is_local=True,
-               is_upload=False,
-               src_threshold_value=None)
+new_data(use_plt=True,
+         train_file="4096_14.21.csv",
+         test_file="4096_1.88.csv",
+         is_local=True,
+         is_upload=False,
+         src_threshold_value=None)

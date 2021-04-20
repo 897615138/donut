@@ -1,5 +1,6 @@
 import csv
 
+
 def split_csv(file_name, begin, num):
     header = ["timestamp", "value", "label", "KPI ID"]
     rows = []
@@ -15,5 +16,12 @@ def split_csv(file_name, begin, num):
         ff = csv.writer(f)
         ff.writerow(header)
         ff.writerows(rows)
+
+
+def is_in(num, lis, range_1, range_2):
+    for i in range(range_1, range_2):
+        if num + i in lis:
+            return True
+    return False
 
 # split_csv('../sample_data/real.csv',1,65536)
