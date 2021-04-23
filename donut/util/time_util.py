@@ -44,6 +44,7 @@ class TimeCounter(object):
         return self._end - self._start
 
     def get_s(self):
+        self._end = time.time()
         return str(self.get())
 
 

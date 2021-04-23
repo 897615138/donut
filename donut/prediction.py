@@ -59,23 +59,23 @@ class DonutPredictor(VarScopeObject):
                 dtype=tf.int32, shape=[None, model.x_dims], name='input_y')
 
             # 感兴趣的输出
-            self.__refactor_probability = self._refactor_probability_without_y = None
+            self._refactor_probability = self._refactor_probability_without_y = None
 
     def _get_refactor_probability(self):
         """
         获取重构概率
         Returns:重构概率
         """
-        if self.__refactor_probability is None:
+        if self._refactor_probability is None:
             with reopen_variable_scope(self.variable_scope), tf.name_scope('score'):
-                self.__refactor_probability = self.model.get_refactor_probability(
+                self._refactor_probability = self.model.get_refactor_probability(
                     window=self._input_x,
                     missing=self._input_y,
                     n_z=self._n_z,
                     mcmc_iteration=self._mcmc_iteration,
                     last_point_only=self._last_point_only
                 )
-        return self.__refactor_probability
+        return self._refactor_probability
 
     def _get_refactor_probability_without_y(self):
         """

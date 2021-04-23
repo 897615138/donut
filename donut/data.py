@@ -7,8 +7,8 @@ import streamlit as st
 
 from donut.cache import gain_data_cache, save_data_cache
 from donut.preprocessing import standardize_kpi, complete_timestamp
-from donut.threshold import catch_label_v1, catch_label_v2
-from donut.train_prediction import train_prediction_v1, train_prediction_v2
+from donut.threshold import catch_label_v1
+from donut.train_prediction import train_prediction_v1
 from donut.util.out.out import print_info, show_line_chart, print_text, show_prepare_data_one, print_warn, \
     show_test_score
 from donut.util.time_util import TimeCounter, get_constant_timestamp, TimeUse
@@ -135,26 +135,6 @@ def standardize_data_v1(train_labels, train_missing, train_values, test_values):
     return train_values, test_values, train_labels, train_mean, train_std
 
 
-def standardize_data_v2(mean, std, fill_train_values, fill_train_labels, train_missing, fill_test_values):
-    """
-    标准化数据
-    Args:
-        std: 标准差
-        mean: 平均值
-        fill_train_labels: 训练数据的异常标识
-        train_missing: 训练数据的缺失点数据
-        fill_train_values: 训练数据的值数据集
-        fill_test_values: 测试数据的值数据集
-    Returns:
-        标准化数据
-    """
-    exclude_array = np.logical_or(fill_train_labels, train_missing)
-    train_values, _, _ = standardize_kpi(fill_train_values, mean=mean, std=std,
-                                         excludes=np.asarray(exclude_array, dtype='bool'))
-    test_values, _, _ = standardize_kpi(fill_test_values, mean=mean, std=std)
-    return train_values, test_values
-
-
 def handle_refactor_probability_v1(refactor_probability, data_num):
     """
     处理测试数据分数结果，补零，倒置去小于0
@@ -173,36 +153,6 @@ def handle_refactor_probability_v1(refactor_probability, data_num):
     refactor_probability = 0 - refactor_probability
     refactor_probability = np.where(refactor_probability < 0, refactor_probability, 0)
     return refactor_probability, zero_num
-
-
-def handle_refactor_probability_v2(refactor_probability, data_num, timestamps, value, label, missing):
-    """
-    处理测试数据分数结果
-    1.得出默认为正常数据的点数
-    2.截取实际测试数据 相关
-    3.重构概率负数，获得分数
-
-    Args:
-        missing: 缺失值
-        label: 异常标签
-        value: 值
-        timestamps: 时间戳
-        refactor_probability: 重构概率
-        data_num: 数据数量
-
-    Returns:
-        处理过的测试分数，补上的0的数量
-    """
-    # 因为对于每个窗口的检测实际返回的是最后一个窗口的重建概率，
-    # 也就是说第一个窗口的前面一部分的点都没有检测，默认为正常数据。
-    # 因此需要在检测结果前面补零或者测试数据的真实 label。
-    zero_num = data_num - refactor_probability.size
-    timestamps = timestamps[zero_num:np.size(timestamps)]
-    value = value[zero_num:np.size(value)]
-    label = label[zero_num:np.size(label)]
-    missing = missing[zero_num:np.size(missing)]
-    refactor_probability = 0 - refactor_probability
-    return refactor_probability, zero_num, timestamps, value, label, missing
 
 
 def show_cache_data(use_plt, file_name, test_portion, src_threshold_value, is_local):
@@ -290,19 +240,7 @@ def gain_sl_cache_data(file):
     return timestamp, labels, values
 
 
-def get_info_from_file(is_upload, is_local, file):
-    try:
-        if is_upload:
-            src_timestamps, src_labels, src_values = gain_sl_cache_data(file)
-        elif is_local:
-            src_timestamps, src_labels, src_values = gain_data("../sample_data/" + file)
-            a = file.split("/")
-            file = a[len(a) - 1]
-        else:
-            src_timestamps, src_labels, src_values = gain_data("sample_data/" + file)
-        return src_timestamps, src_labels, src_values, file, True
-    except Exception:
-        return None, None, None, None, False
+
 
 
 def show_new_data(use_plt, file, test_portion, src_threshold_value, is_upload, is_local):
@@ -443,162 +381,159 @@ def standardize_train_data(fill_train_labels, train_missing, src_train_values):
     return train_values, train_mean, train_std
 
 
-def check(use_plt, train_timestamp, test_timestamp, src_train_values, src_train_labels, src_test_values,
-          src_test_labels):
-    # 一维数组检验
-    if len(train_timestamp.shape) != 1 or len(test_timestamp.shape) != 1:
-        print_warn(use_plt, '`train_timestamp`必须为一维数组')
-        return
-    train_arrays = (src_train_values, src_train_labels)
-    # np arrays-> arrays
-    src_train_arrays = [np.asarray(src_array) for src_array in train_arrays]
-    # 相同维度
-    for i, src_array in enumerate(src_train_arrays):
-        if src_array.shape != train_timestamp.shape:
-            print_warn(use_plt, '`train_timestamp` 的形状必须与`src_array`的形状相同 ({} vs {}) src_array index {}'
-                       .format(train_timestamp.shape, src_array.shape, i))
-            return
-    # src_test_arrays = [np.asarray(src_array) for src_array in train_arrays]
-    # np arrays-> arrays
-    test_arrays = (src_test_values, src_test_labels)
-    src_test_arrays = [np.asarray(src_array) for src_array in test_arrays]
-    # 相同维度
-    for i, src_array in enumerate(src_test_arrays):
-        if src_array.shape != test_timestamp.shape:
-            print_warn(use_plt, '`test_timestamp` 的形状必须与`src_array`的形状相同 ({} vs {}) src_array index {}'
-                       .format(test_timestamp.shape, src_array.shape, i))
+# def check(use_plt, train_timestamp, test_timestamp, src_train_values, src_train_labels, src_test_values,
+#           src_test_labels):
+#     # 一维数组检验
+#     if len(train_timestamp.shape) != 1 or len(test_timestamp.shape) != 1:
+#         print_warn(use_plt, '`train_timestamp`必须为一维数组')
+#         return
+#     train_arrays = (src_train_values, src_train_labels)
+#     # np arrays-> arrays
+#     src_train_arrays = [np.asarray(src_array) for src_array in train_arrays]
+#     # 相同维度
+#     for i, src_array in enumerate(src_train_arrays):
+#         if src_array.shape != train_timestamp.shape:
+#             print_warn(use_plt, '`train_timestamp` 的形状必须与`src_array`的形状相同 ({} vs {}) src_array index {}'
+#                        .format(train_timestamp.shape, src_array.shape, i))
+#             return
+#     # src_test_arrays = [np.asarray(src_array) for src_array in train_arrays]
+#     # np arrays-> arrays
+#     test_arrays = (src_test_values, src_test_labels)
+#     src_test_arrays = [np.asarray(src_array) for src_array in test_arrays]
+#     # 相同维度
+#     for i, src_array in enumerate(src_test_arrays):
+#         if src_array.shape != test_timestamp.shape:
+#             print_warn(use_plt, '`test_timestamp` 的形状必须与`src_array`的形状相同 ({} vs {}) src_array index {}'
+#                        .format(test_timestamp.shape, src_array.shape, i))
     # src_train_arrays = [np.asarray(src_array) for src_array in train_arrays]
 
 
-def merge_data(use_plt, src_train_timestamps, src_train_labels, src_train_values, src_test_timestamps, src_test_labels,
-               src_test_values):
-    # 1.检验数据合法性
-    # np src_array-> src_array
-    train_timestamp = np.asarray(src_train_timestamps, np.int64)
-    test_timestamp = np.asarray(src_test_timestamps, np.int64)
-    check(use_plt, train_timestamp, test_timestamp, src_train_values, src_train_labels, src_test_values,
-          src_test_labels)
-    # 2.检验时间戳数据 补充为有序等间隔时间戳数组
-    # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
-    src_train_index = np.argsort(train_timestamp)
-    src_test_index = np.argsort(test_timestamp)
-    train_timestamp_sorted = train_timestamp[src_train_index]
-    test_timestamp_sorted = test_timestamp[src_test_index]
-    train_values_sorted = src_train_values[src_train_index]
-    test_values_sorted = src_test_values[src_test_index]
-    train_labels_sorted = src_train_labels[src_train_index]
-    test_labels_sorted = src_test_labels[src_test_index]
-    # 沿给定轴计算离散差分 即获得所有存在的时间戳间隔
-    train_intervals = np.unique(np.diff(train_timestamp_sorted))
-    test_intervals = np.unique(np.diff(test_timestamp_sorted))
-    # 最小的间隔数
-    train_min_interval = np.min(train_intervals)
-    test_min_interval = np.min(test_intervals)
-    # 单独有重复
-    if train_min_interval <= 0:
-        repeat_timestamp = set(train_timestamp_sorted - np.unique(train_timestamp_sorted))
-        repeat_timestamp_str = ""
-        for t in repeat_timestamp:
-            repeat_timestamp_str = repeat_timestamp_str + " " + str(t)
-        print_warn(use_plt, '训练数据重复时间戳:\n' + repeat_timestamp_str)
-        return
-    if test_min_interval <= 0:
-        repeat_timestamp = set(test_timestamp_sorted - np.unique(test_timestamp_sorted))
-        repeat_timestamp_str = ""
-        for t in repeat_timestamp:
-            repeat_timestamp_str = repeat_timestamp_str + " " + str(t)
-        print_warn(use_plt, '测试数据重复时间戳:\n' + repeat_timestamp_str)
-        return
-    # 合并有重复时检查
-    merge_set = set(train_timestamp_sorted).intersection(set(test_timestamp_sorted))
-    if len(merge_set) != 0:
-        for i in merge_set:
-            # 寻找指定数值的索引
-            train_index = np.where(train_timestamp_sorted == i)
-            test_index = np.where(test_timestamp_sorted == i)
-            if train_values_sorted[train_index] != test_values_sorted[test_index]:
-                print_warn(use_plt, "训练与测试数据中相同时间戳有不同KPI值，时间戳：{}，训练数据：{}，测试数据：{}"
-                           .format(i, train_values_sorted[train_index], test_values_sorted[test_index]))
-                return
-            if train_labels_sorted[train_index] != test_labels_sorted[test_index]:
-                print_warn(use_plt, "训练与测试数据中相同时间戳有不同标签，时间戳：{}，训练数据：{}，测试数据：{}"
-                           .format(i, train_labels_sorted[train_index], test_labels_sorted[test_index]))
-                return
-        #  取并集
-        union_timestamps = list(set(train_timestamp_sorted).union(set(test_timestamp_sorted)))
-        union_amount = len(union_timestamps)
-        union_values = np.zeros([union_amount], dtype=train_values_sorted.dtype)
-        union_labels = np.zeros([union_amount], dtype=train_labels_sorted.dtype)
-        for i, t in enumerate(union_timestamps):
-            # 寻找指定数值的索引
-            train_index = np.where(train_timestamp_sorted == t)
-            test_index = np.where(test_timestamp_sorted == t)
-            if np.size(train_index) != 0:
-                union_values[i] = train_values_sorted[train_index][0]
-                union_labels[i] = train_labels_sorted[train_index][0]
-            elif np.size(test_index) != 0:
-                union_values[i] = test_values_sorted[test_index][0]
-                union_labels[i] = test_labels_sorted[test_index][0]
-            else:
-                print_warn(use_plt, "找不到指定数值的索引:{}".format(str(t)))
-        mean = np.mean(union_values)
-        std = np.std(union_values, ddof=1)
-    else:
-        n = len(train_values_sorted)
-        m = len(test_values_sorted)
-        m1 = np.mean(train_values_sorted)
-        m2 = np.mean(test_values_sorted)
-        s1 = np.std(train_values_sorted)
-        s2 = np.std(train_values_sorted)
-        mean = (n * m1 + m * m2) / (m + n)
-        std = np.sqrt((n * s1 * s1 + m * s2 * s2 + (m * n * (m1 - m2) * (m1 - m2)) / (m + n)) / (m + n))
-    if train_min_interval != test_min_interval:
-        print_warn(use_plt, '最小间隔数不同训练数据最小间隔：{},测试数据最小间隔：{}'
-                   .format(train_min_interval, test_min_interval))
-    for i in train_intervals:
-        if i % train_min_interval != 0 or i % test_min_interval != 0:
-            print_warn(use_plt, '并不是所有时间间隔都是最小时间间隔的倍数,最小间隔：{},异常间隔：{}'
-                       .format(train_min_interval, i))
-    for i in test_intervals:
-        if i % train_min_interval != 0 or i % test_min_interval != 0:
-            print_warn(use_plt, '并不是所有时间间隔都是最小时间间隔的倍数,最小间隔：{},异常间隔：{}'
-                       .format(test_min_interval, i))
-    # 处理时间戳 获得缺失点
-    train_amount = (train_timestamp_sorted[-1] - train_timestamp_sorted[0]) // train_min_interval + 1
-    test_amount = (test_timestamp_sorted[-1] - test_timestamp_sorted[0]) // test_min_interval + 1
-    # 初始化
-    fill_train_values = np.zeros([train_amount], dtype=train_values_sorted.dtype)
-    fill_test_values = np.zeros([test_amount], dtype=test_values_sorted.dtype)
-    fill_train_labels = np.zeros([train_amount], dtype=train_labels_sorted.dtype)
-    fill_test_labels = np.zeros([test_amount], dtype=test_labels_sorted.dtype)
-    # 重构时间戳数组
-    fill_train_timestamps = np.arange(train_timestamp_sorted[0], train_timestamp_sorted[-1] + train_min_interval,
-                                      train_min_interval, dtype=np.int64)
-    fill_test_timestamps = np.arange(test_timestamp_sorted[0], test_timestamp_sorted[-1] + test_min_interval,
-                                     test_min_interval, dtype=np.int64)
-    # 初始化缺失点数组与数值与标注数组
-    train_missing = np.ones([train_amount], dtype=np.int32)
-    test_missing = np.ones([test_amount], dtype=np.int32)
-    # 3.填充数值
-    # 获得与初始时间戳的差值数组
-    train_diff_with_first = (train_timestamp_sorted - train_timestamp_sorted[0])
-    test_diff_with_first = (test_timestamp_sorted - test_timestamp_sorted[0])
-    # 获得与初始时间戳相差的最小间隔数 即应处的索引值
-    diff_train_intervals_with_first = train_diff_with_first // train_min_interval
-    dst_train_index = np.asarray(diff_train_intervals_with_first, dtype=np.int)
-    diff_test_intervals_with_first = test_diff_with_first // test_min_interval
-    dst_test_index = np.asarray(diff_test_intervals_with_first, dtype=np.int)
-    # 标记有原值的时间戳为非缺失点
-    train_missing[dst_train_index] = 0
-    test_missing[dst_test_index] = 0
-    # 分别组合
-    fill_train_values[dst_train_index] = src_train_values[src_train_index]
-    fill_test_values[dst_test_index] = src_test_values[src_test_index]
-    fill_train_labels[dst_train_index] = src_train_labels[src_train_index]
-    fill_test_labels[dst_test_index] = src_test_labels[src_test_index]
-    return mean, std, \
-           fill_train_timestamps, fill_train_values, fill_train_labels, train_missing, \
-           fill_test_timestamps, fill_test_values, fill_test_labels, test_missing
-
-
-
+# def merge_data(use_plt, src_train_timestamps, src_train_labels, src_train_values, src_test_timestamps, src_test_labels,
+#                src_test_values):
+#     # 1.检验数据合法性
+#     # np src_array-> src_array
+#     train_timestamp = np.asarray(src_train_timestamps, np.int64)
+#     test_timestamp = np.asarray(src_test_timestamps, np.int64)
+#     check(use_plt, train_timestamp, test_timestamp, src_train_values, src_train_labels, src_test_values,
+#           src_test_labels)
+#     # 2.检验时间戳数据 补充为有序等间隔时间戳数组
+#     # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
+#     src_train_index = np.argsort(train_timestamp)
+#     src_test_index = np.argsort(test_timestamp)
+#     train_timestamp_sorted = train_timestamp[src_train_index]
+#     test_timestamp_sorted = test_timestamp[src_test_index]
+#     train_values_sorted = src_train_values[src_train_index]
+#     test_values_sorted = src_test_values[src_test_index]
+#     train_labels_sorted = src_train_labels[src_train_index]
+#     test_labels_sorted = src_test_labels[src_test_index]
+#     # 沿给定轴计算离散差分 即获得所有存在的时间戳间隔
+#     train_intervals = np.unique(np.diff(train_timestamp_sorted))
+#     test_intervals = np.unique(np.diff(test_timestamp_sorted))
+#     # 最小的间隔数
+#     train_min_interval = np.min(train_intervals)
+#     test_min_interval = np.min(test_intervals)
+#     # 单独有重复
+#     if train_min_interval <= 0:
+#         repeat_timestamp = set(train_timestamp_sorted - np.unique(train_timestamp_sorted))
+#         repeat_timestamp_str = ""
+#         for t in repeat_timestamp:
+#             repeat_timestamp_str = repeat_timestamp_str + " " + str(t)
+#         print_warn(use_plt, '训练数据重复时间戳:\n' + repeat_timestamp_str)
+#         return
+#     if test_min_interval <= 0:
+#         repeat_timestamp = set(test_timestamp_sorted - np.unique(test_timestamp_sorted))
+#         repeat_timestamp_str = ""
+#         for t in repeat_timestamp:
+#             repeat_timestamp_str = repeat_timestamp_str + " " + str(t)
+#         print_warn(use_plt, '测试数据重复时间戳:\n' + repeat_timestamp_str)
+#         return
+#     # 合并有重复时检查
+#     merge_set = set(train_timestamp_sorted).intersection(set(test_timestamp_sorted))
+#     if len(merge_set) != 0:
+#         for i in merge_set:
+#             # 寻找指定数值的索引
+#             train_index = np.where(train_timestamp_sorted == i)
+#             test_index = np.where(test_timestamp_sorted == i)
+#             if train_values_sorted[train_index] != test_values_sorted[test_index]:
+#                 print_warn(use_plt, "训练与测试数据中相同时间戳有不同KPI值，时间戳：{}，训练数据：{}，测试数据：{}"
+#                            .format(i, train_values_sorted[train_index], test_values_sorted[test_index]))
+#                 return
+#             if train_labels_sorted[train_index] != test_labels_sorted[test_index]:
+#                 print_warn(use_plt, "训练与测试数据中相同时间戳有不同标签，时间戳：{}，训练数据：{}，测试数据：{}"
+#                            .format(i, train_labels_sorted[train_index], test_labels_sorted[test_index]))
+#                 return
+#         #  取并集
+#         union_timestamps = list(set(train_timestamp_sorted).union(set(test_timestamp_sorted)))
+#         union_amount = len(union_timestamps)
+#         union_values = np.zeros([union_amount], dtype=train_values_sorted.dtype)
+#         union_labels = np.zeros([union_amount], dtype=train_labels_sorted.dtype)
+#         for i, t in enumerate(union_timestamps):
+#             # 寻找指定数值的索引
+#             train_index = np.where(train_timestamp_sorted == t)
+#             test_index = np.where(test_timestamp_sorted == t)
+#             if np.size(train_index) != 0:
+#                 union_values[i] = train_values_sorted[train_index][0]
+#                 union_labels[i] = train_labels_sorted[train_index][0]
+#             elif np.size(test_index) != 0:
+#                 union_values[i] = test_values_sorted[test_index][0]
+#                 union_labels[i] = test_labels_sorted[test_index][0]
+#             else:
+#                 print_warn(use_plt, "找不到指定数值的索引:{}".format(str(t)))
+#         mean = np.mean(union_values)
+#         std = np.std(union_values, ddof=1)
+#     else:
+#         n = len(train_values_sorted)
+#         m = len(test_values_sorted)
+#         m1 = np.mean(train_values_sorted)
+#         m2 = np.mean(test_values_sorted)
+#         s1 = np.std(train_values_sorted)
+#         s2 = np.std(train_values_sorted)
+#         mean = (n * m1 + m * m2) / (m + n)
+#         std = np.sqrt((n * s1 * s1 + m * s2 * s2 + (m * n * (m1 - m2) * (m1 - m2)) / (m + n)) / (m + n))
+#     if train_min_interval != test_min_interval:
+#         print_warn(use_plt, '最小间隔数不同训练数据最小间隔：{},测试数据最小间隔：{}'
+#                    .format(train_min_interval, test_min_interval))
+#     for i in train_intervals:
+#         if i % train_min_interval != 0 or i % test_min_interval != 0:
+#             print_warn(use_plt, '并不是所有时间间隔都是最小时间间隔的倍数,最小间隔：{},异常间隔：{}'
+#                        .format(train_min_interval, i))
+#     for i in test_intervals:
+#         if i % train_min_interval != 0 or i % test_min_interval != 0:
+#             print_warn(use_plt, '并不是所有时间间隔都是最小时间间隔的倍数,最小间隔：{},异常间隔：{}'
+#                        .format(test_min_interval, i))
+#     # 处理时间戳 获得缺失点
+#     train_amount = (train_timestamp_sorted[-1] - train_timestamp_sorted[0]) // train_min_interval + 1
+#     test_amount = (test_timestamp_sorted[-1] - test_timestamp_sorted[0]) // test_min_interval + 1
+#     # 初始化
+#     fill_train_values = np.zeros([train_amount], dtype=train_values_sorted.dtype)
+#     fill_test_values = np.zeros([test_amount], dtype=test_values_sorted.dtype)
+#     fill_train_labels = np.zeros([train_amount], dtype=train_labels_sorted.dtype)
+#     fill_test_labels = np.zeros([test_amount], dtype=test_labels_sorted.dtype)
+#     # 重构时间戳数组
+#     fill_train_timestamps = np.arange(train_timestamp_sorted[0], train_timestamp_sorted[-1] + train_min_interval,
+#                                       train_min_interval, dtype=np.int64)
+#     fill_test_timestamps = np.arange(test_timestamp_sorted[0], test_timestamp_sorted[-1] + test_min_interval,
+#                                      test_min_interval, dtype=np.int64)
+#     # 初始化缺失点数组与数值与标注数组
+#     train_missing = np.ones([train_amount], dtype=np.int32)
+#     test_missing = np.ones([test_amount], dtype=np.int32)
+#     # 3.填充数值
+#     # 获得与初始时间戳的差值数组
+#     train_diff_with_first = (train_timestamp_sorted - train_timestamp_sorted[0])
+#     test_diff_with_first = (test_timestamp_sorted - test_timestamp_sorted[0])
+#     # 获得与初始时间戳相差的最小间隔数 即应处的索引值
+#     diff_train_intervals_with_first = train_diff_with_first // train_min_interval
+#     dst_train_index = np.asarray(diff_train_intervals_with_first, dtype=np.int)
+#     diff_test_intervals_with_first = test_diff_with_first // test_min_interval
+#     dst_test_index = np.asarray(diff_test_intervals_with_first, dtype=np.int)
+#     # 标记有原值的时间戳为非缺失点
+#     train_missing[dst_train_index] = 0
+#     test_missing[dst_test_index] = 0
+#     # 分别组合
+#     fill_train_values[dst_train_index] = src_train_values[src_train_index]
+#     fill_test_values[dst_test_index] = src_test_values[src_test_index]
+#     fill_train_labels[dst_train_index] = src_train_labels[src_train_index]
+#     fill_test_labels[dst_test_index] = src_test_labels[src_test_index]
+#     return mean, std, \
+#            fill_train_timestamps, fill_train_values, fill_train_labels, train_missing, \
+#            fill_test_timestamps, fill_test_values, fill_test_labels, test_missing
