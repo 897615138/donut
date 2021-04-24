@@ -1,4 +1,5 @@
 from donut.cache import is_has_cache
+from donut.dashboard_support import Dashboard
 from donut.data import show_cache_data, show_new_data
 
 
@@ -25,4 +26,16 @@ def dashboard_plt(file_name, test_portion, src_threshold_value, use_cache):
     else:
         show_new_data(True, file_name, test_portion, src_threshold_value, False, True)
 
+
 # dashboard_plt("../sample_data/8192_7.24.csv", 0.3, None, False)
+use_cache_result = True
+use_cache_probability = True
+dashboard = Dashboard(use_plt=True,
+                      train_file="1024_1.csv",
+                      test_file="1024_2.csv",
+                      is_local=True,
+                      is_upload=False,
+                      src_threshold_value=None,
+                      a=1,
+                      use_cache_result=use_cache_result,
+                      use_cache_probability=use_cache_probability)
