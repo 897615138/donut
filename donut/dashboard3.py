@@ -14,7 +14,7 @@ def file_name_converter(suffix, train_file, test_file):
     """
     获得缓存路径
     """
-    return "../cache/{}/{}_{}.db".format(suffix, train_file, test_file)
+    return "cache/{}/{}_{}.db".format(suffix, train_file, test_file)
 
 
 def has_cache(result_file_path):
