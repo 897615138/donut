@@ -29,6 +29,7 @@ class Dashboard(object):
         self._is_upload = is_upload
         self._src_threshold_value = src_threshold_value
         self._has_error = False
+        self._error_str = ""
         self._a = a
         self._tc_1 = TimeCounter()
         self._tc_2 = TimeCounter()
@@ -50,11 +51,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            try:
-                self.use_cache_p()
-            except:
-                self.print_warn("缓存文件损坏")
-                self.do_all()
+            # try:
+            self.use_cache_p()
+            # except:
+            #     self.print_warn("缓存文件损坏")
+            #     self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)
@@ -72,14 +73,15 @@ class Dashboard(object):
         db = shelve.open(name)
         db["_test_scores"] = self._test_scores
         db["_real_test_labels"] = self._real_test_labels
+        db["_get_file_time"] = self._get_file_time
         db["_real_test_missing"] = self._real_test_missing
         db["_has_error"] = self._has_error
         db["_error_str"] = self._error_str
+        db["_src_train_timestamps"]=self._src_train_timestamps
         db["_get_train_file_time"] = self._get_train_file_time
         db["_src_train_num"] = self._src_train_num
         db["_src_train_label_num"] = self._src_train_label_num
         db["_src_train_label_proportion"] = self._src_train_label_proportion
-        db["_src_train_timestamps"] = self._src_train_timestamps
         db["_src_train_values"] = self._src_train_values
         db["_get_test_file_time"] = self._get_test_file_time
         db["_src_test_num"] = self._src_test_num
@@ -132,6 +134,7 @@ class Dashboard(object):
         db["_real_test_values"] = self._real_test_values
         db["_test_scores"] = self._test_scores
         db["_real_test_labels"] = self._real_test_labels
+        db["_get_file_time"] = self._get_file_time
         self._save_probability_time = self._tc_1.get_s() + '秒'
         db["_save_probability_time"] = self._save_probability_time
         db.close()
@@ -617,7 +620,8 @@ class Dashboard(object):
         # 根据分数捕获异常 获得阈值
         self._assessment = Assessment(self._src_threshold_value, self._test_scores, self._real_test_labels,
                                       self._real_test_missing, self._a, self._use_plt)
-        self._threshold_value, self._f_score, self._catch_num, self._catch_index, self._fp_index, self._fp_num, self._tp_index, self._tp_num, self._fn_index, self._fn_num, self._precision, self._recall \
+        self._threshold_value, self._f_score, self._catch_num, self._catch_index, self._fp_index, self._fp_num, \
+        self._tp_index, self._tp_num, self._fn_index, self._fn_num, self._precision, self._recall, self._lis \
             = self._assessment.get_assessment()
         self._catch_timestamps = self._real_test_timestamps[self._catch_index]
         self._catch_interval_num, self._catch_interval_str = get_constant_timestamp(self._catch_timestamps,
@@ -626,6 +630,19 @@ class Dashboard(object):
         self._tp_interval_num, self._tp_interval_str = get_constant_timestamp(self._tp_index, self._fill_step)
         self._fp_interval_num, self._fp_interval_str = get_constant_timestamp(self._fp_index, self._fill_step)
         self._fn_interval_num, self._fn_interval_str = get_constant_timestamp(self._fn_index, self._fill_step)
+        self._lis_str = ""
+        index = 1
+        if len(self._lis) > 10:
+            for l in self._lis[::-1]:
+                if index < 10:
+                    self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), l.get("f"))
+                    index = index + 1
+                else:
+                    break
+        else:
+            for l in self._lis[::-1]:
+                self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), l.get("f"))
+                index = index + 1
         self.print_info("6.评估【共用时{}】".format(self._assessment_time))
         self.print_text(
             "捕捉到异常（数量：{}）：\n 共有{}段连续 \n 具体为{}"
@@ -633,6 +650,7 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
+        self.print_text("F-分数简易排名：{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._tp_num, self._tp_interval_num, self._tp_interval_str))
@@ -709,17 +727,18 @@ class Dashboard(object):
         self._handle_refactor_probability_time = db["_handle_refactor_probability_time"]
         self._real_test_data_num = db["_real_test_data_num"]
         self._real_test_label_num = db["_real_test_label_num"]
+        self._real_test_missing = db["_real_test_missing"]
         self._real_test_missing_num = db["_real_test_missing_num"]
         self._real_test_label_proportion = db["_real_test_label_proportion"]
         self._save_probability_time = db["_save_probability_time"]
         self._real_test_data_num = db["_real_test_data_num"]
         self._real_test_label_num = db["_real_test_label_num"]
-        self._real_test_missing_num = db["_real_test_missing_num"]
         self._real_test_label_proportion = db["_real_test_label_proportion"]
         self._real_test_timestamps = db["_real_test_timestamps"]
         self._real_test_values = db["_real_test_values"]
         self._test_scores = db["_test_scores"]
-        self.__real_test_labels = db["_real_test_labels"]
+        self._real_test_labels = db["_real_test_labels"]
+        self._get_file_time = db["_get_file_time"]
         db.close()
         self._read_probability_time = self._tc_1.get_s() + '秒'
         self.print_info("读取重构概率等数据【共用时{}】".format(self._read_probability_time))
@@ -773,6 +792,7 @@ class Dashboard(object):
         db = shelve.open(name)
         db["_test_scores"] = self._test_scores
         db["_real_test_labels"] = self._real_test_labels
+        db["_get_file_time"] = self._get_file_time
         db["_real_test_missing"] = self._real_test_missing
         db["_has_error"] = self._has_error
         db["_error_str"] = self._error_str
@@ -851,10 +871,12 @@ class Dashboard(object):
         db["_real_test_values"] = self._real_test_values
         db["_test_scores"] = self._test_scores
         db["_real_test_labels"] = self._real_test_labels
+        db["_get_file_time"] = self._get_file_time
         self._save_all_time = self._tc_1.get_s() + "秒"
         db["_save_all_time"] = self._save_all_time
+        db["_lis"] = self._lis
+        db["_lis_str"] = self._lis_str
         db.close()
-
         self.print_info("7.存储所有数据【共用时{}】".format(self._save_all_time))
 
     def read_all(self):
@@ -942,7 +964,10 @@ class Dashboard(object):
         self._real_test_timestamps = db["_real_test_timestamps"]
         self._real_test_values = db["_real_test_values"]
         self._test_scores = db["_test_scores"]
-        self.__real_test_labels = db["_real_test_labels"]
+        self._real_test_labels = db["_real_test_labels"]
+        self._get_file_time = db["_get_file_time"]
+        self._lis = db["_lis"]
+        self._lis_str = db["_lis_str"]
         db.close()
         self._read_all_time = self._tc_1.get_s() + '秒'
         self.print_info("读取重构概率等数据【共用时{}】".format(self._read_all_time))
@@ -1073,6 +1098,7 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
+        self.print_text("F-分数简易排名：{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._tp_num, self._tp_interval_num, self._tp_interval_str))

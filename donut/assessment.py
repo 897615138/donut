@@ -55,13 +55,13 @@ class Assessment(object):
         self.f_score()
 
     def get_assessment(self):
-        return self._threshold_value, self._f_score, self._catch_num, self._catch_index, self._fp_index, self._fp_num, self._tp_index, self._tp_num, self._fn_index, self._fn_num, self._precision, self._recall
+        return self._threshold_value, self._f_score, self._catch_num, self._catch_index, self._fp_index, self._fp_num, self._tp_index, self._tp_num, self._fn_index, self._fn_num, self._precision, self._recall, self._lis
 
     def default_assessment(self):
         print_info(self._use_plt, "开始计算默认阈值")
         # 降序训练数据中的异常标签对应分值
         self._threshold_value = self._max_test_score
-        lis = []
+        self._lis = []
         has_big = False
         while self._threshold_value >= self._min_test_score:
             self.assessment()
@@ -69,7 +69,7 @@ class Assessment(object):
             # print(score)
             if self._f_score is not None:
                 # print(score, f_score)
-                if has_big and self._f_score < 0.7:
+                if has_big and (self._f_score < 0.7 or len(self._lis) > 20):
                     break
                 if self._f_score >= 0.7:
                     self._test_interval = 1e-2
@@ -78,11 +78,11 @@ class Assessment(object):
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
                              "tpn": self._tp_num, "fni": self._fn_index, "fnn": self._fn_num, "p": self._precision,
                              "r": self._recall}
-                    lis.append(catch)
+                    self._lis.append(catch)
         # 字典按照生序排序 取最大的准确度
-        if len(lis) > 0:
-            lis = sorted(lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['threshold']))
-            catch = lis[- 1]
+        if len(self._lis) > 0:
+            self._lis = sorted(self._lis, key=lambda dict_catch: (dict_catch['f'], dict_catch['threshold']))
+            catch = self._lis[- 1]
             # 最优F-score
             self._threshold_value = catch.get("threshold")
             self._catch_num = catch.get("num")
