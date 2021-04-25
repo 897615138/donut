@@ -72,7 +72,7 @@ class Assessment(object):
                 if has_big and (self._f_score < 0.7 or len(self._lis) > 20):
                     break
                 if self._f_score >= 0.7:
-                    self._test_interval = 1e-2
+                    self._test_interval = 1e-1
                     has_big = True
                     catch = {"threshold": self._threshold_value, "num": self._catch_num, "index": self._catch_index,
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
