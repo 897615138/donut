@@ -50,11 +50,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            # try:
-            self.use_cache_p()
-            # except:
-            #     self.print_warn("缓存文件损坏")
-            #     self.do_all()
+            try:
+                self.use_cache_p()
+            except:
+                self.print_warn("缓存文件损坏")
+                self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)
@@ -719,7 +719,7 @@ class Dashboard(object):
         self._real_test_timestamps = db["_real_test_timestamps"]
         self._real_test_values = db["_real_test_values"]
         self._test_scores = db["_test_scores"]
-        self.__real_test_labels=db["_real_test_labels"]
+        self.__real_test_labels = db["_real_test_labels"]
         db.close()
         self._read_probability_time = self._tc_1.get_s() + '秒'
         self.print_info("读取重构概率等数据【共用时{}】".format(self._read_probability_time))
@@ -942,7 +942,7 @@ class Dashboard(object):
         self._real_test_timestamps = db["_real_test_timestamps"]
         self._real_test_values = db["_real_test_values"]
         self._test_scores = db["_test_scores"]
-        self.__real_test_labels=db["_real_test_labels"]
+        self.__real_test_labels = db["_real_test_labels"]
         db.close()
         self._read_all_time = self._tc_1.get_s() + '秒'
         self.print_info("读取重构概率等数据【共用时{}】".format(self._read_all_time))
