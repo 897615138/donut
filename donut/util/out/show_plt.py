@@ -54,6 +54,7 @@ def line_chart(x, y, name):
         y: y轴
         name: 名称
     """
+    return
     plt.figure(figsize=(40, 10), dpi=128)
     plt.plot(x, y, label=name)
     plt.title(name)

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import numpy as np
 
 from donut.util.out.out import print_warn, print_info
@@ -62,18 +64,25 @@ class Assessment(object):
         # 降序训练数据中的异常标签对应分值
         self._threshold_value = self._max_test_score
         self._lis = []
-        has_big = False
+        first = True
+        first_score = 0
         while self._threshold_value >= self._min_test_score:
+            self._threshold_value = float(self._threshold_value)
             self.assessment()
-            self._threshold_value = round((self._threshold_value - self._test_interval), 7)
+            self._threshold_value = round((Decimal(self._threshold_value) - Decimal(self._test_interval)), 7)
             # print(score)
             if self._f_score is not None:
-                # print(score, f_score)
-                if has_big and (self._f_score < 0.7 or len(self._lis) > 20):
+                print(first_score,self._f_score,self._threshold_value,  self._precision, self._recall)
+                if self._f_score < round(first_score-0.02,2) or len(self._lis)>200:  # ):
                     break
-                if self._f_score >= 0.7:
-                    self._test_interval = 1e-1
-                    has_big = True
+                if 0.55 <= self._f_score < 0.6 and self._test_interval == 1:
+                    self._test_interval = 0.5
+                if self._f_score >= 0.6:
+                    if first:
+                        first = False
+                        first_score = float(self._f_score)
+                        self._test_interval = 1e-1
+                    # has_big = True
                     catch = {"threshold": self._threshold_value, "num": self._catch_num, "index": self._catch_index,
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
                              "tpn": self._tp_num, "fni": self._fn_index, "fnn": self._fn_num, "p": self._precision,
@@ -102,9 +111,11 @@ class Assessment(object):
         FN 漏报的异常
         """
         self._fn_index = list(set(self._real_test_labels_index) - set(self._catch_index))
+        fn_t = self._fn_index
         for fn in self._fn_index:
-            if is_in(fn, self._catch_index, -10, 10) or is_in(fn, self._real_test_missing_index, -10, 10):
-                self._fn_index.remove(fn)
+            if is_in(fn, self._catch_index, -200, 200) or is_in(fn, self._real_test_missing_index, -200, 200):
+                fn_t.remove(fn)
+        self._fn_index = fn_t
         self._fn_num = np.size(self._fn_index)
 
     def tp(self):
@@ -114,7 +125,8 @@ class Assessment(object):
         self._tp_index = list(set(self._catch_index).intersection(set(self._real_test_labels_index)))
         append_list = []
         for tp in self._tp_index:
-            if is_in(tp, self._real_test_labels_index, -10, 10) or is_in(tp, self._real_test_missing_index, -10, 10):
+            if is_in(tp, self._real_test_labels_index, -200, 200) or is_in(tp, self._real_test_missing_index, -200,
+                                                                           200):
                 append_list.append(tp)
         for i in append_list:
             self._tp_index.append(i)
@@ -128,7 +140,8 @@ class Assessment(object):
         """
         self._fp_index = list(set(self._catch_index) - set(self._real_test_labels_index))
         for fp in self._fp_index:
-            if is_in(fp, self._real_test_labels_index, -10, 10) or is_in(fp, self._real_test_missing_index, -10, 10):
+            if is_in(fp, self._real_test_labels_index, -200, 200) or is_in(fp, self._real_test_missing_index, -200,
+                                                                           200):
                 self._fp_index.remove(fp)
         self._fp_num = np.size(self._fp_index)
 
@@ -137,25 +150,33 @@ class Assessment(object):
         精度
         """
         if self._tp_num + self._fp_num == 0:
-            return None
-        self._precision = self._tp_num / (self._tp_num + self._fp_num)
+            self._precision = None
+        else:
+            self._precision = Decimal(self._tp_num) / Decimal(self._tp_num + self._fp_num)
+            # self._precision =self._tp_num/(self._tp_num + self._fp_num)
 
     def recall(self):
         """
         召回率
         """
         if self._tp_num + self._fn_num == 0:
-            return None
-        self._recall = self._tp_num / (self._tp_num + self._fn_num)
+            self._recall = None
+        else:
+            self._recall = Decimal(self._tp_num) / Decimal(self._tp_num + self._fn_num)
+            # self._recall=self._tp_num/(self._tp_num + self._fn_num)
 
     def f_score(self):
         """
         f-score
         """
-        self._precision = float(str(self._precision))
-        self._recall = float(self._precision)
-        if round(float(self._precision) + float(self._recall), 7) == 0:
+        if self._precision is None or self._recall is None or Decimal(self._precision) + Decimal(self._recall) == 0:
             self._f_score = None
         else:
-            self._f_score = round((self._a * self._a + 1) * self._precision * self._recall / (
-                    self._a * self._a * (self._precision + self._recall)), 7)
+            # self._precision = Decimal(self._precision)
+            # self._recall = Decimal(self._recall)
+            self._f_score = Decimal(Decimal(
+                Decimal(Decimal(self._a) * Decimal(self._a) + Decimal(1)) * Decimal(self._precision) * Decimal(
+                    self._recall)) / Decimal((
+                    Decimal(self._a) * Decimal(self._a) * Decimal(Decimal(self._precision) + Decimal(self._recall)))))
+            # self._f_score=(self._a*self._a+1)*self._precision*self._recall/\
+            #               self._a*self._a*(self._precision+self._recall)

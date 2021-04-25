@@ -624,21 +624,21 @@ class Dashboard(object):
         self._catch_interval_num, self._catch_interval_str = get_constant_timestamp(self._catch_timestamps,
                                                                                     self._fill_step)
         self._assessment_time = self._tc_1.get_s() + '秒'
-        self._tp_interval_num, self._tp_interval_str = get_constant_timestamp(self._tp_index, self._fill_step)
-        self._fp_interval_num, self._fp_interval_str = get_constant_timestamp(self._fp_index, self._fill_step)
-        self._fn_interval_num, self._fn_interval_str = get_constant_timestamp(self._fn_index, self._fill_step)
+        self._tp_interval_num, self._tp_interval_str = get_constant_timestamp(self._real_test_timestamps[self._tp_index], self._fill_step)
+        self._fp_interval_num, self._fp_interval_str = get_constant_timestamp(self._real_test_timestamps[self._fp_index], self._fill_step)
+        self._fn_interval_num, self._fn_interval_str = get_constant_timestamp(self._real_test_timestamps[self._fn_index], self._fill_step)
         self._lis_str = ""
         index = 1
         if len(self._lis) > 10:
             for l in self._lis[::-1]:
                 if index < 10:
-                    self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), l.get("f"))
+                    self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), round(l.get("f"),7))
                     index = index + 1
                 else:
                     break
         else:
             for l in self._lis[::-1]:
-                self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), l.get("f"))
+                self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), round(l.get("f"),7))
                 index = index + 1
         self.print_info("6.评估【共用时{}】".format(self._assessment_time))
         self.print_text(
@@ -647,7 +647,7 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
-        self.print_text("F-分数简易排名：{}".format(self._lis_str))
+        self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._tp_num, self._tp_interval_num, self._tp_interval_str))
@@ -1095,7 +1095,7 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
-        self.print_text("F-分数简易排名：{}".format(self._lis_str))
+        self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._tp_num, self._tp_interval_num, self._tp_interval_str))

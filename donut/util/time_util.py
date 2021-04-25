@@ -105,4 +105,6 @@ def get_constant_timestamp(timestamps, step):
                     last = t
                     has_head = False
                     has_dot = False
+        if time_str.endswith('...'):
+            time_str=time_str+str(last)
         return interval_num, time_str
