@@ -63,7 +63,7 @@ class Assessment(object):
         self._threshold_value = self._max_test_score
         lis = []
         has_big = False
-        while True and self._threshold_value >= self._min_test_score:
+        while self._threshold_value >= self._min_test_score:
             self.assessment()
             self._threshold_value = round((self._threshold_value - self._test_interval), 7)
             # print(score)
@@ -152,8 +152,8 @@ class Assessment(object):
         """
         f-score
         """
-        self._precision=float(str(self._precision))
-        self._recall=float(self._precision)
+        self._precision = float(str(self._precision))
+        self._recall = float(self._precision)
         if round(float(self._precision) + float(self._recall), 7) == 0:
             self._f_score = None
         else:
