@@ -40,8 +40,10 @@ if file_option == '选择储存至项目中的文件':
     has_result, result_cache_text = has_cache(result_file_path)
     has_probability, probability_cache_text = has_cache(pro_file_path)
     st.text("结果缓存文件：")
+    # st.text(result_file_path)
     st.text(result_cache_text)
     st.text("训练测试文件：")
+    # st.text(pro_file_path)
     st.text(probability_cache_text)
     use_cache_result = True
     use_cache_probability = True
@@ -58,7 +60,7 @@ if file_option == '选择储存至项目中的文件':
         else:
             a = st.text_input('a【F-score评估系数】', 1)
             use_cache_result = False
-            use_cache_probability = False
+            use_cache_probability = True
     elif has_result and not has_probability:
         remark = st.selectbox('数据（缓存）选择', ('使用缓存数据', '更新缓存数据'))
         if remark == '使用缓存数据':
@@ -87,7 +89,7 @@ if file_option == '选择储存至项目中的文件':
         dashboard = Dashboard(use_plt=False,
                               train_file=train_file_name,
                               test_file=test_file_name,
-                              is_local=True,
+                              is_local=False,
                               is_upload=False,
                               src_threshold_value=src_threshold_value,
                               a=a,

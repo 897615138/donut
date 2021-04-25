@@ -32,7 +32,7 @@ class Dashboard(object):
         self._a = a
         self._tc_1 = TimeCounter()
         self._tc_2 = TimeCounter()
-        self._use_cache_probability=use_cache_probability
+        self._use_cache_probability = use_cache_probability
         if use_cache_result:
             exist, suggest = self.check_file("result")
             if exist:
@@ -54,9 +54,18 @@ class Dashboard(object):
                 self.use_cache_p()
             except:
                 self.print_warn("缓存文件损坏")
-                self.before_save_probability()
-                self.save_probability()
-                self.after_save_probability()
+                self.do_all()
+        else:
+            exist, suggest = self.check_file("probability")
+            self.print_text(suggest)
+            self.do_all()
+
+    def do_all(self):
+        self.before_save_probability()
+        # 5.存储重构概率等数据
+        self.save_probability()
+        self.after_save_probability()
+
     def save_probability(self):
         self._tc_1.start()
         name = self.file_name_converter("probability")
@@ -133,6 +142,7 @@ class Dashboard(object):
             self.print_text(suggest)
             self.read_probability()
             self.show_cache_probability()
+            self.after_save_probability()
         else:
             self.print_text(suggest)
             self.before_save_probability()

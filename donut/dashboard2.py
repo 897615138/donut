@@ -28,11 +28,11 @@ def dashboard_plt(file_name, test_portion, src_threshold_value, use_cache):
 
 
 # dashboard_plt("../sample_data/8192_7.24.csv", 0.3, None, False)
-use_cache_result = True
-use_cache_probability = True
+use_cache_result = False
+use_cache_probability = False
 dashboard = Dashboard(use_plt=True,
-                      train_file="1024_1.csv",
-                      test_file="1024_2.csv",
+                      train_file="4096_1.88.csv",
+                      test_file="4096_14.21.csv",
                       is_local=True,
                       is_upload=False,
                       src_threshold_value=None,
