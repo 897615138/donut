@@ -80,8 +80,8 @@ class Assessment(object):
                 if self._f_score >= 0.6:
                     if first:
                         first = False
-                        first_score = float(self._f_score)
-                        self._test_interval = 1e-1
+                        self._threshold_value=round(self._threshold_value,1)
+                        self._test_interval = 0.1
                     # has_big = True
                     catch = {"threshold": self._threshold_value, "num": self._catch_num, "index": self._catch_index,
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
