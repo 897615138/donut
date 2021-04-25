@@ -82,7 +82,7 @@ class Assessment(object):
                         first = False
                         self._threshold_value=round(self._threshold_value,1)
                         self._test_interval = 0.1
-                    # has_big = True
+                        first_score=self._f_score
                     catch = {"threshold": self._threshold_value, "num": self._catch_num, "index": self._catch_index,
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
                              "tpn": self._tp_num, "fni": self._fn_index, "fnn": self._fn_num, "p": self._precision,
@@ -113,7 +113,7 @@ class Assessment(object):
         self._fn_index = list(set(self._real_test_labels_index) - set(self._catch_index))
         fn_t = self._fn_index
         for fn in self._fn_index:
-            if is_in(fn, self._catch_index, -200, 200) or is_in(fn, self._real_test_missing_index, -200, 200):
+            if is_in(fn, self._catch_index) or is_in(fn, self._real_test_missing_index):
                 fn_t.remove(fn)
         self._fn_index = fn_t
         self._fn_num = np.size(self._fn_index)
@@ -125,8 +125,7 @@ class Assessment(object):
         self._tp_index = list(set(self._catch_index).intersection(set(self._real_test_labels_index)))
         append_list = []
         for tp in self._tp_index:
-            if is_in(tp, self._real_test_labels_index, -200, 200) or is_in(tp, self._real_test_missing_index, -200,
-                                                                           200):
+            if is_in(tp, self._real_test_labels_index) or is_in(tp, self._real_test_missing_index):
                 append_list.append(tp)
         for i in append_list:
             self._tp_index.append(i)
@@ -140,8 +139,7 @@ class Assessment(object):
         """
         self._fp_index = list(set(self._catch_index) - set(self._real_test_labels_index))
         for fp in self._fp_index:
-            if is_in(fp, self._real_test_labels_index, -200, 200) or is_in(fp, self._real_test_missing_index, -200,
-                                                                           200):
+            if is_in(fp, self._real_test_labels_index) or is_in(fp, self._real_test_missing_index):
                 self._fp_index.remove(fp)
         self._fp_num = np.size(self._fp_index)
 
@@ -153,7 +151,6 @@ class Assessment(object):
             self._precision = None
         else:
             self._precision = Decimal(self._tp_num) / Decimal(self._tp_num + self._fp_num)
-            # self._precision =self._tp_num/(self._tp_num + self._fp_num)
 
     def recall(self):
         """
@@ -163,7 +160,6 @@ class Assessment(object):
             self._recall = None
         else:
             self._recall = Decimal(self._tp_num) / Decimal(self._tp_num + self._fn_num)
-            # self._recall=self._tp_num/(self._tp_num + self._fn_num)
 
     def f_score(self):
         """
@@ -172,11 +168,7 @@ class Assessment(object):
         if self._precision is None or self._recall is None or Decimal(self._precision) + Decimal(self._recall) == 0:
             self._f_score = None
         else:
-            # self._precision = Decimal(self._precision)
-            # self._recall = Decimal(self._recall)
             self._f_score = Decimal(Decimal(
                 Decimal(Decimal(self._a) * Decimal(self._a) + Decimal(1)) * Decimal(self._precision) * Decimal(
                     self._recall)) / Decimal((
                     Decimal(self._a) * Decimal(self._a) * Decimal(Decimal(self._precision) + Decimal(self._recall)))))
-            # self._f_score=(self._a*self._a+1)*self._precision*self._recall/\
-            #               self._a*self._a*(self._precision+self._recall)
