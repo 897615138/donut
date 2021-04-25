@@ -31,8 +31,8 @@ def has_cache(result_file_path):
 
 if file_option == '选择储存至项目中的文件':
     is_local = False
-    train_file_name = str(st.text_input('训练文件名【sample_data目录下】', "4096_1.88.csv"))
-    test_file_name = str(st.text_input('测试文件名【sample_data目录下】', "4096_14.21.csv"))
+    train_file_name = str(st.text_input('训练文件名【sample_data目录下】', "4096_14.21.csv"))
+    test_file_name = str(st.text_input('测试文件名【sample_data目录下】', "4096_1.88.csv"))
     src_threshold_value = st.text_input('阈值（不设置则使用默认值）', "默认阈值")
     src_threshold_value = handle_src_threshold_value(src_threshold_value)
     result_file_path = file_name_converter("result", train_file_name, test_file_name)
@@ -50,30 +50,30 @@ if file_option == '选择储存至项目中的文件':
     if has_result and has_probability:
         remark = st.selectbox('全部数据（缓存）选择', ('使用缓存数据', '更新缓存数据', '更新评估数据'))
         if remark == '使用缓存数据':
-            a = 1
+            a = 0.8
             use_cache_result = True
             use_cache_probability = True
         elif remark == '使用缓存数据':
-            a = 1
+            a = 0.8
             use_cache_result = False
             use_cache_probability = True
         else:
-            a = st.text_input('a【F-score评估系数】', 1)
+            a = st.text_input('a【F-score评估系数】', 0.8)
             use_cache_result = False
             use_cache_probability = True
     elif has_result and not has_probability:
         remark = st.selectbox('数据（缓存）选择', ('使用缓存数据', '更新缓存数据'))
         if remark == '使用缓存数据':
-            a = 1
+            a = 0.8
             use_cache_result: True
             use_cache_probability = False
         else:
-            a = st.text_input('a【F-score评估系数】', 1)
+            a = st.text_input('a【F-score评估系数】', 0.8)
             use_cache_result = False
             use_cache_probability = False
     elif not has_result and has_probability:
         remark = st.selectbox('数据（缓存）选择', ('使用已有训练测试结果', '更新训练测试结果'))
-        a = st.text_input('a【F-score评估系数】', 1)
+        a = st.text_input('a【F-score评估系数】', 0.8)
         if remark == '使用已有训练测试结果':
             use_cache_result = False
             use_cache_probability = True
@@ -82,7 +82,7 @@ if file_option == '选择储存至项目中的文件':
             use_cache_probability = False
     else:
         st.text("当前无缓存，默认进行缓存")
-        a = st.text_input('a【F-score评估系数】', 1)
+        a = st.text_input('a【F-score评估系数】', 0.8)
     button_pd = st.button("分析数据")
     if button_pd:
         dashboard = Dashboard(use_plt=False,
@@ -124,7 +124,7 @@ else:
                 use_cache_result = False
                 use_cache_probability = True
             else:
-                a = st.text_input('a【F-score评估系数】', 1)
+                a = st.text_input('a【F-score评估系数】', 0.8)
                 use_cache_result = False
                 use_cache_probability = False
         elif has_result and not has_probability:
@@ -134,7 +134,7 @@ else:
                 use_cache_result: True
                 use_cache_probability = False
             else:
-                a = st.text_input('a【F-score评估系数】', 1)
+                a = st.text_input('a【F-score评估系数】', 0.8)
                 use_cache_result = False
                 use_cache_probability = False
         elif not has_result and has_probability:
@@ -144,12 +144,12 @@ else:
                 use_cache_result = False
                 use_cache_probability = True
             else:
-                a = st.text_input('a【F-score评估系数】', 1)
+                a = st.text_input('a【F-score评估系数】', 0.8)
                 use_cache_result = False
                 use_cache_probability = False
         else:
             st.text("当前无缓存，默认进行缓存")
-            a = st.text_input('a【F-score评估系数】', 1)
+            a = st.text_input('a【F-score评估系数】', 0.8)
         button_pd = st.button("分析数据")
         if button_pd:
             dashboard = Dashboard(use_plt=False,
