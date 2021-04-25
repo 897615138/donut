@@ -72,13 +72,12 @@ if file_option == '选择储存至项目中的文件':
             use_cache_result = False
             use_cache_probability = False
     elif not has_result and has_probability:
-        remark = st.selectbox('数据（缓存）选择', ('使用已有训练测试结果', '更新评估结果'))
+        remark = st.selectbox('数据（缓存）选择', ('使用已有训练测试结果', '更新训练测试结果'))
+        a = st.text_input('a【F-score评估系数】', 1)
         if remark == '使用已有训练测试结果':
-            a = 1
             use_cache_result = False
             use_cache_probability = True
         else:
-            a = st.text_input('a【F-score评估系数】', 1)
             use_cache_result = False
             use_cache_probability = False
     else:
