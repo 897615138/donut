@@ -51,11 +51,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            # try:
-            self.use_cache_p()
-            # except:
-            #     self.print_warn("缓存文件损坏")
-            #     self.do_all()
+            try:
+                self.use_cache_p()
+            except:
+                self.print_warn("缓存文件损坏")
+                self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)
@@ -149,10 +149,7 @@ class Dashboard(object):
             self.after_save_probability()
         else:
             self.print_text(suggest)
-            self.before_save_probability()
-            # 5.存储重构概率等数据
-            self.save_probability()
-            self.after_save_probability()
+            self.do_all()
 
     def after_save_probability(self):
         # 6.评估
@@ -1109,3 +1106,4 @@ class Dashboard(object):
             "【FN】漏报异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._fn_num, self._fn_interval_num, self._fn_interval_str))
         self.print_info("7.存储重构概率等数据【共用时{}】".format(self._save_all_time))
+        self.time_sort()
