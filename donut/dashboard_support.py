@@ -51,11 +51,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            try:
-                self.use_cache_p()
-            except:
-                self.print_warn("缓存文件损坏")
-                self.do_all()
+            # try:
+            self.use_cache_p()
+            # except:
+            #     self.print_warn("缓存文件损坏")
+            #     self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)

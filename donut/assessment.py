@@ -73,7 +73,7 @@ class Assessment(object):
             # print(score)
             if self._f_score is not None:
                 print(first_score,self._f_score,self._threshold_value,  self._precision, self._recall)
-                if self._f_score < round(first_score-0.01,2) or len(self._lis)>200:  # ):
+                if self._f_score < round(first_score-Decimal(0.01),2) or len(self._lis)>200:  # ):
                     break
                 if 0.45 <= self._f_score < 0.5 and self._test_interval == 1:
                     self._test_interval = 0.5
