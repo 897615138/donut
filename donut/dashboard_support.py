@@ -51,11 +51,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            # try:
-            self.use_cache_p()
-            # except:
-            #     self.print_warn("缓存文件损坏")
-            #     self.do_all()
+            try:
+                self.use_cache_p()
+            except:
+                self.print_warn("缓存文件损坏")
+                self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)
@@ -77,7 +77,7 @@ class Dashboard(object):
         db["_real_test_missing"] = self._real_test_missing
         db["_has_error"] = self._has_error
         db["_error_str"] = self._error_str
-        db["_src_train_timestamps"]=self._src_train_timestamps
+        db["_src_train_timestamps"] = self._src_train_timestamps
         db["_get_train_file_time"] = self._get_train_file_time
         db["_src_train_num"] = self._src_train_num
         db["_src_train_label_num"] = self._src_train_label_num
@@ -408,7 +408,7 @@ class Dashboard(object):
         self._tc_1.start()
         # 1.检验数据并计算综合平均值与标准差
         self.check_timestamp()
-        # 2.检验时间戳数据 补充为有序等间隔时间戳数组
+        # 检验时间戳数据 补充为有序等间隔时间戳数组
         # 时间戳排序 获得对数组排序后的原数组的对应索引以及有序数组
         self._src_train_index = np.argsort(self._train_timestamp)
         self._src_test_index = np.argsort(self._test_timestamp)
@@ -624,21 +624,26 @@ class Dashboard(object):
         self._catch_interval_num, self._catch_interval_str = get_constant_timestamp(self._catch_timestamps,
                                                                                     self._fill_step)
         self._assessment_time = self._tc_1.get_s() + '秒'
-        self._tp_interval_num, self._tp_interval_str = get_constant_timestamp(self._real_test_timestamps[self._tp_index], self._fill_step)
-        self._fp_interval_num, self._fp_interval_str = get_constant_timestamp(self._real_test_timestamps[self._fp_index], self._fill_step)
-        self._fn_interval_num, self._fn_interval_str = get_constant_timestamp(self._real_test_timestamps[self._fn_index], self._fill_step)
+        self._tp_interval_num, self._tp_interval_str = get_constant_timestamp(
+            self._real_test_timestamps[self._tp_index], self._fill_step)
+        self._fp_interval_num, self._fp_interval_str = get_constant_timestamp(
+            self._real_test_timestamps[self._fp_index], self._fill_step)
+        self._fn_interval_num, self._fn_interval_str = get_constant_timestamp(
+            self._real_test_timestamps[self._fn_index], self._fill_step)
         self._lis_str = ""
         index = 1
         if len(self._lis) > 10:
             for l in self._lis[::-1]:
                 if index < 10:
-                    self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), round(l.get("f"),7))
+                    self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"),
+                                                                              round(l.get("f"), 7))
                     index = index + 1
                 else:
                     break
         else:
             for l in self._lis[::-1]:
-                self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"), round(l.get("f"),7))
+                self._lis_str = self._lis_str + '{} 阈值：{}，分数：{}\n'.format(index, l.get("threshold"),
+                                                                          round(l.get("f"), 7))
                 index = index + 1
         self.print_info("6.评估【共用时{}】".format(self._assessment_time))
         self.print_text(

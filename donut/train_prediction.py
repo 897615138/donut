@@ -96,4 +96,3 @@ def train_prediction_v1(use_plt, train_values, train_labels, train_missing, test
             probability_time = tc.get_s() + "秒"
             print_info(use_plt, "9.预测器获取重构概率【共用时{}】".format(probability_time))
             return refactor_probability, epoch_list, lr_list, epoch_time, model_time, trainer_time, predictor_time, fit_time, probability_time, train_message
-

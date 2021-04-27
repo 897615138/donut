@@ -18,7 +18,7 @@ def split_csv(file_name, begin, num):
         ff.writerows(rows)
 
 
-def is_in(num, lis, range_1=-200, range_2=200):
+def is_in(num, lis, range_1=-240, range_2=240):
     if len(lis) == 0:
         return False
     for i in range(range_1, range_2):

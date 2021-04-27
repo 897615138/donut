@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def complete_timestamp(timestamp, arrays=None):
     """
     1.补齐时间戳，使时间间隔是齐次的。

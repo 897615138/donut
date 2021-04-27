@@ -1,6 +1,4 @@
 import numpy as np
-
-
 class BatchSlidingWindow(object):
     """
     用于获取滑动窗口的小切片的迭代器类。

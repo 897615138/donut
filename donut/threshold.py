@@ -48,6 +48,7 @@ def catch_label_v1(use_plt, test_labels, test_scores, zero_num, threshold_value)
             accuracy = labels_num / catch_num
     return labels_num, catch_num, catch_index, labels_index, threshold_value, accuracy
 
+
 def compute_default_label_threshold_value_v1(
         labels_score, test_score, test_labels_num_vo, test_actual_num, test_labels_index):
     """
