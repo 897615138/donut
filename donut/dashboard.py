@@ -47,7 +47,7 @@ if file_option == '选择储存至项目中的文件':
     # test_file_name = str(st.text_input('测试文件名【sample_data目录下】', "4096_1.88.csv"))
     src_threshold_value = st.text_input('阈值（不设置则使用默认值）', "默认阈值")
     src_threshold_value = handle_src_threshold_value(src_threshold_value)
-    st.text(src_threshold_value)
+    # st.text(src_threshold_value)
     result_file_path = file_name_converter("result", train_file_name, test_file_name)
     pro_file_path = file_name_converter("probability", train_file_name, test_file_name)
     has_result, result_cache_text = has_cache(result_file_path)
@@ -66,10 +66,10 @@ if file_option == '选择储存至项目中的文件':
             a = 0.8
             use_cache_result = True
             use_cache_probability = True
-        elif remark == '使用缓存数据':
+        elif remark == '更新缓存数据':
             a = 0.8
             use_cache_result = False
-            use_cache_probability = True
+            use_cache_probability = False
         else:
             a = st.text_input('a【F-score评估系数】', 1.0)
             use_cache_result = False
@@ -132,10 +132,10 @@ else:
                 a = 1
                 use_cache_result = True
                 use_cache_probability = True
-            elif remark == '使用缓存数据':
+            elif remark == '更新缓存数据':
                 a = 1
                 use_cache_result = False
-                use_cache_probability = True
+                use_cache_probability = False
             else:
                 a = st.text_input('a【F-score评估系数】', 1.0)
                 use_cache_result = False
