@@ -160,8 +160,8 @@ def handle_src_threshold_value(src_threshold_value):
     Returns:
         初始阈值
     """
-    if src_threshold_value is not "默认阈值":
-        src_threshold_value = float(src_threshold_value)
-    else:
+    if src_threshold_value == "默认阈值":
         src_threshold_value = None
+    else:
+        src_threshold_value = float(src_threshold_value)
     return src_threshold_value
