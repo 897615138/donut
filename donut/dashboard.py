@@ -29,10 +29,21 @@ def has_cache(result_file_path):
         return exist, "该配置无缓存,默认缓存数据"
 
 
+def get_file_list():
+    file_list=[]
+    for root, dirs, files in os.walk("sample_data"):
+        for file in files:
+            file_list.append(file.title())
+    return file_list
+
+
 if file_option == '选择储存至项目中的文件':
     is_local = False
-    train_file_name = str(st.text_input('训练文件名【sample_data目录下】', "4096_14.21.csv"))
-    test_file_name = str(st.text_input('测试文件名【sample_data目录下】', "4096_1.88.csv"))
+    file_list=get_file_list()
+    train_file_name=str(st.selectbox('训练文件名【sample_data目录下】', file_list))
+    test_file_name = str(st.selectbox('测试文件名【sample_data目录下】', file_list))
+    # train_file_name = str(st.text_input('训练文件名【sample_data目录下】', "4096_14.21.csv"))
+    # test_file_name = str(st.text_input('测试文件名【sample_data目录下】', "4096_1.88.csv"))
     src_threshold_value = st.text_input('阈值（不设置则使用默认值）', "默认阈值")
     src_threshold_value = handle_src_threshold_value(src_threshold_value)
     result_file_path = file_name_converter("result", train_file_name, test_file_name)

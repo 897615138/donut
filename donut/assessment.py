@@ -72,17 +72,21 @@ class Assessment(object):
             self._threshold_value = round((Decimal(self._threshold_value) - Decimal(self._test_interval)), 7)
             # print(score)
             if self._f_score is not None:
-                print(first_score,self._f_score,self._threshold_value,  self._precision, self._recall)
-                if self._f_score < round(first_score-Decimal(0.01),2) or len(self._lis)>200:  # ):
+                print(first_score, self._f_score, self._threshold_value, self._precision, self._recall)
+                if self._f_score < round(first_score - Decimal(0.01), 2) or len(self._lis) > 500:  # ):
                     break
-                if 0.45 <= self._f_score < 0.5 and self._test_interval == 1:
-                    self._test_interval = 0.5
                 if self._f_score >= 0.5:
                     if first:
                         first = False
-                        self._threshold_value=round(self._threshold_value,1)
+                        self._threshold_value = round(self._threshold_value, 1)
+                        self._test_interval = 0.8
+                        first_score = self._f_score
+                    if self._f_score > 0.6:
+                        self._test_interval = 0.4
+                    if self._f_score > 0.7:
+                        self._test_interval = 0.2
+                    if self._f_score > 0.8:
                         self._test_interval = 0.1
-                        first_score=self._f_score
                     catch = {"threshold": self._threshold_value, "num": self._catch_num, "index": self._catch_index,
                              "f": self._f_score, "fpi": self._fp_index, "fpn": self._fp_num, "tpi": self._tp_index,
                              "tpn": self._tp_num, "fni": self._fn_index, "fnn": self._fn_num, "p": self._precision,
