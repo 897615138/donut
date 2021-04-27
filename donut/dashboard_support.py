@@ -154,10 +154,11 @@ class Dashboard(object):
     def after_save_probability(self):
         # 6.评估
         self.get_assessment()
-        # 7.存储所有信息
-        self.save_all()
-        # 8.时间排序
-        self.time_sort()
+        if self._src_threshold_value is None:
+            # 7.存储所有信息
+            self.save_all()
+            # 8.时间排序
+            self.time_sort()
 
     def before_save_probability(self):
         # 1.获取数据
@@ -652,7 +653,8 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
-        self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
+        if self._src_threshold_value is None:
+            self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"
                 .format(self._tp_num, self._tp_interval_num, self._tp_interval_str))
@@ -1100,6 +1102,8 @@ class Dashboard(object):
         self.print_text(
             "默认阈值：{}，最佳F分值：{}，精度:{}，召回率：{}"
                 .format(round(self._threshold_value, 7), self._f_score, self._precision, self._recall))
+        if self._src_threshold_value is None:
+            self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
         self.print_text("F-分数简易排名：\n{}".format(self._lis_str))
         self.print_text(
             "【TP】成功监测出的异常点（数量：{}）：\n 共有{}段连续 \n 具体为{}"

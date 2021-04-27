@@ -8,7 +8,7 @@ dashboard = Dashboard(use_plt=True,
                       test_file="4096_1.88.csv",
                       is_local=True,
                       is_upload=False,
-                      src_threshold_value=None,
+                      src_threshold_value=21.0,
                       a=1,
                       use_cache_result=use_cache_result,
                       use_cache_probability=use_cache_probability)

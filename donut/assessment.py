@@ -35,6 +35,7 @@ class Assessment(object):
                 print_info(use_plt, "当前阈值无F-score，请确认")
             else:
                 if self._f_score < 0.7:
+                    self._lis = []
                     print_warn(use_plt, "建议调整阈值分数或使用【默认阈值】以获得更好的效果（F—score）")
         # 计算默认阈值进行评估
         else:
