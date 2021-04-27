@@ -130,7 +130,7 @@ class Assessment(object):
         self._tp_index = list(set(self._catch_index).intersection(set(self._real_test_labels_index)))
         append_list = []
         for tp in self._tp_index:
-            if is_in(tp, self._real_test_labels_index, 60, 240) or is_in(tp, self._real_test_missing_index):
+            if is_in(tp, self._real_test_labels_index, -60, 240) or is_in(tp, self._real_test_missing_index):
                 append_list.append(tp)
         for i in append_list:
             self._tp_index.append(i)
@@ -144,7 +144,7 @@ class Assessment(object):
         """
         self._fp_index = list(set(self._catch_index) - set(self._real_test_labels_index))
         for fp in self._fp_index:
-            if is_in(fp, self._real_test_labels_index, 60, 240) or is_in(fp, self._real_test_missing_index):
+            if is_in(fp, self._real_test_labels_index, -60, 240) or is_in(fp, self._real_test_missing_index):
                 self._fp_index.remove(fp)
         self._fp_num = np.size(self._fp_index)
 
