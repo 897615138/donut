@@ -160,7 +160,7 @@ def handle_src_threshold_value(src_threshold_value):
     Returns:
         初始阈值
     """
-    if src_threshold_value.isdecimal():
+    if src_threshold_value is not None:
         src_threshold_value = float(src_threshold_value)
     else:
         src_threshold_value = None
