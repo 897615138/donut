@@ -118,7 +118,7 @@ class Assessment(object):
         self._fn_index = list(set(self._real_test_labels_index) - set(self._catch_index))
         fn_t = self._fn_index
         for fn in self._fn_index:
-            if is_in(fn, self._catch_index) or is_in(fn, self._real_test_missing_index):
+            if is_in(fn, self._catch_index, -240, 0) or is_in(fn, self._real_test_missing_index):
                 fn_t.remove(fn)
         self._fn_index = fn_t
         self._fn_num = np.size(self._fn_index)
@@ -130,7 +130,7 @@ class Assessment(object):
         self._tp_index = list(set(self._catch_index).intersection(set(self._real_test_labels_index)))
         append_list = []
         for tp in self._tp_index:
-            if is_in(tp, self._real_test_labels_index) or is_in(tp, self._real_test_missing_index):
+            if is_in(tp, self._real_test_labels_index, 0, 240) or is_in(tp, self._real_test_missing_index):
                 append_list.append(tp)
         for i in append_list:
             self._tp_index.append(i)
@@ -144,7 +144,7 @@ class Assessment(object):
         """
         self._fp_index = list(set(self._catch_index) - set(self._real_test_labels_index))
         for fp in self._fp_index:
-            if is_in(fp, self._real_test_labels_index) or is_in(fp, self._real_test_missing_index):
+            if is_in(fp, self._real_test_labels_index, 0, 240) or is_in(fp, self._real_test_missing_index):
                 self._fp_index.remove(fp)
         self._fp_num = np.size(self._fp_index)
 
