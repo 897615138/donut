@@ -12,7 +12,7 @@ def split_csv(file_name, begin, num):
             if count in range(begin, begin + num):
                 rows.append([int(i[0]), float(i[1]), int(i[2]), str(i[3])])
             count = count + 1
-    with open(file_name + 'new.csv', 'w', newline='')as f:
+    with open('../../sample_data/'+str(num) + '.csv', 'w', newline='')as f:
         ff = csv.writer(f)
         ff.writerow(header)
         ff.writerows(rows)
@@ -26,4 +26,5 @@ def is_in(num, lis, range_1=-240, range_2=240):
             return True
     return False
 
-# split_csv('../../sample_data/real.csv',2048,1024)
+
+split_csv('../../sample_data/real.csv', 0, 8800)

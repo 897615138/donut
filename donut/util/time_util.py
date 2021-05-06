@@ -5,7 +5,7 @@ import numpy as np
 
 class TimeUse:
     def __init__(self, use, name):
-        self.use = use
+        self.use = float(use)
         self.name = name
 
     def __str__(self):
@@ -106,5 +106,5 @@ def get_constant_timestamp(timestamps, step):
                     has_head = False
                     has_dot = False
         if time_str.endswith('...'):
-            time_str=time_str+str(last)
+            time_str = time_str + str(last)
         return interval_num, time_str
