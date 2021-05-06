@@ -27,4 +27,3 @@ def is_in(num, lis, range_1=-240, range_2=240):
     return False
 
 
-split_csv('../../sample_data/real.csv', 0, 8800)

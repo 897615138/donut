@@ -2,6 +2,7 @@
 import numpy as np
 
 from donut.util.time_util import get_constant_timestamp
+from donut.util.utils import split_csv
 
 
 def test_constant_time():
@@ -59,3 +60,6 @@ def test_sort():
 def test_in():
     arr=[1,2,3,4]
     print(1 in arr )
+
+def test_split():
+    split_csv('../../sample_data/real.csv', 0, 8800)
