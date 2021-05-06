@@ -42,6 +42,7 @@ class Dashboard(object):
                     self.read_all()
                     self.show_cache()
                 except:
+                    self.print_warn("缓存数据损坏，默认读取重构概率缓存")
                     self.use_cache_pro()
             else:
                 self.print_text(suggest)

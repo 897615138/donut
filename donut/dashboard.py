@@ -63,11 +63,11 @@ if file_option == '选择储存至项目中的文件':
     if has_result and has_probability:
         remark = st.selectbox('全部数据（缓存）选择', ('使用缓存数据', '更新缓存数据', '更新评估数据'))
         if remark == '使用缓存数据':
-            a = 0.8
+            a = 1
             use_cache_result = True
             use_cache_probability = True
         elif remark == '更新缓存数据':
-            a = 0.8
+            a = 1
             use_cache_result = False
             use_cache_probability = False
         else:
@@ -77,7 +77,7 @@ if file_option == '选择储存至项目中的文件':
     elif has_result and not has_probability:
         remark = st.selectbox('数据（缓存）选择', ('使用缓存数据', '更新缓存数据'))
         if remark == '使用缓存数据':
-            a = 0.8
+            a = 1
             use_cache_result: True
             use_cache_probability = False
         else:
