@@ -5,7 +5,10 @@ import numpy as np
 
 class TimeUse:
     def __init__(self, use, name):
-        self.use = float(use)
+        if str(use).endswith('秒'):
+            self.use = float(str(use).replace('秒', ''))
+        else:
+            self.use = float(use)
         self.name = name
 
     def __str__(self):

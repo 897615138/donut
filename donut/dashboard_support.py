@@ -38,12 +38,12 @@ class Dashboard(object):
             exist, suggest = self.check_file("result")
             if exist:
                 self.print_text(suggest)
-                try:
-                    self.read_all()
-                    self.show_cache()
-                except:
-                    self.print_warn("缓存数据损坏，默认读取重构概率缓存")
-                    self.use_cache_pro()
+                # try:
+                self.read_all()
+                self.show_cache()
+                # except:
+                #     self.print_warn("缓存数据损坏，默认读取重构概率缓存")
+                #     self.use_cache_pro()
             else:
                 self.print_text(suggest)
                 self.use_cache_pro()
@@ -52,11 +52,11 @@ class Dashboard(object):
 
     def use_cache_pro(self):
         if self._use_cache_probability:
-            try:
-                self.use_cache_p()
-            except:
-                self.print_warn("缓存文件损坏")
-                self.do_all()
+            # try:
+            self.use_cache_p()
+            # except:
+            #     self.print_warn("缓存文件损坏")
+            #     self.do_all()
         else:
             exist, suggest = self.check_file("probability")
             self.print_text(suggest)
@@ -749,18 +749,18 @@ class Dashboard(object):
         self.print_info("读取重构概率等数据【共用时{}】".format(self._read_probability_time))
 
     def time_sort(self):
-        self.print_text("5.标准化训练数据 11.处理重构概率，获得真实测试数据集 用时过短忽略不计")
+        # self.print_text("5.标准化训练数据 11.处理重构概率，获得真实测试数据集 用时过短忽略不计")
         self._time_list_1 = [TimeUse(self._get_train_file_time, "1.获取训练数据集"),
                              TimeUse(self._get_test_file_time, "2.获取测试数据集"),
                              TimeUse(self._check_m_s_time, "3.检验数据并计算综合平均值与标准差"),
                              TimeUse(self._miss_insert_re_time, "4.定位缺失点并填充重构数据集"),
-                             # TimeUse(self._std_time, "5.标准化训练数据"),
+                             TimeUse(self._std_time, "5.标准化训练数据"),
                              TimeUse(self._model_time, "6.构建Donut模型"),
                              TimeUse(self._trainer_time, "7.构造训练器"),
                              TimeUse(self._predictor_time, "8.构造预测器"),
                              TimeUse(self._fit_time, "9.训练器训练模型"),
                              TimeUse(self._test_probability_time, "10.预测器获取重构概率"),
-                             # TimeUse(self._handle_refactor_probability_time, "11.处理重构概率，获得真实测试数据集"),
+                             TimeUse(self._handle_refactor_probability_time, "11.处理重构概率，获得真实测试数据集"),
                              TimeUse(self._save_probability_time, "12.存储重构概率等数据"),
                              TimeUse(self._assessment_time, "13.评估"),
                              TimeUse(self._save_all_time, "14.存储所有数据")
@@ -781,14 +781,14 @@ class Dashboard(object):
         self._t_name_1 = []
         self.print_info("用时排名正序")
         for i, t in enumerate(self._sorted_time_list_1):
-            self.print_text("第{}：{}用时{}".format(i + 1, t.name, t.use))
+            self.print_text("第{}：{} 用时{}秒".format(i + 1, t.name, t.use))
             self._t_use_1.append(t.use)
             self._t_name_1.append(t.name)
         self._t_use_2 = []
         self._t_name_2 = []
         self.print_info("用时排名正序")
         for i, t in enumerate(self._sorted_time_list_1):
-            self.print_text("第{}：{}用时{}".format(i + 1, t.name, t.use))
+            self.print_text("第{}：{} 用时{}秒".format(i + 1, t.name, t.use))
             self._t_use_2.append(t.use)
             self._t_name_2.append(t.name)
 
