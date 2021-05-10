@@ -787,7 +787,7 @@ class Dashboard(object):
         self._t_use_2 = []
         self._t_name_2 = []
         self.print_info("用时排名正序")
-        for i, t in enumerate(self._sorted_time_list_1):
+        for i, t in enumerate(self._sorted_time_list_2):
             self.print_text("第{}：{} 用时{}秒".format(i + 1, t.name, t.use))
             self._t_use_2.append(t.use)
             self._t_name_2.append(t.name)
